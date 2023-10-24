@@ -4,7 +4,6 @@ from django.utils import timezone
 from .models import QuestionOption
 from .models import Question
 from .models import Voting
-from .models import QuestionOptionYesNo
 
 from .filters import StartedFilter
 
@@ -28,7 +27,12 @@ def tally(ModelAdmin, request, queryset):
         v.tally_votes(token)
 
 
+class QuestionOptionInline(admin.TabularInline):
+    model = QuestionOption
 
+
+class QuestionAdmin(admin.ModelAdmin):
+    inlines = [QuestionOptionInline]
 
 
 class VotingAdmin(admin.ModelAdmin):
@@ -43,6 +47,4 @@ class VotingAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Voting, VotingAdmin)
-admin.site.register(Question)
-admin.site.register(QuestionOption)
-admin.site.register(QuestionOptionYesNo)
+admin.site.register(Question, QuestionAdmin)
