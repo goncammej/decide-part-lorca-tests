@@ -8,10 +8,22 @@ from base.models import Auth, Key
 
 
 class Question(models.Model):
-    desc = models.TextField()
+  desc = models.TextField()
+  TYPES = [
+    ('R', 'Ranked')
+  ]
 
-    def __str__(self):
-        return self.desc
+  type = models.CharField(max_length=1, choices=TYPES, default='C')
+  create_ordination = models.BooleanField(verbose_name="Create ordination", default=False)
+
+  def save(self):
+    if self.type == 'R' and not self.create_ordination:
+      import voting.views
+      voting.views.create_ranked_question(self)
+    return super().save()
+
+  def __str__(self):
+    return self.desc
 
 
 class QuestionOption(models.Model):
