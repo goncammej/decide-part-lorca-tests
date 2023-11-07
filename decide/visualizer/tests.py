@@ -43,7 +43,7 @@ class VisualizerTestCase(StaticLiveServerTestCase):
         voting.save()
 
         self.driver.get(f'{self.live_server_url}/visualizer/{voting.pk}/')
-        assert self.driver.find_element(By.ID, "participation").text == ""
+        assert self.driver.find_element(By.ID, "participation").text == "-"
 
     def test_visualizer_started_no_noted(self):        
         question = Question(desc='test question')
