@@ -21,14 +21,14 @@ class VisualizerView(TemplateView):
             context['voting'] = json.dumps(voting[0])
             num_census=0
             num_votes=0
-            participation="-"
+            participation=""
 
             if voting[0].get('start_date'):
                 num_census = Census.objects.filter(voting_id=voting_id).count()
                 num_votes = Vote.objects.filter(voting_id=voting_id).count()
 
                 if num_census != 0:
-                    participation = str((num_votes)*100/num_census)+'%'
+                    participation = str(round((num_votes*100)/num_census,2))+'%'
 
                 realtimedata = {'num_census':num_census, 'num_votes':num_votes, 'participation':participation}
                 context['realtimedata'] = realtimedata
