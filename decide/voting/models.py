@@ -10,17 +10,17 @@ from base.models import Auth, Key
 class Question(models.Model):
   desc = models.TextField()
   TYPES = [
-    ('R', 'Ranked')
+    ('R', 'Ranked'),
+    ('C', 'Classic'),
   ]
 
   type = models.CharField(max_length=1, choices=TYPES, default='C')
-  create_ordination = models.BooleanField(verbose_name="Create ordination", default=False)
 
   def save(self):
+    super().save()
     if self.type == 'R' and not self.create_ordination:
       import voting.views
       voting.views.create_ranked_question(self)
-    return super().save()
 
   def __str__(self):
     return self.desc
@@ -38,6 +38,20 @@ class QuestionOption(models.Model):
 
     def __str__(self):
         return '{} ({})'.format(self.option, self.number)
+    
+class QuestinOptionRanked(models.Model):
+  question = models.ForeignKey(Question, related_name='rankedOptions', on_delete=models.CASCADE)
+  number = models.PositiveIntegerField(blank=True, null=True)
+  option = models.TextField()
+  preference = models.PositiveIntegerField(blank=True, null=True)
+
+  def save(self):
+      if not self.number:
+          self.number = self.question.options.count() + 2
+      return super().save()
+
+  def __str__(self):
+      return '{} ({}) [{}]'.format(self.option, self.number, self.preference)
 
 
 class Voting(models.Model):
