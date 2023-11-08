@@ -34,7 +34,7 @@ class VisualizerTestCase(StaticLiveServerTestCase):
         self.driver.get(f'{self.live_server_url}/visualizer/{voting.pk}/')
         voting_state= self.driver.find_element(By.TAG_NAME,"h2").text
         
-        self.assertTrue(voting_state, "Votación no comenzada")
+        self.assertTrue(voting_state, "Voting not started")
     
     def test_visualizer_started_no_census(self):        
         question = Question(desc='test question')
