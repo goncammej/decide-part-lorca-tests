@@ -14,14 +14,14 @@ Cuando se detecta una incidencia, se debe seguir el siguiente proceso:
 
 1. Se crea una nueva entrada en el Registro de Incidencias, en la que se describe la incidencia y se le asigna un identificador único.
 2. Se indica el tipo de incidencia (error, mejora, nueva funcionalidad, etc.).
-3. Se le asigna una prioridad (alta, media, baja).
+3. Se le asigna una prioridad (Alta, Media, Baja).
 4. Se indica el creador de la incidencia.
 5. Se indica el/los responsable/s de la incidencia.
-6. Se establece el estado de la incidencia como "Abierta".
+6. Se establece el estado de la incidencia como "Abierta 🟢".
 
 ## ¿Qué hacer cuando se resuelve una incidencia?
 
 Cuando se resuelve una incidencia, se debe seguir el siguiente proceso:
 
 1. Se indica cómo se ha resuelto la incidencia.
-2. Se establece el estado de la incidencia como "Cerrada".
+2. Se establece el estado de la incidencia como "Cerrada 🔴".
