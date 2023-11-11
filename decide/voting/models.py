@@ -2,6 +2,7 @@ from django.db import models
 from django.db.models import JSONField
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from django.contrib import messages
 
 from base import mods
 from base.models import Auth, Key
@@ -18,9 +19,9 @@ class Question(models.Model):
 
   def save(self):
     super().save()
-    if self.type == 'R' and not self.create_ordination:
-      import voting.views
-      voting.views.create_ranked_question(self)
+    # if self.type == 'R' and not self.create_ordination:
+    #   import voting.views
+    #   voting.views.create_ranked_question(self)
 
   def __str__(self):
     return self.desc
@@ -34,24 +35,32 @@ class QuestionOption(models.Model):
     def save(self):
         if not self.number:
             self.number = self.question.options.count() + 2
-        return super().save()
+        if self.question.type == 'C':
+            return super().save()
 
     def __str__(self):
-        return '{} ({})'.format(self.option, self.number)
+        if self.question.type == 'C':
+            return '{} - {} ({})'.format(self.question, self.option, self.number)
+        else:
+            return 'You cannot create a ranked option for a non-ranked question'
     
-class QuestinOptionRanked(models.Model):
-  question = models.ForeignKey(Question, related_name='rankedOptions', on_delete=models.CASCADE)
+class QuestionOptionRanked(models.Model):
+  question = models.ForeignKey(Question, related_name='ranked_options', on_delete=models.CASCADE)
   number = models.PositiveIntegerField(blank=True, null=True)
   option = models.TextField()
   preference = models.PositiveIntegerField(blank=True, null=True)
 
   def save(self):
-      if not self.number:
-          self.number = self.question.options.count() + 2
-      return super().save()
+    if not self.number:
+        self.number = self.question.options.count() + 2
+    if self.question.type == 'R':
+        return super().save()
 
   def __str__(self):
-      return '{} ({}) [{}]'.format(self.option, self.number, self.preference)
+        if self.question.type == 'R':
+            return '{} - {} ({}) [{}]'.format(self.question,self.option, self.number, self.preference)
+        else:
+            return 'You cannot create a ranked option for a non-ranked question'
 
 
 class Voting(models.Model):
