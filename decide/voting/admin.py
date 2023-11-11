@@ -2,6 +2,7 @@ from django.contrib import admin
 from django.utils import timezone
 
 from .models import QuestionOption
+from .models import QuestionOptionRanked
 from .models import Question
 from .models import Voting
 
@@ -27,14 +28,6 @@ def tally(ModelAdmin, request, queryset):
         v.tally_votes(token)
 
 
-class QuestionOptionInline(admin.TabularInline):
-    model = QuestionOption
-
-
-class QuestionAdmin(admin.ModelAdmin):
-    inlines = [QuestionOptionInline]
-
-
 class VotingAdmin(admin.ModelAdmin):
     list_display = ('name', 'start_date', 'end_date')
     readonly_fields = ('start_date', 'end_date', 'pub_key',
@@ -46,5 +39,8 @@ class VotingAdmin(admin.ModelAdmin):
     actions = [ start, stop, tally ]
 
 
+
 admin.site.register(Voting, VotingAdmin)
-admin.site.register(Question, QuestionAdmin)
+admin.site.register(Question)
+admin.site.register(QuestionOption)
+admin.site.register(QuestionOptionRanked)
