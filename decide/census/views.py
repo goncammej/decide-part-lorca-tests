@@ -2,6 +2,9 @@ from django.db.utils import IntegrityError
 from django.core.exceptions import ObjectDoesNotExist
 from django.views.generic.base import TemplateView
 from django.http import HttpResponse
+from django.http import HttpResponseRedirect
+from django.contrib import messages
+import openpyxl
 from openpyxl import Workbook
 from openpyxl.styles import PatternFill, Font, Alignment
 from rest_framework import generics
@@ -104,3 +107,24 @@ def export_census(request, voting_id):
     workbook.save(response)
 
     return response
+
+
+class CensusImportView(TemplateView):
+    template_name = "census/import_census.html"
+
+    def post(self, request, *args, **kwargs):
+        if request.method == "POST" and request.FILES["archivo"]:
+            file = request.FILES["archivo"]
+            workbook = openpyxl.load_workbook(file)
+            sheet = workbook.active
+
+            for row in sheet.iter_rows(min_row=2, values_only=True):
+                voting_id = row[0]
+                voter_id = row[1]
+
+                Census.objects.create(voting_id=voting_id, voter_id=voter_id)
+
+            messages.success(request, "Datos importados correctamente")
+            return HttpResponseRedirect("/census/import/")
+
+        return super().get(request, *args, **kwargs)

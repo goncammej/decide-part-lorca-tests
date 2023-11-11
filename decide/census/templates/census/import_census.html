@@ -1,0 +1,42 @@
+{% extends "base.html" %} {% load i18n static %} {% block extrahead %}
+<link
+  type="text/css"
+  rel="stylesheet"
+  href="https://unpkg.com/bootstrap/dist/css/bootstrap.min.css"
+/>
+<link type="text/css" rel="stylesheet" href="{% static "booth/style.css" %}" />
+{% endblock %} {% block content %}
+<div class="voting container">
+  <h3>Importa un censo</h3>
+
+  <p>El archivo debe ser un archivo de Excel (.xlsx).</p>
+  <p>
+    En la primera columna debe aparecer el ID de la votación, y en la segunda el
+    ID del votante.
+  </p>
+  <p>Ten en cuenta que la primera fila del archivo será ignorada.</p>
+
+  <hr />
+
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <input type="file" name="archivo" accept=".xlsx" />
+    <button class="btn btn-primary btn-sm" type="submit">Importar Datos</button>
+  </form>
+</div>
+
+{% if messages %} {% for message in messages %}
+<div
+  class="voting container alert alert-success"
+  {%
+  if
+  message.tags
+  %}
+  class="{{ message.tags }}"
+  {%
+  endif
+  %}
+>
+  {{ message }}
+</div>
+{% endfor %} {% endif %} {% endblock %}
