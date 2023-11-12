@@ -7,6 +7,8 @@ from rest_framework.test import APIClient
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from openpyxl import load_workbook
 from io import BytesIO
+from openpyxl import Workbook
+from django.core.files.uploadedfile import SimpleUploadedFile
 
 from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait
@@ -294,3 +296,57 @@ class ExportCensusTest(BaseTestCase):
         for i, row in enumerate(census_data, start=3):
             self.assertEqual(worksheet[f"A{i}"].value, row.voting_id)
             self.assertEqual(worksheet[f"B{i}"].value, row.voter_id)
+
+
+class CensusImportViewTest(BaseTestCase):
+    def setUp(self):
+        super().setUp()
+
+    def create_voting(self):
+        q = Question(desc="test question")
+        q.save()
+        for i in range(5):
+            opt = QuestionOption(question=q, option="option {}".format(i + 1))
+            opt.save()
+        v = Voting(name="test voting", question=q)
+        v.save()
+
+        a, _ = Auth.objects.get_or_create(
+            url=settings.BASEURL, defaults={"me": True, "name": "test auth"}
+        )
+        a.save()
+        v.auths.add(a)
+
+        return v
+
+    def test_census_import_view(self):
+        self.create_voting()
+
+        workbook = Workbook()
+        sheet = workbook.active
+        sheet.append(["Voting ID", "Voter ID"])
+        sheet.append([1, 1])
+        sheet.append([1, 2])
+
+        file_buffer = BytesIO()
+        workbook.save(file_buffer)
+        file_buffer.seek(0)
+
+        excel_file = SimpleUploadedFile("censo.xlsx", file_buffer.read())
+
+        url = reverse("import_census")
+
+        response = self.client.post(url, {"archivo": excel_file}, follow=True)
+
+        self.assertEqual(response.status_code, 200)
+
+        census_data = Census.objects.all()
+        self.assertEqual(census_data.count(), 2)
+        self.assertEqual(census_data[0].voting_id, 1)
+        self.assertEqual(census_data[0].voter_id, 1)
+        self.assertEqual(census_data[1].voting_id, 1)
+        self.assertEqual(census_data[1].voter_id, 2)
+
+        messages = list(response.context["messages"])
+        self.assertEqual(len(messages), 1)
+        self.assertEqual(str(messages[0]), "Datos importados correctamente")
