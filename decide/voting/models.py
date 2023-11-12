@@ -9,6 +9,17 @@ from base.models import Auth, Key
 
 class Question(models.Model):
     desc = models.TextField()
+    TYPES = [
+            ('C', 'Classic question'),
+            ('Y', 'Yes/No question')
+            ]
+    type = models.CharField(max_length=1, choices=TYPES, default='C')
+
+    def save(self):
+        super().save()
+        if self.type == 'Y':
+            import voting.views # Importo aquí porque si lo hago arriba da error por importacion circular
+            voting.views.create_yes_no_question(self)
 
     def __str__(self):
         return self.desc
@@ -20,13 +31,33 @@ class QuestionOption(models.Model):
     option = models.TextField()
 
     def save(self):
-        if not self.number:
-            self.number = self.question.options.count() + 2
+        if self.question.type=='Y':
+            if not self.option=='Si' and not self.option =='No':
+                return ""
+        else:
+            if not self.number:
+                self.number = self.question.options.count() + 2
         return super().save()
 
     def __str__(self):
         return '{} ({})'.format(self.option, self.number)
 
+class QuestionOptionYesNo(models.Model):
+    question = models.ForeignKey(Question, related_name='yesno_options', on_delete=models.CASCADE)
+    number = models.PositiveIntegerField(blank=True, null=True)
+    option = models.TextField()
+
+    def save(self):
+        if not self.number:
+            self.number = self.question.options.count() + 2
+        if self.question.type == 'Y':
+            return super().save()
+
+    def __str__(self):
+        if self.question.type == 'Y':
+            return '{} - {} ({}) '.format(self.question,self.option, self.number)
+        else:
+            return 'You cannot create a Yes/No option for a non-Yes/No question'
 
 class Voting(models.Model):
     name = models.CharField(max_length=200)
