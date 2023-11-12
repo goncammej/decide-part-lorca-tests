@@ -126,5 +126,3 @@ class CensusImportView(TemplateView):
 
             messages.success(request, "Datos importados correctamente")
             return HttpResponseRedirect("/census/import/")
-
-        return super().get(request, *args, **kwargs)
