@@ -1,10 +1,10 @@
-name: Python application
+name: Decide-Lorca application
 
 on:
-  push:
+  pull_request:
     branches:
       - develop
-      - master
+      - main
 
 jobs:
   build:
@@ -23,7 +23,6 @@ jobs:
           POSTGRES_DB: decide
         ports:
           - 5432:5432
-        # needed because the postgres container does not provide a healthcheck
         options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
 
     steps:
@@ -40,14 +39,17 @@ jobs:
         pip install -r requirements.txt
         pip install codacy-coverage
         cp decide/local_settings.gactions.py decide/local_settings.py
-    - name: Run migrations (unnecessary)
-      run: |
-        cd decide
-        python manage.py migrate
-    - name: Run tests
+    - name: Run all tests
+      if: ${{ github.base_ref == 'main' }}
       run: |
         cd decide
         coverage run --branch --source=. ./manage.py test  --keepdb 
+        coverage xml 
+    - name: Run tests
+      if: ${{ github.base_ref == 'develop' }}
+      run: |
+        cd decide
+        coverage run --branch --source=. ./manage.py test --exclude-tag=slow  --keepdb 
         coverage xml 
     - name: Codacy Coverage Reporter
       uses: codacy/codacy-coverage-reporter-action@v1
