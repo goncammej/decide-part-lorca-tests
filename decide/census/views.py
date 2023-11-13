@@ -77,26 +77,26 @@ def export_census(request, voting_id):
     response = HttpResponse(
         content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     )
-    response["Content-Disposition"] = "attachment; filename=censo.xlsx"
+    response["Content-Disposition"] = "attachment; filename=census.xlsx"
 
     workbook = Workbook()
     worksheet = workbook.active
-    worksheet.title = "Censo"
+    worksheet.title = "Census"
 
     worksheet.merge_cells("A1:B1")
     first_cell = worksheet["A1"]
-    first_cell.value = "Censo de: " + voting.name
+    first_cell.value = "Census for: " + voting.name
     first_cell.fill = PatternFill("solid", fgColor="0D98BA")
     first_cell.font = Font(bold=True, color="FFFFFF", name="Calibri")
     first_cell.alignment = Alignment(horizontal="center")
 
     voting_id_title = worksheet["A2"]
-    voting_id_title.value = "ID de la votación"
+    voting_id_title.value = "Voting ID"
     voting_id_title.font = Font(bold=True, color="0D98BA", name="Calibri")
     voting_id_title.alignment = Alignment(horizontal="center")
 
     voter_id_title = worksheet["B2"]
-    voter_id_title.value = "ID del votante"
+    voter_id_title.value = "Voter ID"
     voter_id_title.font = Font(bold=True, color="0D98BA", name="Calibri")
     voter_id_title.alignment = Alignment(horizontal="center")
 
@@ -113,8 +113,8 @@ class CensusImportView(TemplateView):
     template_name = "census/import_census.html"
 
     def post(self, request, *args, **kwargs):
-        if request.method == "POST" and request.FILES["archivo"]:
-            file = request.FILES["archivo"]
+        if request.method == "POST" and request.FILES["file"]:
+            file = request.FILES["file"]
             workbook = openpyxl.load_workbook(file)
             sheet = workbook.active
 
@@ -124,5 +124,5 @@ class CensusImportView(TemplateView):
 
                 Census.objects.create(voting_id=voting_id, voter_id=voter_id)
 
-            messages.success(request, "Datos importados correctamente")
+            messages.success(request, "Data imported successfully!")
             return HttpResponseRedirect("/census/import/")
