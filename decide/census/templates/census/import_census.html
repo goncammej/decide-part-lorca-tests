@@ -7,21 +7,21 @@
 <link type="text/css" rel="stylesheet" href="{% static "booth/style.css" %}" />
 {% endblock %} {% block content %}
 <div class="voting container">
-  <h3>Importa un censo</h3>
+  <h3>Import census</h3>
 
-  <p>El archivo debe ser un archivo de Excel (.xlsx).</p>
+  <p>The file must be an Excel file (.xlsx).</p>
   <p>
-    En la primera columna debe aparecer el ID de la votación, y en la segunda el
-    ID del votante.
+    The first column must contain the ID of the voting, and the second column
+    must contain the ID of the voter.
   </p>
-  <p>Ten en cuenta que la primera fila del archivo será ignorada.</p>
+  <p>Please note that the first row of the file will be ignored.</p>
 
   <hr />
 
   <form method="post" enctype="multipart/form-data">
     {% csrf_token %}
-    <input type="file" name="archivo" accept=".xlsx" />
-    <button class="btn btn-primary btn-sm" type="submit">Importar Datos</button>
+    <input type="file" name="file" accept=".xlsx" />
+    <button class="btn btn-primary btn-sm" type="submit">Import census</button>
   </form>
 </div>
 

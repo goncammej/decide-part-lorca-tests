@@ -7,12 +7,12 @@
 <link type="text/css" rel="stylesheet" href="{% static "booth/style.css" %}" />
 {% endblock %} {% block content %}
 <div class="voting container">
-  <h3>Exporta un censo</h3>
+  <h3>Export census</h3>
 
   <table class="table table-bordered table-striped">
     <thead>
       <tr>
-        <th>Votación</th>
+        <th>Voting</th>
       </tr>
     </thead>
     <tbody>
@@ -23,7 +23,7 @@
           <a
             class="btn btn-primary btn-sm"
             href="{% url 'export_census_of_voting' voting.id %}"
-            >Exportar censo</a
+            >Export census</a
           >
         </td>
       </tr>

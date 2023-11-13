@@ -281,16 +281,16 @@ class ExportCensusTest(BaseTestCase):
         )
 
         self.assertEqual(
-            response["Content-Disposition"], "attachment; filename=censo.xlsx"
+            response["Content-Disposition"], "attachment; filename=census.xlsx"
         )
 
         workbook = load_workbook(BytesIO(response.content))
         worksheet = workbook.active
 
-        self.assertEqual(worksheet["A1"].value, f"Censo de: {v.name}")
+        self.assertEqual(worksheet["A1"].value, f"Census for: {v.name}")
 
-        self.assertEqual(worksheet["A2"].value, "ID de la votación")
-        self.assertEqual(worksheet["B2"].value, "ID del votante")
+        self.assertEqual(worksheet["A2"].value, "Voting ID")
+        self.assertEqual(worksheet["B2"].value, "Voter ID")
 
         census_data = Census.objects.filter(voting_id=v.id)
         for i, row in enumerate(census_data, start=3):
@@ -332,11 +332,11 @@ class CensusImportViewTest(BaseTestCase):
         workbook.save(file_buffer)
         file_buffer.seek(0)
 
-        excel_file = SimpleUploadedFile("censo.xlsx", file_buffer.read())
+        excel_file = SimpleUploadedFile("census.xlsx", file_buffer.read())
 
         url = reverse("import_census")
 
-        response = self.client.post(url, {"archivo": excel_file}, follow=True)
+        response = self.client.post(url, {"file": excel_file}, follow=True)
 
         self.assertEqual(response.status_code, 200)
 
@@ -349,4 +349,4 @@ class CensusImportViewTest(BaseTestCase):
 
         messages = list(response.context["messages"])
         self.assertEqual(len(messages), 1)
-        self.assertEqual(str(messages[0]), "Datos importados correctamente")
+        self.assertEqual(str(messages[0]), "Data imported successfully!")
