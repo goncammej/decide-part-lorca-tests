@@ -44,6 +44,8 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'rest_framework_swagger',
     'gateway',
+    'social_django',
+    'django_extensions'
 ]
 
 REST_FRAMEWORK = {
@@ -55,8 +57,19 @@ REST_FRAMEWORK = {
 }
 
 AUTHENTICATION_BACKENDS = [
+    'social_core.backends.google.GoogleOAuth2',
+    'social_core.backends.facebook.FacebookOAuth2',
     'base.backends.AuthBackend',
+    'django.contrib.auth.backends.ModelBackend'
 ]
+
+LOGIN_REDIRECT_URL = '/authentication'
+
+SOCIALACCOUNT_QUERY_EMAIL = True
+ACCOUNT_LOGOUT_ON_GET= True
+ACCOUNT_UNIQUE_EMAIL = True
+ACCOUNT_EMAIL_REQUIRED = True
+
 
 MODULES = [
     'authentication',
@@ -72,6 +85,7 @@ MODULES = [
 
 BASEURL = 'http://localhost:8000'
 
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -79,7 +93,7 @@ MIDDLEWARE = [
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django.middleware.clickjacking.XFrameOptionsMiddleware'
 ]
 
 ROOT_URLCONF = 'decide.urls'
@@ -187,3 +201,9 @@ EMAIL_USE_TLS=True
 EMAIL_PORT=587
 EMAIL_HOST_USER="decidepartlorca2324@gmail.com"
 EMAIL_HOST_PASSWORD="minv wukr swha dxnv" 
+
+SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = '314792186602-tb6jd8sgtquj1nel58knt1iok5tdo5n9.apps.googleusercontent.com'
+SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = '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'
+
+SOCIAL_AUTH_FACEBOOK_KEY = '315921004519258'
+SOCIAL_AUTH_FACEBOOK_SECRET = '31fe7b9b67e74c0e76f3ba32c76e8482'
