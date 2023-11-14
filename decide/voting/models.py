@@ -2,7 +2,6 @@ from django.db import models
 from django.db.models import JSONField
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from django.contrib import messages
 
 from base import mods
 from base.models import Auth, Key
@@ -52,15 +51,15 @@ class QuestionOptionRanked(models.Model):
 
   def save(self):
     if not self.number:
-        self.number = self.question.options.count() + 2
+      self.number = self.question.options.count() + 2
     if self.question.type == 'R':
-        return super().save()
+      return super().save()
 
   def __str__(self):
-        if self.question.type == 'R':
-            return '{} ({})'.format(self.option, self.number)
-        else:
-            return 'You cannot create a ranked option for a non-ranked question'
+    if self.question.type == 'R':
+      return '{} ({})'.format(self.option, self.number)
+    else:
+      return 'You cannot create a ranked option for a non-ranked question'
 
 
 class Voting(models.Model):
