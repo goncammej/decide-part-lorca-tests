@@ -4,7 +4,7 @@ from django.utils import timezone
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
-from django.test import TestCase
+from django.test import TestCase, tag
 from rest_framework.test import APIClient
 from rest_framework.test import APITestCase
 
@@ -91,6 +91,7 @@ class VotingTestCase(BaseTestCase):
                 mods.post('store', json=data)
         return clear
 
+    @tag("slow")
     def test_complete_voting(self):
         v = self.create_voting()
         self.create_voters(v)
