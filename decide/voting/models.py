@@ -40,7 +40,7 @@ class QuestionOption(models.Model):
 
     def __str__(self):
         if self.question.type == 'C':
-            return '{} - {} ({})'.format(self.question, self.option, self.number)
+            return '{} ({})'.format(self.option, self.number)
         else:
             return 'You cannot create a ranked option for a non-ranked question'
     
@@ -58,7 +58,7 @@ class QuestionOptionRanked(models.Model):
 
   def __str__(self):
         if self.question.type == 'R':
-            return '{} - {} ({}) [{}]'.format(self.question,self.option, self.number, self.preference)
+            return '{} ({})'.format(self.option, self.number)
         else:
             return 'You cannot create a ranked option for a non-ranked question'
 
