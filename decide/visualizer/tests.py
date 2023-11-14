@@ -16,7 +16,7 @@ class VisualizerTestCase(StaticLiveServerTestCase):
         self.voting = VotingTestCase()
 
         options = webdriver.ChromeOptions()
-        options.headless = False
+        options.headless = True
         self.driver = webdriver.Chrome(options=options)
             
     def tearDown(self):           
