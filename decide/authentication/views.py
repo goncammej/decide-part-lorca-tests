@@ -98,7 +98,7 @@ class CustomUserCreationForm(UserCreationForm):
             return False
 
     def clean_password_common(self, password):
-        common_passwords = ['12345678 ', '11111111', '00000000', 'password', 'password0', 'password1', 'decide', 'decide password', '01234567', 
+        common_passwords = ['12345678', '11111111', '00000000', 'password', 'password0', 'password1', 'decide', 'decide password', '01234567', 
         '2345678','password123', 'password12', 'cotraseña', 'contraseña123','adminadmin', 'admin123', '1234567890',
         '0987654321', '87654321','lorca123','lorca_password']
 
