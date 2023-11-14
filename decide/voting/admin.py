@@ -2,6 +2,7 @@ from django.contrib import admin
 from django.utils import timezone
 
 from .models import QuestionOption
+from .models import QuestionOptionRanked
 from .models import Question
 from .models import Voting
 
@@ -26,13 +27,11 @@ def tally(ModelAdmin, request, queryset):
         token = request.session.get('auth-token', '')
         v.tally_votes(token)
 
-
-class QuestionOptionInline(admin.TabularInline):
-    model = QuestionOption
-
-
 class QuestionAdmin(admin.ModelAdmin):
-    inlines = [QuestionOptionInline]
+    list_display = ('desc', 'type')
+
+class QuestionOptionRankedAdmin(admin.ModelAdmin):
+    list_display = ('question', 'number', 'option')
 
 
 class VotingAdmin(admin.ModelAdmin):
@@ -46,5 +45,8 @@ class VotingAdmin(admin.ModelAdmin):
     actions = [ start, stop, tally ]
 
 
+
 admin.site.register(Voting, VotingAdmin)
 admin.site.register(Question, QuestionAdmin)
+admin.site.register(QuestionOption)
+admin.site.register(QuestionOptionRanked, QuestionOptionRankedAdmin)
