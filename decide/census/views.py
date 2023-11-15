@@ -113,7 +113,7 @@ class CensusImportView(TemplateView):
     template_name = "census/import_census.html"
 
     def post(self, request, *args, **kwargs):
-        if request.method == "POST" and request.FILES["file"]:
+        if request.method == "POST" and request.FILES:
             file = request.FILES["file"]
             workbook = openpyxl.load_workbook(file)
             sheet = workbook.active
@@ -122,7 +122,14 @@ class CensusImportView(TemplateView):
                 voting_id = row[0]
                 voter_id = row[1]
 
-                Census.objects.create(voting_id=voting_id, voter_id=voter_id)
+                try:
+                    Census.objects.create(voting_id=voting_id, voter_id=voter_id)
+                except Exception as e:
+                    messages.error(request, f"Error importing data: {str(e)}")
+                    return HttpResponseRedirect("/census/import/")
 
             messages.success(request, "Data imported successfully!")
+            return HttpResponseRedirect("/census/import/")
+        if request.method == "POST" and not request.FILES:
+            messages.error(request, "No file selected!")
             return HttpResponseRedirect("/census/import/")
