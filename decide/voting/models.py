@@ -18,9 +18,6 @@ class Question(models.Model):
 
   def save(self):
     super().save()
-    # if self.type == 'R' and not self.create_ordination:
-    #   import voting.views
-    #   voting.views.create_ranked_question(self)
 
   def __str__(self):
     return self.desc
