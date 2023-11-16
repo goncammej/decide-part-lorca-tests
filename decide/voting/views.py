@@ -109,11 +109,3 @@ class VotingUpdate(generics.RetrieveUpdateDestroyAPIView):
         return Response(msg, status=st)
     
 
-def create_yes_no_question(self):
-    options = QuestionOption.objects.all().filter(question=self)
-    for o in options:
-        o.delete()
-    option_yes = QuestionOption(option='Sí', number=1, question=self)
-    option_yes.save()
-    option_no = QuestionOption(option='No', number=2, question=self)
-    option_no.save()
