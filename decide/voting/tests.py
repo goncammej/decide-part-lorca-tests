@@ -45,8 +45,9 @@ class VotingTestCase(BaseTestCase):
         for i in range(5):
             opt = QuestionOption(question=q, option='option {}'.format(i+1))
             opt.save()
-        v = Voting(name='test voting', question=q)
+        v = Voting(name='test voting')
         v.save()
+        v.questions.set([q])
 
         a, _ = Auth.objects.get_or_create(url=settings.BASEURL,
                                           defaults={'me': True, 'name': 'test auth'})
@@ -75,20 +76,21 @@ class VotingTestCase(BaseTestCase):
         voter = voters.pop()
 
         clear = {}
-        for opt in v.question.options.all():
-            clear[opt.number] = 0
-            for i in range(random.randint(0, 5)):
-                a, b = self.encrypt_msg(opt.number, v)
-                data = {
-                    'voting': v.id,
-                    'voter': voter.voter_id,
-                    'vote': { 'a': a, 'b': b },
-                }
-                clear[opt.number] += 1
-                user = self.get_or_create_user(voter.voter_id)
-                self.login(user=user.username)
-                voter = voters.pop()
-                mods.post('store', json=data)
+        for question in v.questions.all():
+            for opt in question.options.all():
+                clear[opt.number] = 0
+                for i in range(random.randint(0, 5)):
+                    a, b = self.encrypt_msg(opt.number, v)
+                    data = {
+                        'voting': v.id,
+                        'voter': voter.voter_id,
+                        'vote': { 'a': a, 'b': b },
+                    }
+                    clear[opt.number] += 1
+                    user = self.get_or_create_user(voter.voter_id)
+                    self.login(user=user.username)
+                    voter = voters.pop()
+                    mods.post('store', json=data)
         return clear
 
     @tag("slow")
@@ -109,7 +111,7 @@ class VotingTestCase(BaseTestCase):
         tally.sort()
         tally = {k: len(list(x)) for k, x in itertools.groupby(tally)}
 
-        for q in v.question.options.all():
+        for q in v.questions.all()[0].options.all():
             self.assertEqual(tally.get(q.number, 0), clear.get(q.number, 0))
 
         for q in v.postproc:
