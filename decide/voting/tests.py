@@ -135,8 +135,8 @@ class VotingTestCase(BaseTestCase):
         data = {
             'name': 'Example',
             'desc': 'Description example',
-            'question': 'I want a ',
-            'question_opt': ['cat', 'dog', 'horse']
+            'questions': ['I want a '],
+            'questions_opt': [['cat', 'dog', 'horse']]
         }
 
         response = self.client.post('/voting/', data, format='json')
@@ -219,6 +219,19 @@ class VotingTestCase(BaseTestCase):
         response = self.client.put('/voting/{}/'.format(voting.pk), data, format='json')
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.json(), 'Voting already tallied')
+
+    def test_create_voting_multiple_questions_from_api(self):
+        # login with user admin
+        self.login()
+        data = {
+            'name': 'Example',
+            'desc': 'Description example',
+            'questions': ['I want a ', 'I need a'],
+            'questions_opt': [['cat', 'dog', 'horse'],['house','car','phone']]
+        }
+
+        response = self.client.post('/voting/', data, format='json')
+        self.assertEqual(response.status_code, 201)
 
 class LogInSuccessTests(StaticLiveServerTestCase):
 
