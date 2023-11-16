@@ -319,7 +319,7 @@ class CensusImportViewTest(BaseTestCase):
 
         return v
 
-    def test_census_import_view(self):
+    def test_census_import_view_success(self):
         self.create_voting()
 
         workbook = Workbook()
@@ -350,3 +350,38 @@ class CensusImportViewTest(BaseTestCase):
         messages = list(response.context["messages"])
         self.assertEqual(len(messages), 1)
         self.assertEqual(str(messages[0]), "Data imported successfully!")
+
+    def test_census_import_view_fail(self):
+        self.create_voting()
+
+        workbook = Workbook()
+        sheet = workbook.active
+        sheet.append(["Voting ID", "Voter ID"])
+        sheet.append(["A", "B"])
+
+        file_buffer = BytesIO()
+        workbook.save(file_buffer)
+        file_buffer.seek(0)
+
+        excel_file = SimpleUploadedFile("census.xlsx", file_buffer.read())
+
+        url = reverse("import_census")
+
+        response = self.client.post(url, {"file": excel_file}, follow=True)
+
+        self.assertEqual(response.status_code, 200)
+
+        messages = list(response.context["messages"])
+        self.assertEqual(len(messages), 1)
+        self.assertTrue("Error importing data" in str(messages[0]))
+
+    def test_census_import_view_no_file(self):
+        url = reverse("import_census")
+
+        response = self.client.post(url, follow=True)
+
+        self.assertEqual(response.status_code, 200)
+
+        messages = list(response.context["messages"])
+        self.assertEqual(len(messages), 1)
+        self.assertEqual(str(messages[0]), "No file selected!")
