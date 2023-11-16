@@ -1,0 +1,76 @@
+{% extends "base.html" %} 
+{% load i18n static %} 
+
+{% block extrahead %}
+<link
+  type="text/css"
+  rel="stylesheet"
+  href="https://unpkg.com/bootstrap/dist/css/bootstrap.min.css"
+/>
+<link type="text/css" rel="stylesheet" href="{% static "booth/style.css" %}" />
+{% endblock %} 
+
+{% block content %}
+<div class="voting container">
+  <h3>Import census</h3>
+
+ <div class="d-flex justify-content-between">
+  <div>
+    <p>The file must be an Excel file (.xlsx).</p>
+    <p>
+      The first column must contain the ID of the voting.
+    </p>
+    <p>
+      The second column must contain the ID of the voter.
+    <p>Please note that the first row of the file will be ignored.</p>
+  </div>
+  <div>
+    <p>File example:</p>
+    <img  src="{% static "census/img/import_census_example.png" %}" class="img-fluid rounded border" />
+  </div>
+ </div>
+
+
+  <hr />
+
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <input type="file" name="file" accept=".xlsx" />
+    <button class="btn btn-primary btn-sm" type="submit">Import census</button>
+  </form>
+
+  {% if messages %}
+    {% for message in messages %}
+      {% if message.level == DEFAULT_MESSAGE_LEVELS.ERROR %}
+        <div class="alert alert-danger"
+          {%
+          if message.tags
+          %}
+          class="{{ message.tags }}"
+          {%
+          endif
+          %}
+        >
+          {{ message }}
+        </div>
+      {% endif %}
+
+      {% if message.level == DEFAULT_MESSAGE_LEVELS.SUCCESS %}
+        <div class="alert alert-success"
+          {%
+          if message.tags
+          %}
+          class="{{ message.tags }}"
+          {%
+          endif
+          %}
+        >
+          {{ message }}
+        </div>
+      {% endif %}
+    {% endfor %}
+  {% endif %}
+
+</div>
+
+{% endblock %}
