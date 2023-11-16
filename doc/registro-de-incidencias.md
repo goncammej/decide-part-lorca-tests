@@ -28,3 +28,27 @@ Estado actual de la incidencia (Abierta 🟢, Cerrada 🔴).
 Descripción de cómo se ha resuelto la incidencia.
 
 ---
+
+### I-001: Problems with preference type voting
+
+**Descripción:**
+The feature to be able to vote on the booth page decides the preference type voting. It depends on the changes made to create and store the new preference vote in decide. 
+And I am not able to develop my assigned tasks until it is finished and working correctly.
+
+**Tipo:**
+New functionality
+
+**Prioridad:**
+Alta
+
+**Creador:**
+jmartinacu
+
+**Responsable/s:**+
+josgarber6
+
+**Estado:**
+Cerrada 🔴
+
+**Resolución:**
+The necessary features habe been implemented to decide and I am now able to proceed with my tasks.
