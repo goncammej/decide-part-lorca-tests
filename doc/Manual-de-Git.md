@@ -1,5 +1,6 @@
 <h1 align="center">Manual de Git</h1>
 <h5 align="center">Por Álvaro Bernal Caunedo y Joaquín Martín Acuña</h5>
+
 ### 1. Copiar commits de otras ramas
 ##### 1.1 Prerequisitos
 
