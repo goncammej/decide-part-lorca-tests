@@ -6,7 +6,7 @@ Una incidencia es un problema que se ha detectado, relacionado con el software o
 
 ## ¿Qué es el Registro de Incidencias?
 
-El Registro de Incidencias es un Project Board de GitHub, en el que se registran todas las incidencias detectadas. Cada incidencia se representa como una Issue.
+El Registro de Incidencias es un Project Board de GitHub, en el que se registran todas las incidencias detectadas. Cada incidencia se representa como una Issue. El idioma empleado en el Registro de Incidencias es el inglés.
 
 ## ¿Qué hacer cuando se detecta una incidencia?
 
@@ -20,14 +20,11 @@ Cuando se detecta una incidencia, se debe seguir el siguiente proceso:
 6. Se asigna una Label a la Issue indicando la prioridad de la incidencia (*High*, 
 *Medium* o *Low*).
 
-## ¿Cuándo queda resuelta una incidencia?
-
-Una incidencia queda resuelta cuando se ha realizado una modificación en el software o la documentación del proyecto que soluciona el problema que se ha detectado, y además, dicha modificación se ha subido al menos a la rama `develop` del repositorio.
-
 ## ¿Qué hacer cuando se resuelve una incidencia?
 
 Cuando se resuelve una incidencia, se debe seguir el siguiente proceso:
 
-1. Se mueve la Issue a la columna *CLOSED* del Registro de Incidencias.
-2. Se cierra la Issue.
+1. Crear una Pull Request hacia la rama `develop` del repositorio, en la que se incluya la modificación que resuelve la incidencia. Es importante que la Issue esté referenciada en la descripción de la Pull Request. Por ejemplo: *Fixes #1*.
+2. Una vez que la Pull Request ha sido aprobada y fusionada, se mueve la Issue a la columna *CLOSED* del Registro de Incidencias.
+3. Se cierra la Issue.
 
