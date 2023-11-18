@@ -117,14 +117,17 @@
         <!-- Voting -->
         <div v-if="!signup">
             <h1>[[ voting.id ]] - [[ voting.name ]]</h1>
-            <h2>[[ voting.question.desc ]]</h2>
-            <form v-for="opt in voting.question.options" :key="opt.number">
+
+            <form v-for="(q, index) in voting.questions" :key="index">
                 <div class="form-group">
-                    <input type="radio" v-model="selected"
-                                :id="'q' + opt.number"
-                                name="question"
+                    <h2>[[ q.desc ]]</h2>
+                    <div v-for="opt in q.options" :key="opt.number">
+                        <input type="radio" v-model="selected[index]"
+                                :id="'q' + opt.number + '_index' + index"
+                                name="'question_' + index"
                                 :value="opt.number">
                         [[ opt.option ]]
+                    </div>
                 </div>
             </form>
             <button class="btn btn-primary mt-3" v-on:click="decideSend">
@@ -163,7 +166,7 @@
             data() {
                 return {
                     voting: voting,
-                    selected: "",
+                    selected: [],
                     signup: true,
                     successVote: false,
                     alertShow: false,
