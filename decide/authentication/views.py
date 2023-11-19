@@ -1,16 +1,13 @@
 from rest_framework.response import Response
-from django.http import HttpResponse
 from rest_framework.status import (
-        HTTP_201_CREATED,
-        HTTP_200_OK,
-        HTTP_400_BAD_REQUEST,
-        HTTP_401_UNAUTHORIZED
+    HTTP_201_CREATED,
+    HTTP_400_BAD_REQUEST,
+    HTTP_401_UNAUTHORIZED
 )
-from django.http import HttpRequest, QueryDict
+from django.http import HttpResponse
 from django.contrib.auth import logout
 from rest_framework.views import APIView
 from rest_framework.authtoken.models import Token
-from rest_framework.authtoken.views import obtain_auth_token
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
 from django.db import IntegrityError
@@ -21,15 +18,9 @@ from django.views.generic import CreateView
 from django.urls import reverse_lazy
 from django import forms
 from .serializers import UserSerializer
-from django.core.exceptions import ValidationError  
-from django.forms.fields import EmailField  
-from django.forms.forms import Form 
 import re
 from django.contrib.auth import authenticate, login
 from django.core.mail import EmailMessage
-from django.shortcuts import render
-from census.models import Census
-from voting.models import Voting
 
 class CustomUserCreationForm(UserCreationForm):  
 
@@ -188,8 +179,8 @@ class LoginView(CreateView):
             token, created = Token.objects.get_or_create(user=userObject)
             response.set_cookie(key='token', value=token)
         else:
-            incorrect = ["Username and password do not exist"]
-            template = loader.get_template("authentication/authentication.html")
+            incorrect = ["This username or password do not exist"]
+            template = loader.get_template("authentication/login.html")
             context = {"errors":incorrect}
 
             return HttpResponse(template.render(context, request))
@@ -200,7 +191,6 @@ class LoginView(CreateView):
 class RegisterView(CreateView):
     template_name = "authentication/authentication.html"
     form_class = CustomUserCreationForm
-    success_url = reverse_lazy("login")
     model = User
 
     def get_form(self, form_class=None):
@@ -213,9 +203,6 @@ class RegisterView(CreateView):
         form.fields['email'].widget = forms.EmailInput(attrs={'class':'form-control mb-2', 'placeholder':'example@decide.com'}) 
 
         return form
-
-    def get_success_url(self):
-        return reverse_lazy("/authentication/login")
 
     def post(self, request):
         values = request.POST   
@@ -252,7 +239,7 @@ class RegisterView(CreateView):
         if(form.clean_password_common(password1)):
             errors.append("This password is a common password")
 
-        if(form.clean_password_too_similar(password1, username, first_name, last_name)):
+        if(form.clean_password_too_similar(password1,username,first_name,last_name)):
             errors.append("This password is too similar to your personal data")
 
         if(form.clean_password_numeric(password1)):
@@ -293,22 +280,12 @@ def main(request):
     template = loader.get_template("authentication/welcome.html")
     context = {}
     is_authenticated = False
-    votings=[]
 
     if request.user.is_authenticated == True:
         is_authenticated = True
         context['username'] = request.user.username
-        census = Census.objects.filter(voter_id=request.user.id)
-        for c in census:
-            voting_id = c.voting_id
-
-            voting = Voting.objects.get(id = voting_id)
-            
-            if voting is not None and voting.start_date is not None and voting.end_date is None:
-                votings.append(voting) 
 
     context['authenticated'] = is_authenticated
-    context['votings'] = votings
 
     return HttpResponse(template.render(context, request))
 

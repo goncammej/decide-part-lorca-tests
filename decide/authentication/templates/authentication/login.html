@@ -24,8 +24,10 @@
             <input type="submit" class="btn btn-primary" value="Login">
         </form>
 
-        <a href="{% url 'social:begin' 'google-oauth2' %}">Iniciar sesión con Google</a>
-        <a href="{% url 'social:begin' 'facebook' %}">Iniciar sesión con Facebook</a>
+        <p class="lead">You can also:</p>
+        
+        <p class="lead"><a href="{% url 'social:begin' 'google-oauth2' %}">Sign in with Google</a> or <a href="{% url 'social:begin' 'facebook' %}">Sign in with Facebook</a></p>
+        
 
         {% for error in errors %}
         <div class="alert alert-danger">
@@ -33,11 +35,6 @@
             <br>
         </div>
         {% endfor %}
-
-        
-        {% if errors|length > 0 %}
-        <h3>Return back and try again.</h3>
-        {% endif %}
 
 </div>
 
