@@ -15,4 +15,7 @@ pynose==1.4.8
 dj-database-url==2.1.0
 whitenoise==6.5.0
 gunicorn==21.2.0
+<<<<<<< HEAD
 openpyxl==3.1.2
+=======
+>>>>>>> d031d8b (conf:update-django.yml)
