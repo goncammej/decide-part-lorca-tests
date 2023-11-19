@@ -1,5 +1,7 @@
 from django.db.utils import IntegrityError
 from django.core.exceptions import ObjectDoesNotExist
+from django.shortcuts import render
+from django.views import View
 from django.views.generic.base import TemplateView
 from django.http import HttpResponse
 from django.http import HttpResponseRedirect
@@ -18,9 +20,12 @@ from rest_framework.status import (
 )
 
 from base.perms import UserIsStaff
+from .forms import CreationCensusForm
 from .models import Census
 from voting.models import Voting
 
+def census(request):
+    return render(request,'census.html')
 
 class CensusCreate(generics.ListCreateAPIView):
     permission_classes = (UserIsStaff,)
@@ -133,3 +138,21 @@ class CensusImportView(TemplateView):
         if request.method == "POST" and not request.FILES:
             messages.error(request, "No file selected!")
             return HttpResponseRedirect("/census/import/")
+
+######Creación de censo
+def createCensus(request): 
+    if request.method == 'GET':
+        return render(request, 'census_create.html',{'form': CreationCensusForm})
+    else: 
+        if request.method == 'POST':
+            try: 
+                census = Census.objects.create(voting_id = request.POST['voting_id'],voter_id = request.POST['voter_id'],
+                name = request.POST['name'],surname= request.POST['surname'],city = request.POST['city'],a_community = request.POST['a_community'],
+                gender = request.POST['gender'],born_year = request.POST['born_year'],civil_state = request.POST['civil_state'],
+                sexuality = request.POST['sexuality'],works = request.POST['works'])
+                census.save()
+                return render(request,'census_succeed.html',{'census':census})
+                
+            except: 
+                return render(request,'census_create.html',{'form': CreationCensusForm, "error": 'Census already exist'})
+        return  render(request,'census_create.html',{'form': CreationCensusForm})
