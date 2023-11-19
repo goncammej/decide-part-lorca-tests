@@ -324,9 +324,9 @@ class CensusImportViewTest(BaseTestCase):
 
         workbook = Workbook()
         sheet = workbook.active
-        sheet.append(["Voting ID", "Voter ID"])
-        sheet.append([1, 1])
-        sheet.append([1, 2])
+        sheet.append(["Voter ID"])
+        sheet.append([1])
+        sheet.append([2])
 
         file_buffer = BytesIO()
         workbook.save(file_buffer)
@@ -336,7 +336,9 @@ class CensusImportViewTest(BaseTestCase):
 
         url = reverse("import_census")
 
-        response = self.client.post(url, {"file": excel_file}, follow=True)
+        response = self.client.post(
+            url, {"file": excel_file, "voting_id": 1}, follow=True
+        )
 
         self.assertEqual(response.status_code, 200)
 
@@ -356,8 +358,8 @@ class CensusImportViewTest(BaseTestCase):
 
         workbook = Workbook()
         sheet = workbook.active
-        sheet.append(["Voting ID", "Voter ID"])
-        sheet.append(["A", "B"])
+        sheet.append(["Voter ID"])
+        sheet.append(["A"])
 
         file_buffer = BytesIO()
         workbook.save(file_buffer)
@@ -367,7 +369,9 @@ class CensusImportViewTest(BaseTestCase):
 
         url = reverse("import_census")
 
-        response = self.client.post(url, {"file": excel_file}, follow=True)
+        response = self.client.post(
+            url, {"file": excel_file, "voting_id": 1}, follow=True
+        )
 
         self.assertEqual(response.status_code, 200)
 

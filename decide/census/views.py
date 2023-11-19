@@ -4,6 +4,8 @@ from django.views.generic.base import TemplateView
 from django.http import HttpResponse
 from django.http import HttpResponseRedirect
 from django.contrib import messages
+from django.urls import reverse
+from django.db import transaction
 import openpyxl
 from openpyxl import Workbook
 from openpyxl.styles import PatternFill, Font, Alignment
@@ -112,24 +114,31 @@ def export_census(request, voting_id):
 class CensusImportView(TemplateView):
     template_name = "census/import_census.html"
 
+    @transaction.atomic
     def post(self, request, *args, **kwargs):
+        voting_id = request.POST.get("voting_id")
         if request.method == "POST" and request.FILES:
-            file = request.FILES["file"]
-            workbook = openpyxl.load_workbook(file)
-            sheet = workbook.active
+            try:
+                file = request.FILES["file"]
+                workbook = openpyxl.load_workbook(file)
+                sheet = workbook.active
 
-            for row in sheet.iter_rows(min_row=2, values_only=True):
-                voting_id = row[0]
-                voter_id = row[1]
-
-                try:
+                for row in sheet.iter_rows(min_row=2, values_only=True):
+                    voter_id = row[0]
                     Census.objects.create(voting_id=voting_id, voter_id=voter_id)
-                except Exception as e:
-                    messages.error(request, f"Error importing data: {str(e)}")
-                    return HttpResponseRedirect("/census/import/")
+
+            except Exception as e:
+                messages.error(request, f"Error importing data: {str(e)}")
+                return HttpResponseRedirect(reverse("import_census"))
 
             messages.success(request, "Data imported successfully!")
-            return HttpResponseRedirect("/census/import/")
+            return HttpResponseRedirect(reverse("import_census"))
         if request.method == "POST" and not request.FILES:
             messages.error(request, "No file selected!")
-            return HttpResponseRedirect("/census/import/")
+            return HttpResponseRedirect(reverse("import_census"))
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        votings = Voting.objects.all()
+        context["votings"] = votings
+        return context
