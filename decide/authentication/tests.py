@@ -13,7 +13,6 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.keys import Keys
-from datetime import datetime
 from .views import CustomUserCreationForm
 
 
@@ -104,7 +103,7 @@ class AuthTestCase(APITestCase):
         token = response.json()
 
         token.update({'username': 'user1'})
-        response = self.client.post('/authentication/register-api/', token, format='json')
+        response = self.client.post('/authentication/register/', token, format='json')
         self.assertEqual(response.status_code, 401)
 
     def test_register_bad_request(self):
@@ -114,7 +113,7 @@ class AuthTestCase(APITestCase):
         token = response.json()
 
         token.update({'username': 'user1'})
-        response = self.client.post('/authentication/register-api/', token, format='json')
+        response = self.client.post('/authentication/register/', token, format='json')
         self.assertEqual(response.status_code, 400)
 
     def test_register_user_already_exist(self):
@@ -124,7 +123,7 @@ class AuthTestCase(APITestCase):
         token = response.json()
 
         token.update(data)
-        response = self.client.post('/authentication/register-api/', token, format='json')
+        response = self.client.post('/authentication/register/', token, format='json')
         self.assertEqual(response.status_code, 400)
 
     def test_register(self):
@@ -134,7 +133,7 @@ class AuthTestCase(APITestCase):
         token = response.json()
 
         token.update({'username': 'user1', 'password': 'pwd1'})
-        response = self.client.post('/authentication/register-api/', token, format='json')
+        response = self.client.post('/authentication/register/', token, format='json')
         self.assertEqual(response.status_code, 201)
         self.assertEqual(
             sorted(list(response.json().keys())),
@@ -147,7 +146,7 @@ class TestRegisterPositive(StaticLiveServerTestCase):
         self.base.setUp()
 
         options = webdriver.ChromeOptions()
-        options.headless = True
+        options.headless = True 
         self.cleaner = webdriver.Chrome(options=options)
 
         super().setUp()            
@@ -158,7 +157,7 @@ class TestRegisterPositive(StaticLiveServerTestCase):
         self.base.tearDown()
   
     def testregisterpositive(self):
-        self.cleaner.get(self.live_server_url+"/authentication/register/")
+        self.cleaner.get(self.live_server_url+"/authentication/register-view/")
         
         self.cleaner.find_element(By.ID, "id_username").click()
         self.cleaner.find_element(By.ID, "id_username").send_keys("testuser")
@@ -201,7 +200,7 @@ class TestRegisterNegative(StaticLiveServerTestCase):
         self.base.tearDown()
   
     def testregisternegativewrongpassword(self):
-        self.cleaner.get(self.live_server_url+"/authentication/register/")
+        self.cleaner.get(self.live_server_url+"/authentication/register-view/")
         
         self.cleaner.find_element(By.ID, "id_username").click()
         self.cleaner.find_element(By.ID, "id_username").send_keys("testuser")
@@ -217,11 +216,11 @@ class TestRegisterNegative(StaticLiveServerTestCase):
         self.cleaner.find_element(By.ID, "id_last_name").send_keys("Smith")
         self.cleaner.find_element(By.CSS_SELECTOR, ".btn").click()
 
-        self.assertTrue(self.cleaner.current_url == self.live_server_url+"/authentication/register/")
+        self.assertTrue(self.cleaner.current_url == self.live_server_url+"/authentication/register-view/")
         self.assertTrue( self.cleaner.find_element(By.CSS_SELECTOR, ".alert").text == "Passwords must be the same")
 
     def testregisternegativelongusername(self):
-        self.cleaner.get(self.live_server_url+"/authentication/register/")
+        self.cleaner.get(self.live_server_url+"/authentication/register-view/")
         
         self.cleaner.find_element(By.ID, "id_username").click()
         self.cleaner.find_element(By.ID, "id_username").send_keys("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
@@ -237,11 +236,11 @@ class TestRegisterNegative(StaticLiveServerTestCase):
         self.cleaner.find_element(By.ID, "id_last_name").send_keys("Smith")
         self.cleaner.find_element(By.CSS_SELECTOR, ".btn").click()
 
-        self.assertTrue(self.cleaner.current_url == self.live_server_url+"/authentication/register/")
+        self.assertTrue(self.cleaner.current_url == self.live_server_url+"/authentication/register-view/")
         self.assertTrue( self.cleaner.find_element(By.CSS_SELECTOR, ".alert").text == "This username is larger than 150 characters")
 
     def testregisternegativeusername(self):
-        self.cleaner.get(self.live_server_url+"/authentication/register/")
+        self.cleaner.get(self.live_server_url+"/authentication/register-view/")
         
         self.cleaner.find_element(By.ID, "id_username").click()
         self.cleaner.find_element(By.ID, "id_username").send_keys("prueba1")
@@ -257,11 +256,11 @@ class TestRegisterNegative(StaticLiveServerTestCase):
         self.cleaner.find_element(By.ID, "id_last_name").send_keys("Smith")
         self.cleaner.find_element(By.CSS_SELECTOR, ".btn").click()
 
-        self.assertTrue(self.cleaner.current_url == self.live_server_url+"/authentication/register/")
+        self.assertTrue(self.cleaner.current_url == self.live_server_url+"/authentication/register-view/")
         self.assertTrue( self.cleaner.find_element(By.CSS_SELECTOR, ".alert").text == "This username has already taken")
 
     def testregisternegativepatternusername(self):
-        self.cleaner.get(self.live_server_url+"/authentication/register/")
+        self.cleaner.get(self.live_server_url+"/authentication/register-view/")
         
         self.cleaner.find_element(By.ID, "id_username").click()
         self.cleaner.find_element(By.ID, "id_username").send_keys("test$%&user")
@@ -277,11 +276,11 @@ class TestRegisterNegative(StaticLiveServerTestCase):
         self.cleaner.find_element(By.ID, "id_last_name").send_keys("Smith")
         self.cleaner.find_element(By.CSS_SELECTOR, ".btn").click()
 
-        self.assertTrue(self.cleaner.current_url == self.live_server_url+"/authentication/register/")
+        self.assertTrue(self.cleaner.current_url == self.live_server_url+"/authentication/register-view/")
         self.assertTrue( self.cleaner.find_element(By.CSS_SELECTOR, ".alert").text == "This username not match with the pattern")
 
     def testregisternegativeemail(self):
-        self.cleaner.get(self.live_server_url+"/authentication/register/")
+        self.cleaner.get(self.live_server_url+"/authentication/register-view/")
         
         self.cleaner.find_element(By.ID, "id_username").click()
         self.cleaner.find_element(By.ID, "id_username").send_keys("testuser5")
@@ -297,11 +296,11 @@ class TestRegisterNegative(StaticLiveServerTestCase):
         self.cleaner.find_element(By.ID, "id_last_name").send_keys("Smith")
         self.cleaner.find_element(By.CSS_SELECTOR, ".btn").click()
 
-        self.assertTrue(self.cleaner.current_url == self.live_server_url+"/authentication/register/")
+        self.assertTrue(self.cleaner.current_url == self.live_server_url+"/authentication/register-view/")
         self.assertTrue( self.cleaner.find_element(By.CSS_SELECTOR, ".alert").text == "This email has already taken")
     
     def testregisternegativeemail(self):
-        self.cleaner.get(self.live_server_url+"/authentication/register/")
+        self.cleaner.get(self.live_server_url+"/authentication/register-view/")
         
         self.cleaner.find_element(By.ID, "id_username").click()
         self.cleaner.find_element(By.ID, "id_username").send_keys("testuser5")
@@ -317,11 +316,11 @@ class TestRegisterNegative(StaticLiveServerTestCase):
         self.cleaner.find_element(By.ID, "id_last_name").send_keys("Smith")
         self.cleaner.find_element(By.CSS_SELECTOR, ".btn").click()
 
-        self.assertTrue(self.cleaner.current_url == self.live_server_url+"/authentication/register/")
+        self.assertTrue(self.cleaner.current_url == self.live_server_url+"/authentication/register-view/")
         self.assertTrue( self.cleaner.find_element(By.CSS_SELECTOR, ".alert").text == "This email has already taken")
 
     def testregisternegativeemail(self):
-        self.cleaner.get(self.live_server_url+"/authentication/register/")
+        self.cleaner.get(self.live_server_url+"/authentication/register-view/")
         
         self.cleaner.find_element(By.ID, "id_username").click()
         self.cleaner.find_element(By.ID, "id_username").send_keys("testuser6")
@@ -337,11 +336,11 @@ class TestRegisterNegative(StaticLiveServerTestCase):
         self.cleaner.find_element(By.ID, "id_last_name").send_keys("Smith")
         self.cleaner.find_element(By.CSS_SELECTOR, ".btn").click()
 
-        self.assertTrue(self.cleaner.current_url == self.live_server_url+"/authentication/register/")
+        self.assertTrue(self.cleaner.current_url == self.live_server_url+"/authentication/register-view/")
         self.assertTrue( self.cleaner.find_element(By.CSS_SELECTOR, ".alert").text == "This password must contain at least 8 characters")
 
     def testregisternegativecommonpass(self):
-        self.cleaner.get(self.live_server_url+"/authentication/register/")
+        self.cleaner.get(self.live_server_url+"/authentication/register-view/")
         
         self.cleaner.find_element(By.ID, "id_username").click()
         self.cleaner.find_element(By.ID, "id_username").send_keys("testuser7")
@@ -357,11 +356,11 @@ class TestRegisterNegative(StaticLiveServerTestCase):
         self.cleaner.find_element(By.ID, "id_last_name").send_keys("Smith")
         self.cleaner.find_element(By.CSS_SELECTOR, ".btn").click()
 
-        self.assertTrue(self.cleaner.current_url == self.live_server_url+"/authentication/register/")
+        self.assertTrue(self.cleaner.current_url == self.live_server_url+"/authentication/register-view/")
         self.assertTrue( self.cleaner.find_element(By.CSS_SELECTOR, ".alert").text == "This password is a common password")
 
     def testregisternegativesimilarpass(self):
-        self.cleaner.get(self.live_server_url+"/authentication/register/")
+        self.cleaner.get(self.live_server_url+"/authentication/register-view/")
         
         self.cleaner.find_element(By.ID, "id_username").click()
         self.cleaner.find_element(By.ID, "id_username").send_keys("testuser8")
@@ -377,11 +376,11 @@ class TestRegisterNegative(StaticLiveServerTestCase):
         self.cleaner.find_element(By.ID, "id_last_name").send_keys("Smith")
         self.cleaner.find_element(By.CSS_SELECTOR, ".btn").click()
 
-        self.assertTrue(self.cleaner.current_url == self.live_server_url+"/authentication/register/")
+        self.assertTrue(self.cleaner.current_url == self.live_server_url+"/authentication/register-view/")
         self.assertTrue( self.cleaner.find_element(By.CSS_SELECTOR, ".alert").text == "This password is too similar to your personal data")
 
     def testregisternegativenumericpass(self):
-        self.cleaner.get(self.live_server_url+"/authentication/register/")
+        self.cleaner.get(self.live_server_url+"/authentication/register-view/")
         
         self.cleaner.find_element(By.ID, "id_username").click()
         self.cleaner.find_element(By.ID, "id_username").send_keys("testuser9")
@@ -397,7 +396,7 @@ class TestRegisterNegative(StaticLiveServerTestCase):
         self.cleaner.find_element(By.ID, "id_last_name").send_keys("Smith")
         self.cleaner.find_element(By.CSS_SELECTOR, ".btn").click()
 
-        self.assertTrue(self.cleaner.current_url == self.live_server_url+"/authentication/register/")
+        self.assertTrue(self.cleaner.current_url == self.live_server_url+"/authentication/register-view/")
         self.assertTrue( self.cleaner.find_element(By.CSS_SELECTOR, ".alert").text == "This password is numeric")
 
 
@@ -419,7 +418,7 @@ class TestLoginPositive(StaticLiveServerTestCase):
         self.base.tearDown()
   
     def testloginpositive(self):
-        self.cleaner.get(self.live_server_url+"/authentication/register/")
+        self.cleaner.get(self.live_server_url+"/authentication/register-view/")
         
         self.cleaner.find_element(By.ID, "id_username").click()
         self.cleaner.find_element(By.ID, "id_username").send_keys("testlogin")
@@ -475,5 +474,5 @@ class TestLoginNegative(StaticLiveServerTestCase):
 
         
         self.assertTrue(self.cleaner.current_url == self.live_server_url+"/authentication/login-view/")
-        self.assertTrue( self.cleaner.find_element(By.CSS_SELECTOR, ".alert").text == "Username and password do not exist")
+        self.assertTrue( self.cleaner.find_element(By.CSS_SELECTOR, ".alert").text == "This username or password do not exist")
         
