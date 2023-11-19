@@ -195,12 +195,12 @@ class RegisterView(CreateView):
 
     def get_form(self, form_class=None):
         form = super(RegisterView, self).get_form()
-        form.fields['username'].widget = forms.TextInput(attrs={'class':'form-control mb-2', 'placeholder':'Less than 150 characters'})
-        form.fields['password1'].widget = forms.PasswordInput(attrs={'class':'form-control mb-2', 'placeholder':'8 characters or more'}) 
-        form.fields['password2'].widget = forms.PasswordInput(attrs={'class':'form-control mb-2', 'placeholder':'Confirm password'}) 
-        form.fields['first_name'].widget = forms.TextInput(attrs={'class':'form-control mb-2', 'placeholder':'Alex'}) 
-        form.fields['last_name'].widget = forms.TextInput(attrs={'class':'form-control mb-2', 'placeholder':'Smith'}) 
-        form.fields['email'].widget = forms.EmailInput(attrs={'class':'form-control mb-2', 'placeholder':'example@decide.com'}) 
+        form.fields['username'].widget = forms.TextInput(attrs={'class':'form-control mb-2', 'placeholder':'Less than 150 characters', 'required': 'required'})
+        form.fields['password1'].widget = forms.PasswordInput(attrs={'class':'form-control mb-2', 'placeholder':'8 characters or more', 'required': 'required'}) 
+        form.fields['password2'].widget = forms.PasswordInput(attrs={'class':'form-control mb-2', 'placeholder':'Confirm password', 'required': 'required'}) 
+        form.fields['first_name'].widget = forms.TextInput(attrs={'class':'form-control mb-2', 'placeholder':'Alex', 'required': 'required'}) 
+        form.fields['last_name'].widget = forms.TextInput(attrs={'class':'form-control mb-2', 'placeholder':'Smith', 'required': 'required'}) 
+        form.fields['email'].widget = forms.EmailInput(attrs={'class':'form-control mb-2', 'placeholder':'example@decide.com', 'required': 'required'}) 
 
         return form
 
@@ -217,7 +217,7 @@ class RegisterView(CreateView):
 
         errors = []
 
-
+        
         if(form.clean_confirmation(password1, password2)):
             errors.append("Passwords must be the same")
 
