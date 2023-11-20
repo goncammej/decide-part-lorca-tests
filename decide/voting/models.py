@@ -9,6 +9,14 @@ from base.models import Auth, Key
 
 class Question(models.Model):
     desc = models.TextField()
+    TYPES = [
+            ('C', 'Classic question'),
+            ('T', 'Text question')
+            ]
+    type = models.CharField(max_length=1, choices=TYPES, default='C')
+
+    def save(self):
+        super().save()
 
     def __str__(self):
         return self.desc
@@ -20,13 +28,16 @@ class QuestionOption(models.Model):
     option = models.TextField()
 
     def save(self):
-        if not self.number:
+        if self.number:
             self.number = self.question.options.count() + 2
-        return super().save()
+        if self.question.type == 'C':
+            return super().save()
 
     def __str__(self):
-        return '{} ({})'.format(self.option, self.number)
-
+        if self.question.type == 'C':
+            return '{} ({})'.format(self.option, self.number)
+        else:
+            return 'You cannot create a classic option for a non-Classic question'
 
 class Voting(models.Model):
     name = models.CharField(max_length=200)
