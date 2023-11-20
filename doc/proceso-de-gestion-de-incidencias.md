@@ -13,10 +13,13 @@ El Registro de Incidencias es un Project Board de GitHub, en el que se registran
 Cuando se detecta una incidencia, se debe seguir el siguiente proceso:
 
 1. Se crea una Issue en el Registro de Incidencias, dentro de la columna *OPEN*,  indicando el nombre de la incidencia y el módulo al que hace referencia, separado por un guión. Por ejemplo: *Import/Export Census - Census*. Si la incidencia está relacionada con la documentación, en lugar de un módulo, se indica *Doc*. Por ejemplo: *Change documentation - Doc*.
-2. Si es necesario, se realiza una descripción detallada de la Issue.
-3. Se asigna la Issue a la persona responsable de resolverla.
-4. Se asigna una Label a la Issue indicando el grupo al que pertenece la persona responsable de resolverla (*lorca-1* o *lorca-2*).
-5. Se asigna una Label a la Issue indicando el tipo de incidencia (*Error*, *Improvement* o *New feature*).
+2. Se asigna una Label a la Issue indicando el tipo de incidencia (*Error*, *Improvement* o *New feature*).
+3. Se realiza una descripción detallada de la Issue según el tipo de incidencia:
+    * *Error*: se indica cómo reproducir el error y se describe el comportamiento esperado. Si es necesario, se describe el entorno en el que se ha detectado el error.
+    * *Improvement*: se describe el estado actual de la funcionalidad y cómo se debería mejorar.
+    * *New feature*: se describe la nueva funcionalidad que se propone acotando el alcance de la misma.
+4. Se asigna la Issue a una persona que será la encargada de revisarla y resolverla.
+5. Se asigna una Label a la Issue indicando el grupo al que pertenece la persona responsable de revisarla y resolverla (*lorca-1* o *lorca-2*).
 6. Se asigna una Label a la Issue indicando la prioridad de la incidencia (*High*, 
 *Medium* o *Low*).
 
