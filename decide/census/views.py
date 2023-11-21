@@ -1,3 +1,5 @@
+from typing import Any
+from django import http
 from django.db.utils import IntegrityError
 from django.core.exceptions import ObjectDoesNotExist
 from django.views.generic.base import TemplateView
@@ -6,6 +8,8 @@ from django.http import HttpResponseRedirect
 from django.contrib import messages
 from django.urls import reverse
 from django.db import transaction
+from django.contrib.auth.decorators import user_passes_test
+from django.utils.decorators import method_decorator
 import openpyxl
 from openpyxl import Workbook
 from openpyxl.styles import PatternFill, Font, Alignment
@@ -22,6 +26,10 @@ from rest_framework.status import (
 from base.perms import UserIsStaff
 from .models import Census
 from voting.models import Voting
+
+
+def is_admin(user):
+    return user.is_authenticated and user.is_staff
 
 
 class CensusCreate(generics.ListCreateAPIView):
@@ -64,6 +72,12 @@ class CensusDetail(generics.RetrieveDestroyAPIView):
 
 class CensusExportView(TemplateView):
     template_name = "census/export_census.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        if not is_admin(request.user):
+            messages.error(request, "You must be an admin to access this page!")
+            return HttpResponseRedirect("/")
+        return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -113,6 +127,12 @@ def export_census(request, voting_id):
 
 class CensusImportView(TemplateView):
     template_name = "census/import_census.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        if not is_admin(request.user):
+            messages.error(request, "You must be an admin to access this page!")
+            return HttpResponseRedirect("/")
+        return super().dispatch(request, *args, **kwargs)
 
     @transaction.atomic
     def post(self, request, *args, **kwargs):
