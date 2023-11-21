@@ -20,6 +20,7 @@ Cuando se detecta una incidencia, se debe seguir el siguiente proceso:
     * *New feature*: se describe la nueva funcionalidad que se propone acotando el alcance de la misma.
 4. Se asigna la Issue a una persona que será la encargada de revisarla y resolverla.
 5. Se asigna una Label a la Issue indicando el grupo al que pertenece la persona responsable de revisarla y resolverla (*lorca-1* o *lorca-2*).
+
 6. Se asigna una Label a la Issue indicando la prioridad de la incidencia (*High*, 
 *Medium* o *Low*).
 
