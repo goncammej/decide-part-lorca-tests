@@ -9,6 +9,7 @@ from openpyxl import load_workbook
 from io import BytesIO
 from openpyxl import Workbook
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.utils import timezone
 
 from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait
@@ -320,7 +321,10 @@ class CensusImportViewTest(BaseTestCase):
         return v
 
     def test_census_import_view_success(self):
-        self.create_voting()
+        v = self.create_voting()
+        v.create_pubkey()
+        v.start_date = timezone.now()
+        v.save()
 
         workbook = Workbook()
         sheet = workbook.active
@@ -337,16 +341,16 @@ class CensusImportViewTest(BaseTestCase):
         url = reverse("import_census")
 
         response = self.client.post(
-            url, {"file": excel_file, "voting_id": 1}, follow=True
+            url, {"file": excel_file, "voting_id": v.id}, follow=True
         )
 
         self.assertEqual(response.status_code, 200)
 
         census_data = Census.objects.all()
         self.assertEqual(census_data.count(), 2)
-        self.assertEqual(census_data[0].voting_id, 1)
+        self.assertEqual(census_data[0].voting_id, v.id)
         self.assertEqual(census_data[0].voter_id, 1)
-        self.assertEqual(census_data[1].voting_id, 1)
+        self.assertEqual(census_data[1].voting_id, v.id)
         self.assertEqual(census_data[1].voter_id, 2)
 
         messages = list(response.context["messages"])
@@ -354,7 +358,10 @@ class CensusImportViewTest(BaseTestCase):
         self.assertEqual(str(messages[0]), "Data imported successfully!")
 
     def test_census_import_view_fail(self):
-        self.create_voting()
+        v = self.create_voting()
+        v.create_pubkey()
+        v.start_date = timezone.now()
+        v.save()
 
         workbook = Workbook()
         sheet = workbook.active
@@ -370,7 +377,7 @@ class CensusImportViewTest(BaseTestCase):
         url = reverse("import_census")
 
         response = self.client.post(
-            url, {"file": excel_file, "voting_id": 1}, follow=True
+            url, {"file": excel_file, "voting_id": v.id}, follow=True
         )
 
         self.assertEqual(response.status_code, 200)
@@ -380,12 +387,62 @@ class CensusImportViewTest(BaseTestCase):
         self.assertTrue("Error importing data" in str(messages[0]))
 
     def test_census_import_view_no_file(self):
+        v = self.create_voting()
+        v.create_pubkey()
+        v.start_date = timezone.now()
+        v.save()
+
         url = reverse("import_census")
 
-        response = self.client.post(url, follow=True)
+        response = self.client.post(url, {"voting_id": v.id}, follow=True)
 
         self.assertEqual(response.status_code, 200)
 
         messages = list(response.context["messages"])
         self.assertEqual(len(messages), 1)
         self.assertEqual(str(messages[0]), "No file selected!")
+
+    def test_census_import_view_voting_ended(self):
+        v = self.create_voting()
+        v.create_pubkey()
+        v.start_date = timezone.now()
+        v.end_date = timezone.now()
+        v.save()
+
+        url = reverse("import_census")
+
+        response = self.client.post(
+            url, {"file": "test", "voting_id": v.id}, follow=True
+        )
+
+        self.assertEqual(response.status_code, 200)
+
+        messages = list(response.context["messages"])
+        self.assertEqual(len(messages), 1)
+        self.assertEqual(str(messages[0]), "Voting has already ended!")
+
+    def test_census_import_view_voting_not_started(self):
+        v = self.create_voting()
+
+        workbook = Workbook()
+        sheet = workbook.active
+        sheet.append(["Voter ID"])
+        sheet.append([1])
+
+        file_buffer = BytesIO()
+        workbook.save(file_buffer)
+        file_buffer.seek(0)
+
+        excel_file = SimpleUploadedFile("census.xlsx", file_buffer.read())
+
+        url = reverse("import_census")
+
+        response = self.client.post(
+            url, {"file": excel_file, "voting_id": v.id}, follow=True
+        )
+
+        self.assertEqual(response.status_code, 200)
+
+        messages = list(response.context["messages"])
+        self.assertEqual(len(messages), 1)
+        self.assertEqual(str(messages[0]), "Voting should be started first!")

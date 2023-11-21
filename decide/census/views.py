@@ -117,6 +117,16 @@ class CensusImportView(TemplateView):
     @transaction.atomic
     def post(self, request, *args, **kwargs):
         voting_id = request.POST.get("voting_id")
+        voting = Voting.objects.get(id=voting_id)
+
+        if voting.end_date:
+            messages.error(request, "Voting has already ended!")
+            return HttpResponseRedirect(reverse("import_census"))
+
+        if not voting.start_date:
+            messages.error(request, "Voting should be started first!")
+            return HttpResponseRedirect(reverse("import_census"))
+
         if request.method == "POST" and request.FILES:
             try:
                 file = request.FILES["file"]
@@ -133,6 +143,7 @@ class CensusImportView(TemplateView):
 
             messages.success(request, "Data imported successfully!")
             return HttpResponseRedirect(reverse("import_census"))
+
         if request.method == "POST" and not request.FILES:
             messages.error(request, "No file selected!")
             return HttpResponseRedirect(reverse("import_census"))
