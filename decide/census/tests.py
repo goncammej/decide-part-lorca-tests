@@ -1,6 +1,6 @@
 import random
 from django.contrib.auth.models import User
-from django.test import TestCase
+from django.test import Client, TestCase
 from django.conf import settings
 from django.urls import reverse
 from rest_framework.test import APIClient
@@ -27,8 +27,23 @@ from datetime import datetime
 class CensusTestCase(BaseTestCase):
     def setUp(self):
         super().setUp()
+        self.client = Client()
         self.census = Census(voting_id=1, voter_id=1)
         self.census.save()
+
+    def test_create_census(self):
+        # Define the URL and the data
+        url = reverse('census_create')  # replace with your URL name
+        data = {'voting_id': 2, 'voter_id': 2}
+
+        # Make the POST request
+        response = self.client.post(url, data)
+
+        # Check the status code and the response data
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(Census.objects.count(), 2)
+        self.assertEqual(Census.objects.latest('id').voting_id, 2)
+        self.assertEqual(Census.objects.latest('id').voter_id, 2)
 
     def tearDown(self):
         super().tearDown()
