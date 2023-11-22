@@ -17,12 +17,12 @@
 # Miembros del grupo decide-part-lorca-2
 (falta por poner correos)
 
-* Bernal Caunedo, Álvaro Jesús (alegalpel@alum.us.es) <br>
-* Gónzalez Frías, Álvaro (adrferfer@alum.us.es) <br>
-* Martín Acuña, Joaquín (migpatgut@alum.us.es) <br>
-* García Berdejo, José María (manromcar2@alum.us.es) <br>
-* Benítez Ruis Díaz, Francisco Sebastían (albtolmay@alum.us.es) <br>
-* García Ruíz, Manuel (borvercas@alum.us.es) <br>
+* Bernal Caunedo, Álvaro Jesús (alvarobc2412@gmail.com) <br>
+* Gónzalez Frías, Álvaro (alvgonfri@alum.us.es) <br>
+* Martín Acuña, Joaquín (jmardev@proton.me) <br>
+* García Berdejo, José María (josgarber6@alum.us.es) <br>
+* Benítez Ruis Díaz, Francisco Sebastían (frabenrui1@alum.us.es) <br>
+* García Ruíz, Manuel (manuelgruiz22@gmail.com) <br>
 
 
 # Resumen reuniones
