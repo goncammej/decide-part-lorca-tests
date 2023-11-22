@@ -27,13 +27,8 @@ def tally(ModelAdmin, request, queryset):
         v.tally_votes(token)
 
 
-class QuestionOptionInline(admin.TabularInline):
-    model = QuestionOption
-
-
 class QuestionAdmin(admin.ModelAdmin):
-    inlines = [QuestionOptionInline]
-
+    list_display = ('desc', 'type')
 
 class VotingAdmin(admin.ModelAdmin):
     list_display = ('name', 'start_date', 'end_date')
@@ -48,3 +43,4 @@ class VotingAdmin(admin.ModelAdmin):
 
 admin.site.register(Voting, VotingAdmin)
 admin.site.register(Question, QuestionAdmin)
+admin.site.register(QuestionOption)
