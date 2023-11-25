@@ -8,6 +8,5 @@ router.register(r'', views.MixnetViewSet)
 urlpatterns = [
     path('', include(router.urls)),
     path('shuffle/<int:voting_id>/', views.Shuffle.as_view(), name='shuffle'),
-    path('decrypt/<int:voting_id>/', views.Decrypt.as_view(), name='decrypt'),
-    path('decrypt_pycrypto/<int:voting_id>/', views.DecryptPycrypto.as_view(), name='decrypt_pycrypto')
+    path('decrypt/<int:voting_id>/', views.Decrypt.as_view(), name='decrypt')
 ]

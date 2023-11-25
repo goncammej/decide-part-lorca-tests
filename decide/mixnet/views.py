@@ -136,33 +136,4 @@ class Decrypt(APIView):
             msgs = resp
 
         return  Response(msgs)
-    
-class DecryptPycrypto(APIView):
 
-    def post(self, request, voting_id):
-        
-        position = request.data.get("position", 0)
-        mn = get_object_or_404(Mixnet, voting_id=voting_id, auth_position=position)
-
-        msgs = request.data.get("msgs", [])
-        pk = request.data.get("pk", None)
-        if not pk:
-           pk = mn.key
-        next_auths = mn.next_auths()
-        last = next_auths.count() == 0
-
-        # useful for tests only, to override the last value
-        last = request.data.get("force-last", last)
-
-        msgs = mn.decrypt_pycrypto(msgs, pk, last=last)
-
-        data = {
-            "msgs": msgs,
-            "pk": pk,
-        }
-        # chained call to the next auth to gen the key
-        resp = mn.chain_call("/decrypt_pycrypto/{}/".format(voting_id), data)
-        if resp:
-            msgs = resp
-
-        return  Response(msgs)

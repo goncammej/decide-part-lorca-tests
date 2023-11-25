@@ -126,10 +126,6 @@ class MixCrypt:
         self.k = ElGamal.construct((p, g, y, x))
         return self.k
     
-    def setk_pycrypto(self, key):
-        self.k = AES.new(key, AES.MODE_ECB)
-        return self.k
-
     def encrypt(self, m, k=None):
         r = rand(self.k.p)
         if not k:
@@ -141,11 +137,6 @@ class MixCrypt:
         m = self.k._decrypt(c)
         return m
     
-    def decrypt_pycrypto(self, c):
-        decrypted_data = self.k.decrypt(c).rstrip()
-        return decrypted_data
-
-
     def multiple_decrypt(self, msgs, last=True):
         msgs2 = []
         for a, b in msgs:
@@ -172,21 +163,6 @@ class MixCrypt:
 
         return msgs3
     
-    def shuffle_decrypt_pycrypto(self, msgs, last=True):
-        msgs2 = msgs.copy()
-        msgs3 = []
-        while msgs2:
-            n = random.StrongRandom().randint(0, len(msgs2) - 1)
-            a, b = msgs2.pop(n)
-            clear = self.decrypt_pycrypto((a, b))
-            if last:
-                msg = clear
-            else:
-                msg = (a, clear)
-            msgs3.append(msg)
-
-        return msgs3
-
     def reencrypt(self, cipher, pubkey=None):
         '''
         >>> B = 256

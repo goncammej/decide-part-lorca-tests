@@ -21,7 +21,7 @@ class Mixnet(models.Model):
     pubkey = models.ForeignKey(Key, blank=True, null=True,
                                related_name="mixnets_pub",
                                on_delete=models.SET_NULL)
-
+    
     def __str__(self):
         auths = ", ".join(a.name for a in self.auths.all())
         return "Voting: {}, Auths: {}\nPubKey: {}".format(self.voting_id,
@@ -38,11 +38,6 @@ class Mixnet(models.Model):
         k = crypt.setk(self.key.p, self.key.g, self.key.y, self.key.x)
         return crypt.shuffle_decrypt(msgs, last)
     
-    def decrypt_pycrypto(self, msgs, pk, last=False):
-        crypt = MixCrypt(bits=B)
-        k = crypt.setk_pycrypto(self.key)
-        return crypt.shuffle_decrypt_pycrypto(msgs, last)
-
     def gen_key(self, p=0, g=0):
         crypt = MixCrypt(bits=B)
         if self.key:
