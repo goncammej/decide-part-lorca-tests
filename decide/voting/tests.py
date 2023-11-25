@@ -447,6 +447,18 @@ class QuestionTestCases(BaseTestCase):
         opt = QuestionOptionRanked(number=1, option='test option', question=q)
         self.assertEqual(str(opt), 'test option (1)')
 
+    def test_question_option_ranked_error_str(self):
+        q = Question(desc='test question', type='C')
+        opt = QuestionOptionRanked(number=1, option='test option', question=q)
+        self.assertEqual(str(opt), 
+                         'You cannot create a ranked option for a non-ranked question')
+
+    def test_question_option_error_str(self):
+        q = Question(desc='test question', type='R')
+        opt = QuestionOption(number=1, option='test option', question=q)
+        self.assertEqual(str(opt), 
+                         'You cannot create a classic option for a non-classical question')
+
     def test_question(self):
         q1 = Question(desc='test question', type='C')
         q1.save()
@@ -468,6 +480,12 @@ class QuestionTestCases(BaseTestCase):
         self.assertEqual(opt.option, 'test option')
         self.assertEqual(opt.question, q)
 
+    def test_question_option_error(self):
+        Question(desc='test question', type='R').save()
+        q = Question.objects.get(desc='test question')
+        QuestionOption(number=1, option='test option', question=q).save()
+        self.assertRaises(QuestionOption.DoesNotExist)
+
     def test_question_option_ranked(self):
         Question(desc='test question', type='R').save()
         q = Question.objects.get(desc='test question')
@@ -477,3 +495,9 @@ class QuestionTestCases(BaseTestCase):
         self.assertEqual(opt.number, 1)
         self.assertEqual(opt.option, 'test option')
         self.assertEqual(opt.question, q)
+
+    def test_question_option_ranked_error(self):
+        Question(desc='test question', type='C').save()
+        q = Question.objects.get(desc='test question')
+        QuestionOptionRanked(number=1, option='test option', question=q).save()
+        self.assertRaises(QuestionOptionRanked.DoesNotExist)
