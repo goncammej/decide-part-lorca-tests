@@ -40,6 +40,7 @@ from Crypto.PublicKey import ElGamal
 from Crypto.Random import random
 from Crypto import Random
 from Crypto.Util.number import GCD
+from Crypto.Cipher import AES
 
 
 def rand(p):
@@ -124,6 +125,10 @@ class MixCrypt:
     def setk(self, p, g, y, x):
         self.k = ElGamal.construct((p, g, y, x))
         return self.k
+    
+    def setk_pycrypto(self, key):
+        self.k = AES.new(key, AES.MODE_ECB)
+        return self.k
 
     def encrypt(self, m, k=None):
         r = rand(self.k.p)
@@ -135,6 +140,11 @@ class MixCrypt:
     def decrypt(self, c):
         m = self.k._decrypt(c)
         return m
+    
+    def decrypt_pycrypto(self, c):
+        decrypted_data = self.k.decrypt(c).rstrip()
+        return decrypted_data
+
 
     def multiple_decrypt(self, msgs, last=True):
         msgs2 = []
@@ -154,6 +164,21 @@ class MixCrypt:
             n = random.StrongRandom().randint(0, len(msgs2) - 1)
             a, b = msgs2.pop(n)
             clear = self.decrypt((a, b))
+            if last:
+                msg = clear
+            else:
+                msg = (a, clear)
+            msgs3.append(msg)
+
+        return msgs3
+    
+    def shuffle_decrypt_pycrypto(self, msgs, last=True):
+        msgs2 = msgs.copy()
+        msgs3 = []
+        while msgs2:
+            n = random.StrongRandom().randint(0, len(msgs2) - 1)
+            a, b = msgs2.pop(n)
+            clear = self.decrypt_pycrypto((a, b))
             if last:
                 msg = clear
             else:
