@@ -20,7 +20,7 @@ from census.models import Census
 from mixnet.mixcrypt import ElGamal
 from mixnet.mixcrypt import MixCrypt
 from mixnet.models import Auth
-from voting.models import Voting, Question, QuestionOption
+from voting.models import Voting, Question, QuestionOption, QuestionOptionRanked
 from datetime import datetime
 
 
@@ -50,6 +50,21 @@ class VotingTestCase(BaseTestCase):
 
         a, _ = Auth.objects.get_or_create(url=settings.BASEURL,
                                           defaults={'me': True, 'name': 'test auth'})
+        a.save()
+        v.auths.add(a)
+
+        return v
+    
+    def create_ranked_voting(self):
+        q = Question(desc='ranked test question', type='R')
+        q.save()
+        for i in range(5):
+            opt = QuestionOptionRanked(question=q, option='option {}'.format(i+1))
+            opt.save()
+        v = Voting(name='test ranked voting', question=q)
+        v.save()
+
+        a, _ = Auth.objects.get_or_create(url=settings.BASEURL,defaults={'me': True, 'name': 'test auth'})
         a.save()
         v.auths.add(a)
 
@@ -114,6 +129,29 @@ class VotingTestCase(BaseTestCase):
         for q in v.postproc:
             self.assertEqual(tally.get(q["number"], 0), q["votes"])
 
+    def test_complete_ranked_voting(self):
+        v = self.create_ranked_voting()
+        self.create_voters(v)
+
+        v.create_pubkey()
+        v.start_date = timezone.now()
+        v.save()
+
+        clear = self.store_votes(v)
+
+        self.login()
+        # v.tally_votes(self.token)
+
+        # tally = v.tally
+        # tally.sort()
+        # tally = {k: len(list(x)) for k, x in itertools.groupby(tally)}
+
+        # for q in v.question.options.all():
+        #     self.assertEqual(tally.get(q.number, 0), clear.get(q.number, 0))
+
+        # for q in v.postproc:
+        #     self.assertEqual(tally.get(q["number"], 0), q["votes"])
+
     def test_create_voting_from_api(self):
         data = {'name': 'Example'}
         response = self.client.post('/voting/', data, format='json')
@@ -133,6 +171,31 @@ class VotingTestCase(BaseTestCase):
             'name': 'Example',
             'desc': 'Description example',
             'question': 'I want a ',
+            'question_opt': ['cat', 'dog', 'horse']
+        }
+
+        response = self.client.post('/voting/', data, format='json')
+        self.assertEqual(response.status_code, 201)
+
+    def test_create_voting_from_api_ranked(self):
+        data = {'name': 'Voting ranked'}
+        response = self.client.post('/voting/', data, format='json')
+        self.assertEqual(response.status_code, 401)
+
+        # login with user no admin
+        self.login(user='noadmin')
+        response = mods.post('voting', params=data, response=True)
+        self.assertEqual(response.status_code, 403)
+
+        # login with user admin
+        self.login()
+        response = mods.post('voting', params=data, response=True)
+        self.assertEqual(response.status_code, 400)
+
+        data = {
+            'name': 'Voting ranked',
+            'desc': 'Description example',
+            'question': 'Choose your prefered option',
             'question_opt': ['cat', 'dog', 'horse']
         }
 
@@ -315,7 +378,7 @@ class QuestionsTests(StaticLiveServerTestCase):
 
         self.base.tearDown()
 
-    def createQuestionSuccess(self):
+    def createClassicQuestionSuccess(self):
         self.cleaner.get(self.live_server_url+"/admin/login/?next=/admin/")
         self.cleaner.set_window_size(1280, 720)
 
@@ -361,3 +424,56 @@ class QuestionsTests(StaticLiveServerTestCase):
 
         self.assertTrue(self.cleaner.find_element_by_xpath('/html/body/div/div[3]/div/div[1]/div/form/div/p').text == 'Please correct the errors below.')
         self.assertTrue(self.cleaner.current_url == self.live_server_url+"/admin/voting/question/add/")
+
+class QuestionTestCases(BaseTestCase):
+
+    def setUp(self):
+        super().setUp()
+    
+    def tearDown(self):
+        super().tearDown()
+
+    def test_question_to_string(self):
+        q = Question(desc='test question', type='C')
+        self.assertEqual(str(q), 'test question')
+
+    def test_question_option_to_string(self):
+        q = Question(desc='test question', type='C')
+        opt = QuestionOption(number=1, option='test option', question=q)
+        self.assertEqual(str(opt), 'test option (1)')
+
+    def test_question_option_ranked_to_string(self):
+        q = Question(desc='test question', type='R')
+        opt = QuestionOptionRanked(number=1, option='test option', question=q)
+        self.assertEqual(str(opt), 'test option (1)')
+
+    def test_question(self):
+        q1 = Question(desc='test question', type='C')
+        q1.save()
+        q2 = Question(desc='test question', type='R')
+        q2.save()
+
+        self.assertEqual(q1.type, 'C')
+        self.assertEqual(q2.type, 'R')
+        self.assertEqual(q1.desc, 'test question')
+        self.assertEqual(q2.desc, 'test question')
+
+    def test_question_option(self):
+        Question(desc='test question', type='C').save()
+        q = Question.objects.get(desc='test question')
+        QuestionOption(number=1, option='test option', question=q).save()
+        opt = QuestionOption.objects.get(option='test option')
+
+        self.assertEqual(opt.number, 1)
+        self.assertEqual(opt.option, 'test option')
+        self.assertEqual(opt.question, q)
+
+    def test_question_option_ranked(self):
+        Question(desc='test question', type='R').save()
+        q = Question.objects.get(desc='test question')
+        QuestionOptionRanked(number=1, option='test option', question=q).save()
+        opt = QuestionOptionRanked.objects.get(option='test option')
+
+        self.assertEqual(opt.number, 1)
+        self.assertEqual(opt.option, 'test option')
+        self.assertEqual(opt.question, q)
