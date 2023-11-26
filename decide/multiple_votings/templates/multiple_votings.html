@@ -1,9 +1,47 @@
-
 {% extends 'base2.html' %}
-
 
 {% block content %}
 
-<h1>Multiple_votings</h1>
+    <h1>Choose Voting Type</h1>
+    <select id="voting-type">
+        <option value="base-voting">Base Voting</option>
+        <option value="multiple-votings">Multiple Votings</option>
+    </select>
+
+    <div id="base-voting-form" style="display:none;">
+        <h2>Base Voting Form</h2>
+        <form action="/multiple_votings/multiple_votings/" method="POST">
+            {% csrf_token %}
+            {{form}}
+            <button>
+                Save
+            </button>
+        </form>
+    </div>
+
+    <div id="multiple-votings-form" style="display:none;">
+        <h2>Multiple Votings Form</h2>
+        
+    </div>
+
+    <script>
+        const votingTypeSelect = document.getElementById('voting-type');
+        const baseVotingForm = document.getElementById('base-voting-form');
+        const multipleVotingsForm = document.getElementById('multiple-votings-form');
+
+        votingTypeSelect.addEventListener('change', () => {
+            if (votingTypeSelect.value === 'base-voting') {
+                baseVotingForm.style.display = 'block';
+                multipleVotingsForm.style.display = 'none';
+            } else if (votingTypeSelect.value === 'multiple-votings') {
+                baseVotingForm.style.display = 'none';
+                multipleVotingsForm.style.display = 'block';
+            }
+        });
+
+        // Add this code to display the Multiple Votings form by default
+        baseVotingForm.style.display = 'block';
+        multipleVotingsForm.style.display = 'none';
+    </script>
 
 {% endblock %}
