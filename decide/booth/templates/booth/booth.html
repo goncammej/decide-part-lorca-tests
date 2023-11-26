@@ -187,6 +187,7 @@
     <!-- ElGamal encrypt -->
     <script src="{% static "crypto/elgamal.js" %}"></script>
 
+
     <!-- Vuejs -->
     <script src="https://unpkg.com/vue@latest"</script>
     <script src="https://unpkg.com/babel-polyfill@latest/dist/polyfill.min.js"></script>
@@ -271,6 +272,17 @@
                             this.showAlert("danger", '{% trans "Error: " %}' + error);
                         });
                 },
+                textoAHexadecimal(cadena) {
+                    let resultado = '';
+                    for (let i = 0; i < cadena.length; i++) {
+                        let valorAscii = cadena.charCodeAt(i) + '';
+                        if (valorAscii.length <= 2) {
+                        valorAscii = valorAscii.length === 2 ? '0' + valorAscii: valorAscii
+                        }     
+                        resultado +=  valorAscii;
+                    }
+                    return resultado;
+                },
                 getUser(evt) {
                     var data = {token: this.token};
                     this.postData("{% url "gateway" "authentication" "/getuser/" %}", data)
@@ -295,11 +307,6 @@
                 },
                 decideEncrypt() {
                     var bigmsg = BigInt.fromJSONObject(this.selected.toString());
-                    var cipher = ElGamal.encrypt(this.bigpk, bigmsg);
-                    return cipher;
-                },
-                decideEncryptText(toEncrypt) {
-                    var bigmsg = BigInt.fromJSONObject(toEncrypt.toString());
                     var cipher = ElGamal.encrypt(this.bigpk, bigmsg);
                     return cipher;
                 },
@@ -330,6 +337,7 @@
                         this.selected = selectedOption.number;
                         evt.preventDefault();
                         var v = this.decideEncrypt();
+                        console.log(v);
                         var data = {
                             vote: { a: v.alpha.toString(), b: v.beta.toString() },
                             voting: this.voting.id,
@@ -350,7 +358,8 @@
                     } else if (this.voting.question.type === 'T') {
                         var textAreaValue = document.getElementById('floatingTextarea2').value;
                         evt.preventDefault();
-                        var v = this.decideEncryptText(textAreaValue);
+                        this.selected = this.textoAHexadecimal(textAreaValue);
+                        var v = this.decideEncrypt();
                         var data = {
                             vote: { a: v.alpha.toString(), b: v.beta.toString() },
                             voting: this.voting.id,
@@ -383,3 +392,4 @@
     </script>
 </body>
 {% endblock %}
+
