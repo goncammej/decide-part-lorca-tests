@@ -78,7 +78,7 @@ class MultipleQuestionTestCase(StaticLiveServerTestCase):
         EC.element_to_be_clickable((By.ID, "username"))
             )
         username.click()
-        
+
         self.driver.find_element(By.ID, "username").send_keys("testvoter")
         self.driver.find_element(By.ID, "password").click()
         self.driver.find_element(By.ID, "password").send_keys("qwerty")
@@ -86,7 +86,7 @@ class MultipleQuestionTestCase(StaticLiveServerTestCase):
 
         send_vote = WebDriverWait(self.driver, 10).until(
         EC.element_to_be_clickable((By.ID, "send-vote"))
-            )    
+            )
         send_vote.click()
 
         alert_element = WebDriverWait(self.driver, 10).until(
