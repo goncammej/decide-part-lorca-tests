@@ -1,4 +1,3 @@
-import time
 from django.utils import timezone
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 
@@ -60,7 +59,7 @@ class MultipleQuestionTestCase(StaticLiveServerTestCase):
 
         super().setUp()
 
-    def tearDown(self):       
+    def tearDown(self):
         super().tearDown()
         self.driver.quit()
 
@@ -79,7 +78,7 @@ class MultipleQuestionTestCase(StaticLiveServerTestCase):
         EC.element_to_be_clickable((By.ID, "username"))
             )
         username.click()
-      
+        
         self.driver.find_element(By.ID, "username").send_keys("testvoter")
         self.driver.find_element(By.ID, "password").click()
         self.driver.find_element(By.ID, "password").send_keys("qwerty")
@@ -88,11 +87,11 @@ class MultipleQuestionTestCase(StaticLiveServerTestCase):
         send_vote = WebDriverWait(self.driver, 10).until(
         EC.element_to_be_clickable((By.ID, "send-vote"))
             )    
-        send_vote.click()   
+        send_vote.click()
 
         alert_element = WebDriverWait(self.driver, 10).until(
         EC.visibility_of_element_located((By.CSS_SELECTOR, ".alert"))
-            )    
+            )
 
         assert alert_element is not None and alert_element.get_attribute("variant") == "danger"
 
@@ -122,7 +121,7 @@ class MultipleQuestionTestCase(StaticLiveServerTestCase):
 
         WebDriverWait(self.driver, 10).until(
         EC.visibility_of_element_located((By.ID, "vote"))
-            )    
+            )
 
         self.driver.find_element(By.ID, "opt1_index0").click()
         self.driver.find_element(By.ID, "opt2_index2").click()
@@ -131,7 +130,7 @@ class MultipleQuestionTestCase(StaticLiveServerTestCase):
 
         alert_element = WebDriverWait(self.driver, 10).until(
         EC.visibility_of_element_located((By.CSS_SELECTOR, ".alert"))
-            )    
+            )
 
         assert alert_element is not None and alert_element.get_attribute("variant") == "danger"
 
@@ -161,7 +160,7 @@ class MultipleQuestionTestCase(StaticLiveServerTestCase):
 
         WebDriverWait(self.driver, 10).until(
         EC.visibility_of_element_located((By.ID, "vote"))
-            )    
+            )
 
         questions = WebDriverWait(self.driver, 10).until(
             EC.presence_of_all_elements_located((By.CSS_SELECTOR, '#vote .form-group'))
