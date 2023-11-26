@@ -1,3 +1,4 @@
+from voting.models import Voting
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
@@ -73,7 +74,10 @@ def multiple_votings(request):
             })
 
 def list_votings(request):
-    return render(request, 'list_votings.html')
+    votings = Voting.objects.all()
+    return render(request, 'list_votings.html',{
+        'votings': votings
+    })
 
 def signout(request):
     logout(request)

@@ -4,5 +4,12 @@
 {% block content %}
 
 <h1>Votings</h1>
+{% for voting in votings %}
+
+<div>
+    <h2>{{voting.name}}</h2>
+</div>
+
+{% endfor %}
 
 {% endblock %}
