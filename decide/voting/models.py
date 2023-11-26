@@ -28,7 +28,7 @@ class QuestionOption(models.Model):
     option = models.TextField()
 
     def save(self):
-        if self.number:
+        if not self.number:
             self.number = self.question.options.count() + 2
         if self.question.type == 'C':
             return super().save()
