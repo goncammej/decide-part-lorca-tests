@@ -1,15 +1,48 @@
 {% extends 'base2.html' %}
 
-
 {% block content %}
 
-<h1>Votings</h1>
-{% for voting in votings %}
-
-<div>
-    <h2>{{voting.name}}</h2>
+<div style="text-align: center;">
+    <h1>Votings_List</h1>
 </div>
+{% for voting in votings %}
+    {% if voting.end_date != null %}
+        <div>
+            <h1>{{voting.name}}</h1>
+            <p>{{voting.desc}}</p>
+            <button>
+                ❌ Delete
+            </button>
+            <button>
+                <button>
+                    📊 Tally
+                </button>
+            </button>
+        </div>
+        <br> 
 
+
+
+    {% else %}
+        <div>
+            <h1>{{voting.name}}</h1>
+            <p>{{voting.desc}}</p>
+            <button>
+                ❌ Delete
+            </button>
+            <button>
+                ✏ Update
+            </button>
+            <button>
+                📝 Vote
+            </button>
+        </div>
+
+
+        <br> 
+
+
+    {% endif %}
 {% endfor %}
 
 {% endblock %}
