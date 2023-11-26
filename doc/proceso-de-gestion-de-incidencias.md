@@ -2,11 +2,11 @@
 
 ## ¿Qué es una incidencia?
 
-Una incidencia es un problema que se ha detectado, relacionado con el software o la documentación del proyecto.
+Una incidencia es un problema que se ha detectado, relacionado con el software o la documentación del proyecto. En nuestro caso, una incidencia también suponen tareas de implementación de nueva funcionalidad y mejoras en el repositorio (ya sean de documentación, github actions, etc)
 
 ## ¿Qué es el Registro de Incidencias?
 
-El Registro de Incidencias es un Project Board de GitHub, en el que se registran todas las incidencias detectadas. Cada incidencia se representa como una Issue. El idioma empleado en el Registro de Incidencias es el inglés.
+El Registro de Incidencias es un Project Board de GitHub nombrado *Incidents*, en el que se registran todas las incidencias detectadas. Cada incidencia se representa como una tarjeta del tablero. El idioma empleado en el Registro de Incidencias es el inglés.
 
 ## ¿Qué hacer cuando se detecta una incidencia?
 
@@ -28,7 +28,25 @@ Cuando se detecta una incidencia, se debe seguir el siguiente proceso:
 
 Cuando se resuelve una incidencia, se debe seguir el siguiente proceso:
 
-1. Crear una Pull Request hacia la rama `develop` del repositorio, en la que se incluya la modificación que resuelve la incidencia. Es importante que la Issue esté referenciada en la descripción de la Pull Request. Por ejemplo: *Fixes #1*.
+1. Crear una Pull Request hacia la rama *develop* del repositorio, en la que se incluya la modificación que resuelve la incidencia. Es importante que la Issue esté referenciada en la descripción de la Pull Request. Por ejemplo: *Fixes #1*.
 2. Una vez que la Pull Request ha sido aprobada y fusionada, se mueve la Issue a la columna *CLOSED* del Registro de Incidencias.
 3. Se cierra la Issue.
 
+
+## Algunos ejemplos
+### Incidencia de nueva funcionalidad
+<p align="center">
+<img  src="./images/newFeature.png">
+</p>
+
+### Incidencia de error
+<p align="center">
+<img  src="./images/errorPart1.png">
+<img  src="./images/errorPart2.png">
+<img  src="./images/errorPart3.png">
+</p>
+
+### Incidencia de mejora
+<p align="center">
+<img  src="./images/improvement.png">  
+</p>
