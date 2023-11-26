@@ -4,7 +4,7 @@ from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.models import User
 from django.contrib.auth import login, logout, authenticate
 from django.db import IntegrityError
-
+from .forms import BaseVotingForm
 
 def home(request):
     return render(request, 'home.html')
@@ -53,9 +53,24 @@ def signin(request):
 
 
 def multiple_votings(request):
-    return render(request, 'multiple_votings.html')
-
-
+    if request.method == 'GET':
+        return render(request, 'multiple_votings.html',{
+            'form': BaseVotingForm
+        })
+    else:
+        try:
+            form =BaseVotingForm(request.POST)
+            new_voting = form.save(commit=False)
+            new_voting.save()
+            print(new_voting)
+            return render(request, 'multiple_votings.html',{
+                'form': BaseVotingForm
+            })
+        except :
+            return render(request, 'multiple_votings.html',{
+                'form': BaseVotingForm,
+                'error': 'Bad data',
+            })
 
 def list_votings(request):
     return render(request, 'list_votings.html')
