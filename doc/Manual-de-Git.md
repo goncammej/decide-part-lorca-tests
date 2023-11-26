@@ -1,8 +1,9 @@
 <h1 align="center">Manual de Git</h1>
+
 <h5 align="center">Por Álvaro Bernal Caunedo y Joaquín Martín Acuña</h5>
 
-### 1. Copiar commits de otras ramas
-##### 1.1 Prerequisitos
+### Copiar commits de otras ramas
+#### 1.1. Prerequisitos
 
 **Si tienes cambios sin confirmar en local:**
 1. Estando en tu rama:
@@ -15,7 +16,7 @@
 	git pull origin  <rama_que_quieres_copiar>
 ```
 
-##### 1.2 Copiar commits
+#### 1.2. Copiar commits
 1. Mirar el historial de commits de la rama
 	- Desde el historial de github de esa rama
 	- Haciendo:
@@ -26,24 +27,24 @@
 	- Si son muchos:
 			`git cherry-pick <hash_commit_mas_antiguo>^..<hash_commit_mas_nuevo>`
 	- Si son pocos:
-			`git cherry-pick <hash1> <hash2>`
+			`git chery pick <hash1> <hash2>`
 
-##### 1.3 Copiar commits
+#### 1.3. Copiar commits
 1. Recuperar tus anteriores
 	`git stash apply`
 
 > [!warning]
 > Cuando vayas a hacer push a tu rama, seguramente tengas problemas con la actualización de las ramas. Para solucionarlo haz `git push -f origin <tu_rama>`
 
-### 2. Actualizar la integración continua en vuestra rama de trabajo
+### Actualizar la integración continua en vuestra rama de trabajo
 
-##### 2.1 Pre-requisitos
+#### 1.1. Pre-requisitos
 
 Si tienes cambios sin confirmar en local:
 1. Estando en tu rama:
    `git stash -u`
 
-##### 2.2 Actualizar:
+#### 1.2. Actualizar:
 
 1. Hacer un fetch para asegurarse de tener las últimas actualizaciones:
    `git fetch origin`
@@ -74,3 +75,4 @@ Si hiciste stash al principio, vuelve a aplicar esos cambios:
 
 > [!warning]
 > Cuando vayas a hacer push a tu rama, seguramente tengas problemas con la actualización de las ramas. Para solucionarlo haz `git push -f origin <tu_rama>`
+
