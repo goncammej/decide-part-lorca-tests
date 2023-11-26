@@ -426,3 +426,70 @@ class QuestionsTests(StaticLiveServerTestCase):
 
         self.assertTrue(self.cleaner.find_element_by_xpath('/html/body/div/div[3]/div/div[1]/div/form/div/p').text == 'Please correct the errors below.')
         self.assertTrue(self.cleaner.current_url == self.live_server_url+"/admin/voting/question/add/")
+
+class QuestionTestCases(BaseTestCase):
+
+    def setUp(self):
+        super().setUp()
+
+    def tearDown(self):
+        super().tearDown()
+
+    def test_question_to_string(self):
+        q = Question(desc='test question', type='C')
+        self.assertEqual(str(q), 'test question')
+
+    def test_question_option_to_string(self):
+        q = Question(desc='test question', type='C')
+        opt = QuestionOption(number=1, option='test option', question=q)
+        self.assertEqual(str(opt), 'test option (1)')
+
+    def test_question_option_yesno_to_string(self):
+        q = Question(desc='test question', type='Y')
+        opt = QuestionOptionYesNo(number=1, option='test option', question=q)
+        self.assertEqual(str(opt), 'test option (1)')
+
+    def test_question_option_yesno_error_str(self):
+        q = Question(desc='test question', type='C')
+        opt = QuestionOptionYesNo(number=1, option='test option', question=q)
+        self.assertEqual(str(opt), 
+            'You cannot create a Yes/No option for a non-Yes/No question')
+
+    def test_question_option_error_str(self):
+        q = Question(desc='test question', type='Y')
+        opt = QuestionOption(number=1, option='test option', question=q)
+        self.assertEqual(str(opt), 
+            'You cannot create a classic option for a non-classical question')
+
+    def test_question(self):
+        q1 = Question(desc='test question', type='C')
+        q1.save()
+
+        q2 = Question(desc='test question', type='Y')
+        q2.save()
+
+        self.assertEqual(q1.type, 'C')
+        self.assertEqual(q2.type, 'Y')
+
+        self.assertEqual(q1.desc, 'test question')
+        self.assertEqual(q2.desc, 'test question')
+
+    def test_question_option(self):
+        Question(desc='test question', type='C').save()
+        q = Question.objects.get(desc='test question')
+        QuestionOption(number=1, option='test option', question=q).save()
+        opt = QuestionOption.objects.get(option='test option')
+
+        self.assertEqual(opt.number, 1)
+        self.assertEqual(opt.option, 'test option')
+        self.assertEqual(opt.question, q)
+
+    def test_question_option_yesno(self):
+        Question(desc='test question', type='Y').save()
+        q = Question.objects.get(desc='test question')
+        QuestionOptionYesNo(number=1, option='test option', question=q).save()
+        opt = QuestionOptionYesNo.objects.get(option='test option')
+
+        self.assertEqual(opt.number, 1)
+        self.assertEqual(opt.option, 'test option')
+        self.assertEqual(opt.question, q)
