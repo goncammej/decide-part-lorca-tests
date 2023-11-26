@@ -27,7 +27,7 @@
 	- Si son muchos:
 			`git cherry-pick <hash_commit_mas_antiguo>^..<hash_commit_mas_nuevo>`
 	- Si son pocos:
-			`git chery pick <hash1> <hash2>`
+			`git cherry-pick <hash1> <hash2>`
 
 #### 1.3. Copiar commits
 1. Recuperar tus anteriores
