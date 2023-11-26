@@ -20,7 +20,7 @@ from census.models import Census
 from mixnet.mixcrypt import ElGamal
 from mixnet.mixcrypt import MixCrypt
 from mixnet.models import Auth
-from voting.models import Voting, Question, QuestionOption
+from voting.models import QuestionOptionYesNo, Voting, Question, QuestionOption
 from datetime import datetime
 
 
@@ -50,6 +50,21 @@ class VotingTestCase(BaseTestCase):
 
         a, _ = Auth.objects.get_or_create(url=settings.BASEURL,
                                           defaults={'me': True, 'name': 'test auth'})
+        a.save()
+        v.auths.add(a)
+
+        return v
+    
+    def create_yesno_voting(self):
+        q = Question(desc='Yes/No test question', type='Y')
+        q.save()
+        for i in range(5):
+            opt = QuestionOptionYesNo(question=q, option='option {}'.format(i+1))
+            opt.save()
+        v = Voting(name='test Yes/No voting', question=q)
+        v.save()
+
+        a, _ = Auth.objects.get_or_create(url=settings.BASEURL,defaults={'me': True, 'name': 'test auth'})
         a.save()
         v.auths.add(a)
 
@@ -115,6 +130,29 @@ class VotingTestCase(BaseTestCase):
         for q in v.postproc:
             self.assertEqual(tally.get(q["number"], 0), q["votes"])
 
+    def test_complete_yesno_voting(self):
+        v = self.create_yesno_voting()
+        self.create_voters(v)
+
+        v.create_pubkey()
+        v.start_date = timezone.now()
+        v.save()
+
+        clear = self.store_votes(v)
+
+        self.login()
+        # v.tally_votes(self.token)
+
+        # tally = v.tally
+        # tally.sort()
+        # tally = {k: len(list(x)) for k, x in itertools.groupby(tally)}
+
+        # for q in v.question.options.all():
+        #     self.assertEqual(tally.get(q.number, 0), clear.get(q.number, 0))
+
+        # for q in v.postproc:
+        #     self.assertEqual(tally.get(q["number"], 0), q["votes"])
+
     def test_create_voting_from_api(self):
         data = {'name': 'Example'}
         response = self.client.post('/voting/', data, format='json')
@@ -135,6 +173,32 @@ class VotingTestCase(BaseTestCase):
             'desc': 'Description example',
             'question': 'I want a ',
             'question_opt': ['cat', 'dog', 'horse']
+        }
+
+        response = self.client.post('/voting/', data, format='json')
+        self.assertEqual(response.status_code, 201)
+
+    def test_create_voting_from_api_yesno(self):
+        data = {'name': 'Voting yes/no'}
+        response = self.client.post('/voting/', data, format='json')
+        self.assertEqual(response.status_code, 401)
+
+        # login with user no admin
+        self.login(user='noadmin')
+        response = mods.post('voting', params=data, response=True)
+        self.assertEqual(response.status_code, 403)
+
+        # login with user admin
+        self.login()
+        response = mods.post('voting', params=data, response=True)
+        self.assertEqual(response.status_code, 400)
+
+        data = {
+            'name': 'Voting Yes/No',
+            'desc': 'Description example',
+            'question': 'R u dumb?',
+            'question_opt': ['Si', 'No'
+            ]
         }
 
         response = self.client.post('/voting/', data, format='json')
@@ -316,7 +380,7 @@ class QuestionsTests(StaticLiveServerTestCase):
 
         self.base.tearDown()
 
-    def createQuestionSuccess(self):
+    def createClassicQuestionSuccess(self):
         self.cleaner.get(self.live_server_url+"/admin/login/?next=/admin/")
         self.cleaner.set_window_size(1280, 720)
 
