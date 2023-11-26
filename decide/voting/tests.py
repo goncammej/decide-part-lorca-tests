@@ -40,7 +40,7 @@ class VotingTestCase(BaseTestCase):
         return k.encrypt(msg)
 
     def create_voting(self):
-        q = Question(desc='test question')
+        q = Question(desc='test question', type = 'C')
         q.save()
         for i in range(5):
             opt = QuestionOption(question=q, option='option {}'.format(i+1))
@@ -106,52 +106,52 @@ class VotingTestCase(BaseTestCase):
                 mods.post('store', json=data)
         return clear
 
-    # @tag("slow")
-    # def test_complete_voting(self):
-    #     v = self.create_voting()
-    #     self.create_voters(v)
+    @tag("slow")
+    def test_complete_voting(self):
+        v = self.create_voting()
+        self.create_voters(v)
 
-    #     v.create_pubkey()
-    #     v.start_date = timezone.now()
-    #     v.save()
+        v.create_pubkey()
+        v.start_date = timezone.now()
+        v.save()
 
-    #     clear = self.store_votes(v)
+        clear = self.store_votes(v)
 
-    #     self.login()  # set token
-    #     v.tally_votes(self.token)
+        self.login()  # set token
+        v.tally_votes(self.token)
 
-    #     tally = v.tally
-    #     tally.sort()
-    #     tally = {k: len(list(x)) for k, x in itertools.groupby(tally)}
+        tally = v.tally
+        tally.sort()
+        tally = {k: len(list(x)) for k, x in itertools.groupby(tally)}
 
-    #     for q in v.question.options.all():
-    #         self.assertEqual(tally.get(q.number, 0), clear.get(q.number, 0))
+        for q in v.question.options.all():
+            self.assertEqual(tally.get(q.number, 0), clear.get(q.number, 0))
 
-    #     for q in v.postproc:
-    #         self.assertEqual(tally.get(q["number"], 0), q["votes"])
+        for q in v.postproc:
+            self.assertEqual(tally.get(q["number"], 0), q["votes"])
 
-    # def test_complete_yesno_voting(self):
-    #     v = self.create_yesno_voting()
-    #     self.create_voters(v)
+    def test_complete_yesno_voting(self):
+        v = self.create_yesno_voting()
+        self.create_voters(v)
 
-    #     v.create_pubkey()
-    #     v.start_date = timezone.now()
-    #     v.save()
+        v.create_pubkey()
+        v.start_date = timezone.now()
+        v.save()
 
-    #     clear = self.store_votes(v)
+        clear = self.store_votes(v)
 
-    #     self.login()
-        # v.tally_votes(self.token)
+        self.login()
+        v.tally_votes(self.token)
 
-        # tally = v.tally
-        # tally.sort()
-        # tally = {k: len(list(x)) for k, x in itertools.groupby(tally)}
+        tally = v.tally
+        tally.sort()
+        tally = {k: len(list(x)) for k, x in itertools.groupby(tally)}
 
-        # for q in v.question.options.all():
-        #     self.assertEqual(tally.get(q.number, 0), clear.get(q.number, 0))
+        for q in v.question.options.all():
+            self.assertEqual(tally.get(q.number, 0), clear.get(q.number, 0))
 
-        # for q in v.postproc:
-        #     self.assertEqual(tally.get(q["number"], 0), q["votes"])
+        for q in v.postproc:
+            self.assertEqual(tally.get(q["number"], 0), q["votes"])
 
     
     def test_update_voting(self):
