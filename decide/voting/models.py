@@ -38,7 +38,7 @@ class QuestionOption(models.Model):
         if self.question.type == 'C':
             return '{} ({})'.format(self.option, self.number)
         else:
-            return 'You cannot create a ranked option for a non-ranked question'
+            return 'You cannot create a classic option for a non-classical question'
     
 class QuestionOptionRanked(models.Model):
   question = models.ForeignKey(Question, related_name='ranked_options', on_delete=models.CASCADE)
