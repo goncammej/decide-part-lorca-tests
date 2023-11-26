@@ -5,44 +5,81 @@
 <div style="text-align: center;">
     <h1>Votings_List</h1>
 </div>
-{% for voting in votings %}
-    {% if voting.end_date != null %}
-        <div>
-            <h1>{{voting.name}}</h1>
-            <p>{{voting.desc}}</p>
-            <button>
-                ❌ Delete
-            </button>
-            <button>
+{% if user.is_superuser %}
+    {% for voting in votings %}
+        {% if voting.end_date != null and voting.start_date != null %}
+            <div>
+                <h1>⌛{{voting.name}}</h1>
+                <p>{{voting.desc}}</p>
                 <button>
-                    📊 Tally
+                    ❌ Delete
                 </button>
-            </button>
-        </div>
-        <br> 
+                <button>
+                    🗳 Tally
+                </button>
+                <button>
+                    ✏ Update
+                </button>
 
-
-
-    {% else %}
+            </div>
+        {% endif %}
+        {% if voting.start_date == null %}
         <div>
-            <h1>{{voting.name}}</h1>
+            <h1>⏳{{voting.name}}</h1>
             <p>{{voting.desc}}</p>
             <button>
                 ❌ Delete
+            </button>
+        
+            <button>
+                📆 Start_Voting
             </button>
             <button>
                 ✏ Update
             </button>
-            <button>
-                📝 Vote
-            </button>
+
         </div>
+        {% endif %}
+        {% if voting.end_date == null %}
+        <div>
+            <h1>⏳{{voting.name}}</h1>
+            <p>{{voting.desc}}</p>
+            <button>
+                ❌ Delete
+            </button>
+            
+            <button>
+                📅 End_Voting
+            </button>
+            <button>
+                ✏ Update
+            </button>
 
+        </div>
+        {% endif %}
+    {% endfor %}
+{% endif %}
 
-        <br> 
+{% if not user.is_superuser %}
+    {% for voting in votings %}
 
+    {% if voting.end_date == null and voting.start_date != null %}
+    <div>
+        <h1>⏳{{voting.name}}</h1>
+        <p>{{voting.desc}}</p>
+        <button>
+            🗳 Vote
+        </button>
+        <button>
+            👁 Mirar
+        </button>
 
+    </div>
     {% endif %}
-{% endfor %}
+
+    {% endfor %}
+    
+{% endif %}
+    
 
 {% endblock %}

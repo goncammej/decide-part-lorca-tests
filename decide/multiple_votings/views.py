@@ -75,8 +75,10 @@ def multiple_votings(request):
 
 def list_votings(request):
     votings = Voting.objects.all()
-    return render(request, 'list_votings.html',{
-        'votings': votings
+    user = request.user
+    return render(request, 'list_votings.html', {
+        'votings': votings,
+        'user': user,
     })
 
 def signout(request):
