@@ -6,6 +6,10 @@ on:
       - develop
       - main
 
+    paths-ignore:
+      - 'doc/**'
+
+
 jobs:
   build:
     strategy:

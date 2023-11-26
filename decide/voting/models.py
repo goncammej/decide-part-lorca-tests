@@ -153,7 +153,20 @@ class Voting(models.Model):
                 'number': opt.number,
                 'votes': votes
             })
-
+            
+        # yes/no postproc
+        if self.question.type == 'Y':
+            yesno_options = self.question.yesno_options.all()
+            for opt in yesno_options:
+                if isinstance(tally, list):
+                    votes = tally.count(opt.number)
+                else:
+                    votes = 0
+                opts.append({
+                    'option': opt.option,
+                    'number': opt.number,
+                    'votes': votes
+                })
         data = { 'type': 'IDENTITY', 'options': opts }
         postp = mods.post('postproc', json=data)
 
