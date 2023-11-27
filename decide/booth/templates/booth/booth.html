@@ -167,6 +167,7 @@
                 return {
                     voting: voting,
                     selected: [],
+                    questionsIds: {{ question_ids|safe }},
                     signup: true,
                     successVote: false,
                     alertShow: false,
@@ -260,9 +261,15 @@
                     this.successVote = false;
                 },
                 decideEncrypt() {
-                    return this.selected.map((response, index) => {
-                        var bigmsg = BigInt.fromJSONObject(response.toString());
-                        return ElGamal.encrypt(this.bigpk, bigmsg);
+                    return this.selected.map((selectedValue, index) => {
+                        const bigmsg = BigInt.fromJSONObject(this.selected[index].toString());
+                        const encryptedVote = ElGamal.encrypt(this.bigpk, bigmsg);
+                
+                        return {
+                            a: encryptedVote.alpha.toString(),
+                            b: encryptedVote.beta.toString(),
+                            questionId: this.questionsIds[index]
+                        };
                     })
                 },
                 decideSend(evt) {
@@ -275,11 +282,14 @@
 
                     var v = this.decideEncrypt();
                     var data = {
-                        vote: v.map(vote => ({ a: vote.alpha.toString(), b: vote.beta.toString() })),
+                        votes: v,
                         voting: this.voting.id,
+                        voting_type: 'multiple',
                         voter: this.user.id,
                         token: this.token
                     }
+
+                    console.log("Data to be send:" + JSON.stringify(data,null,2))
 
                     this.postData("{% url "gateway" "store" "/" %}", data)
                         .then(data => {
