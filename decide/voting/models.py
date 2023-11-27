@@ -133,17 +133,14 @@ class Voting(models.Model):
         
         if self.question.type == 'T':
             data = {"msgs": response.json()}
-            for key, value in data.items():
-                data[key] = decimal_to_ascii(value)
+            for key, values in data.items():
+                data[key] = [decimal_to_ascii(v) for v in values]
             self.tally = data
             self.save()
         else:
             self.tally = response.json()
             self.save()
             
-        # self.tally = response.json()
-        # self.save()
-
         self.do_postproc()
     
         
@@ -166,15 +163,14 @@ class Voting(models.Model):
         #postproc for text questions
         if self.question.type == 'T':
             text_votes = []
-            for msg, vote in tally.items():
-                text_votes.append(vote)
+            for msg, votes in tally.items():
+                for vote in votes:
+                    text_votes.append({'vote': vote})
 
             data = {'type': 'TEXT', 'text_votes': text_votes}
         else:
             data = { 'type': 'IDENTITY', 'options': opts }
 
-
-        #data = { 'type': 'IDENTITY', 'options': opts }
         postp = mods.post('postproc', json=data)
 
         self.postproc = postp
