@@ -10,7 +10,7 @@
     <!-- CSS only -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi" crossorigin="anonymous">
 
-    <title>Decide-Censos</title>
+    <title>Decide!</title>
     
 
 
@@ -40,6 +40,15 @@
                   <div class="card-body">
                     <h5 class="card-title">Create new census</h5>
                     <p class="card-text"> Click here to create a new census.</p>
+                    {% if messages %}
+                      <ul class="messages">
+                          {% for message in messages %}
+                            {% if 'created' in message.message %}
+                              <li class="success-message">{{ message }}</li>
+                            {% endif %}
+                          {% endfor %}
+                      </ul>
+                    {% endif %}
                   </div>
                 </div>
               </a>
@@ -53,11 +62,11 @@
                     
                     Census details </h5>
                     <p style="color: red;">{{error_id}}</p>
-                  <p class="card-text">Introduce a census id to get all details</p>
+                  <p class="card-text">Introduce a voting id to get all details.</p>
                   <form action="/census/details" method="get">
                   
                     <input type="text"  required = 'required' name="id" placeholder="Id ">
-                    <button type="submit"> Buscar </button>
+                    <button type="submit"> Search </button>
                   </form>
                 </div>
               </div>
@@ -70,18 +79,27 @@
                     
                     Delete a census </h5>
                     <p style="color: red;">{{error}}</p>
-                  <p class="card-text">Introduce a census id to get all details</p>
-                  <form action=" /census/census_deleted/" method="get">
-                  
+                  <p class="card-text">Introduce voting id and voter id to delete that census entry.</p>
+                  <form action=" /census/delete" method="get">
+                    {% csrf_token %}
                     <input type="text" name="Votingid" required = 'required'  placeholder="VotingId ">
                     <input type="text"  required = 'required' name="Voterid" placeholder="VoterId ">
-                    <button type="submit"> Borrar </button>
+                    <button type="submit"> Delete </button>
                   </form>
+                  {% if messages %}
+                    <ul class="messages">
+                      {% for message in messages %}
+                        {% if 'deleted' in message.message %}
+                          <li class="error-message">{{ message }}</li>
+                        {% endif %}
+                      {% endfor %}
+                    </ul>
+                  {% endif %}
                 </div>
               </div>
             </div>
             <div class="col">
-              <a href="/census/import_census" class="a2">
+              <a href="/census/import" class="a2">
                 <div class="card">
                   <img  class="card-img-top" >
                   <div class="card-body">
@@ -92,13 +110,13 @@
                         <path d="M14 14V4.5L9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2zM9.5 3A1.5 1.5 0 0 0 11 4.5h2V9H3V2a1 1 0 0 1 1-1h5.5v2zM3 12v-2h2v2H3zm0 1h2v2H4a1 1 0 0 1-1-1v-1zm3 2v-2h3v2H6zm4 0v-2h3v1a1 1 0 0 1-1 1h-2zm3-3h-3v-2h3v2zm-7 0v-2h3v2H6z"/>
                       </svg>
                     </h5>
-                    <p class="card-text"> Use this funcinality to get new census from Excel.</p>
+                    <p class="card-text"> Use this funcionality to get new census from Excel.</p>
                   </div>
                 </div>
               </a>
             </div>
             <div class="col">
-              <a href="/census/export_census" class="a2">
+              <a href="/census/export" class="a2">
                 <div class="card">
                   <img  class="card-img-top" >
                   <div class="card-body">

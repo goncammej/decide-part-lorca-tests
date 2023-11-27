@@ -24,9 +24,10 @@ from .forms import CreationCensusForm
 from .models import Census
 from voting.models import Voting
 from openpyxl.styles import Border, Side, Alignment, Font, PatternFill
+from django.shortcuts import redirect
 
 def census(request):
-    return render(request,'census.html')
+    return render(request,'census/census.html')
 
 class CensusCreate(generics.ListCreateAPIView):
     permission_classes = (UserIsStaff,)
@@ -70,9 +71,9 @@ def GetId(request):
     
     census = Census.objects.filter(voting_id=int(id))
     if len(census) == 0:
-        return render(request,'census.html',{'error_id':'There is not a census with that voting_id'})
+        return render(request,'census/census.html',{'error_id':'There is not a census with that voting_id'})
     else:
-        return render(request,"census_details.html",{'census':census})
+        return render(request,"census/census_details.html",{'census':census})
 
 
 class CensusExportView(TemplateView):
@@ -141,45 +142,45 @@ class CensusImportView(TemplateView):
                     Census.objects.create(voting_id=voting_id, voter_id=voter_id)
                 except Exception as e:
                     messages.error(request, f"Error importing data: {str(e)}")
-                    return HttpResponseRedirect("/census/import_census/")
+                    return HttpResponseRedirect("/census/import/")
 
             messages.success(request, "Data imported successfully!")
-            return HttpResponseRedirect("/census/import_census/")
+            return HttpResponseRedirect("/census/import/")
         if request.method == "POST" and not request.FILES:
             messages.error(request, "No file selected!")
-            return HttpResponseRedirect("/census/import_census/")
+            return HttpResponseRedirect("/census/import/")
 
 ######Creación de censo
 def createCensus(request): 
-    if request.method == 'GET':
-        return render(request, 'census_create.html',{'form': CreationCensusForm})
-    else: 
-        if request.method == 'POST':
-            try: 
-                census = Census.objects.create(voting_id = request.POST['voting_id'], voter_id = request.POST['voter_id'])
-                census.save()
-                return render(request,'census_succeed.html',{'census':census})
-                
-            except: 
-                return render(request,'census_create.html',{'form': CreationCensusForm, "error": 'Census already exist'})
-        return  render(request,'census_create.html',{'form': CreationCensusForm})
+    if request.method == 'POST':
+        census_exists = Census.objects.filter(voting_id = request.POST['voting_id'], voter_id = request.POST['voter_id'])
+        if len(census_exists) != 0:
+            return render(request,'census/census_create.html',{'form': CreationCensusForm, "error": 'Census already exist'})
+        else:
+            census = Census.objects.create(voting_id = request.POST['voting_id'], voter_id = request.POST['voter_id'])
+            census.save()
+            messages.success(request, 'Census created successfully')
+            return redirect('census')
+    return render(request, 'census/census_create.html',{'form': CreationCensusForm})
+
     
+
 ############BORRAR CENSOS
 def deleteCensus(request):
     Voterid = request.GET['Voterid']
     Votingid = request.GET['Votingid']
     census = Census.objects.filter(voting_id=int(Votingid),voter_id = int(Voterid))
     if len(census) == 0: 
-        return render(request,'census.html',{'error':'Census does not exist.Try other census'})
+        return render(request,'census/census.html',{'error':'Census does not exist.Try other census'})
     if len(census) != 0:
         census.delete()
-        return render(request,'census_deleted.html')
-    
-def censusDeleted(request):
-    return render(request,'census_deleted.html')
+        messages.success(request, 'Census deleted successfully')
+        return redirect('census')
 
+def censusDeleted(request):
+    return render(request,'census/census.html')
 
 def censusList(request):
     queryset = Census.objects.all()
-    return render(request, 'census_list.html', {'queryset':queryset})
+    return render(request, 'census/census_list.html', {'queryset':queryset})
 

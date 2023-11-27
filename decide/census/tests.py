@@ -1,6 +1,6 @@
 import random
 from django.contrib.auth.models import User
-from django.test import Client, TestCase
+from django.test import TestCase
 from django.conf import settings
 from django.urls import reverse
 from rest_framework.test import APIClient
@@ -25,11 +25,12 @@ from datetime import datetime
 
 
 class CensusTestCase(BaseTestCase):
+
     def setUp(self):
         super().setUp()
-        self.client = Client()
         self.census = Census(voting_id=1, voter_id=1)
         self.census.save()
+
 
     def test_create_census(self):
         # Define the URL and the data
@@ -37,13 +38,31 @@ class CensusTestCase(BaseTestCase):
         data = {'voting_id': 2, 'voter_id': 2}
 
         # Make the POST request
-        response = self.client.post(url, data)
+        response = self.client.post(url, data, follow=True)
 
         # Check the status code and the response data
         self.assertEqual(response.status_code, 200)
         self.assertEqual(Census.objects.count(), 2)
         self.assertEqual(Census.objects.latest('id').voting_id, 2)
         self.assertEqual(Census.objects.latest('id').voter_id, 2)
+
+    def test_create_census_invalid_voting_id(self):
+        with self.assertRaises(ValueError):
+            # Attempt to create a census with an invalid voting_id
+            census = Census.objects.create(voting_id="invalid_voting_id", voter_id=1)
+            census.full_clean()  # This should raise a ValidationError exception
+
+    def test_create_census_invalid_voter_id(self):
+        with self.assertRaises(ValueError):
+            # Attempt to create a census with an invalid voter_id
+            census = Census.objects.create(voting_id=1, voter_id="invalid_voter_id")
+            census.full_clean()
+
+    def test_create_census_invalid_voting_id_and_voter_id(self):
+        with self.assertRaises(ValueError):
+            # Attempt to create a census with an invalid voting_id and voter_id
+            census = Census.objects.create(voting_id="invalid_voting_id", voter_id="invalid_voter_id")
+            census.full_clean()
 
     def tearDown(self):
         super().tearDown()
@@ -311,6 +330,7 @@ class ExportCensusTest(BaseTestCase):
         for i, row in enumerate(census_data, start=3):
             self.assertEqual(worksheet[f"A{i}"].value, row.voting_id)
             self.assertEqual(worksheet[f"B{i}"].value, row.voter_id)
+
 
 
 class CensusImportViewTest(BaseTestCase):
