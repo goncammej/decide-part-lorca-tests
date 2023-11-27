@@ -11,6 +11,7 @@ from . import utils
 
 VOTING_TYPES = {
   'preference': utils.classic_store,
+  'classic': utils.classic_store,
 }
 
 
