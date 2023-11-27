@@ -142,7 +142,7 @@
 
                     <div v-else-if="voting.question.type === 'M'" class="mb-3">
                         <!-- Votación Pregunta con múltiples opciones -->
-                        <div class="d-flex flex-wrap justify-content-center">
+                        <div >
                             <form v-for="opt in voting.question.options" :key="opt.number">
                                 <div class="form-check form-check-inline">
                                     <!-- Inside the template loop for checkboxes -->
@@ -344,7 +344,8 @@
                         votes: votes,
                         voting: this.voting.id,
                         voter: this.user.id,
-                        token: this.token
+                        token: this.token,
+                        voting_type: 'choices'
                     }
                     this.postData("{% url "gateway" "store" "/" %}", data)
                         .then(data => {

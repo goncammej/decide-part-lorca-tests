@@ -4,9 +4,13 @@ from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from django.utils import timezone
 
 from base.tests import BaseTestCase
-from voting.tests import VotingTestCase
+from voting.models import Question, Voting, QuestionOption
 import time
 from census.models import Census
+from mixnet.models import Auth
+from django.conf import settings
+from django.contrib.auth.models import User
+
 
 from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait
@@ -14,29 +18,50 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.keys import Keys
 
-class AdminTestCase(StaticLiveServerTestCase):
+class MultipleChoiceQuestionBoothTest(StaticLiveServerTestCase):
 
+    def create_voting(self):
+        q = Question(desc='test question')
+        q.save()
+        for i in range(5):
+            opt = QuestionOption(question=q, option='option {}'.format(i+1))
+            opt.save()
+        v = Voting(name='test voting', question=q)
+        v.save()
+
+        a, _ = Auth.objects.get_or_create(url=settings.BASEURL,
+                                          defaults={'me': True, 'name': 'test auth'})
+        a.save()
+        v.auths.add(a)
+
+        return v
+    
+    def get_or_create_user(self, pk):
+        user, _ = User.objects.get_or_create(pk=pk)
+        user.username = 'user{}'.format(pk)
+        user.set_password('qwerty')
+        user.save()
+        return user
+    
     def setUp(self):
         #Crea un usuario admin y otro no admin
         self.base = BaseTestCase()
         self.base.setUp()
 	
-        self.voting = VotingTestCase()
-        v = self.voting.create_voting()
-        v.question.type = 'M'
-        opts = v.question.options
-        v.question.save()
+        self.v = self.create_voting()
+        self.v.question.type = 'M'
+        self.v.question.save()
 
         #Añadimos al usuario noadmin al censo y empezamos la votacion
-        user = self.voting.get_or_create_user(1)
+        user = self.get_or_create_user(1)
         user.is_active = True
         user.save()
-        c = Census(voter_id=user.id, voting_id=v.id)
+        c = Census(voter_id=user.id, voting_id=self.v.id)
         c.save()
 
-        v.create_pubkey()
-        v.start_date = timezone.now()
-        v.save()
+        self.v.create_pubkey()
+        self.v.start_date = timezone.now()
+        self.v.save()
     
         #Opciones de Chrome
         options = webdriver.ChromeOptions()
@@ -52,7 +77,7 @@ class AdminTestCase(StaticLiveServerTestCase):
         self.base.tearDown()
     
     def test_testquestionmultipleoptions(self):
-        self.driver.get(f'{self.live_server_url}/booth/4/')
+        self.driver.get(f'{self.live_server_url}/booth/{self.v.id}/')
         self.driver.set_window_size(910, 1016)
         time.sleep(1)
         self.driver.find_element(By.CSS_SELECTOR, ".navbar-toggler-icon").click()
