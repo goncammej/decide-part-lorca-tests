@@ -15,17 +15,17 @@
     <nav class="navbar navbar-dark bg-primary">
         <div class="container-fluid">
             <div class="navbar-brand" >Decide</div>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <button id="menu-toggle" class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarSupportedContent">
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                     <li class="nav-item" v-if="!signup">
-                        <button v-on:click="decideLogout" class="btn btn-secondary">{% trans "Logout" %}</button>
+                        <button id="goto-logout-button" v-on:click="decideLogout" class="btn btn-secondary">{% trans "Logout" %}</button>
                     </li>
                     <li class="nav-item" v-if="signup">
                         <!-- Button trigger modal -->
-                        <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#registerModal">
+                        <button id="goto-logging-button" type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#registerModal">
                             Login
                         </button>
                     </li>
@@ -106,7 +106,7 @@
                                         v-model="form.password"
                                         required />
                                 </div>
-                                <button class="btn btn-primary mt-3" type="submit" data-bs-dismiss="modal">{% trans "Login" %}</button>
+                                <button id="process-login-button" class="btn btn-primary mt-3" type="submit" data-bs-dismiss="modal">{% trans "Login" %}</button>
                             </form>
                         </div>
                     </div>
@@ -117,17 +117,20 @@
         <!-- Voting -->
         <div v-if="!signup">
             <h1>[[ voting.id ]] - [[ voting.name ]]</h1>
-            <h2>[[ voting.question.desc ]]</h2>
-            <form v-for="opt in voting.question.options" :key="opt.number">
+
+            <form id="vote" v-for="(q, index) in voting.questions" :key="index">
                 <div class="form-group">
-                    <input type="radio" v-model="selected"
-                                :id="'q' + opt.number"
-                                name="question"
+                    <h2>[[ q.desc ]]</h2>
+                    <div v-for="opt in q.options" :key="opt.number">
+                        <input type="radio" v-model="selected[index]"
+                                :id="'opt' + opt.number + '_index' + index"
+                                name="'question_' + index"
                                 :value="opt.number">
                         [[ opt.option ]]
+                    </div>
                 </div>
             </form>
-            <button class="btn btn-primary mt-3" v-on:click="decideSend">
+            <button id="send-vote" class="btn btn-primary mt-3" v-on:click="decideSend">
                 {% trans "Vote" %}
             </button>
         </div>
@@ -163,7 +166,8 @@
             data() {
                 return {
                     voting: voting,
-                    selected: "",
+                    selected: [],
+                    questionsIds: {{ question_ids|safe }},
                     signup: true,
                     successVote: false,
                     alertShow: false,
@@ -257,19 +261,36 @@
                     this.successVote = false;
                 },
                 decideEncrypt() {
-                    var bigmsg = BigInt.fromJSONObject(this.selected.toString());
-                    var cipher = ElGamal.encrypt(this.bigpk, bigmsg);
-                    return cipher;
+                    return this.selected.map((selectedValue, index) => {
+                        const bigmsg = BigInt.fromJSONObject(this.selected[index].toString());
+                        const encryptedVote = ElGamal.encrypt(this.bigpk, bigmsg);
+                
+                        return {
+                            a: encryptedVote.alpha.toString(),
+                            b: encryptedVote.beta.toString(),
+                            questionId: this.questionsIds[index]
+                        };
+                    })
                 },
                 decideSend(evt) {
                     evt.preventDefault();
+
+                    if (this.selected.length !== this.voting.questions.length || this.selected.includes(undefined)) {
+                        this.showAlert("danger", '{% trans "Please answer all questions before submitting." %}');
+                        return;
+                    }
+
                     var v = this.decideEncrypt();
                     var data = {
-                        vote: {a: v.alpha.toString(), b: v.beta.toString()},
+                        votes: v,
                         voting: this.voting.id,
+                        voting_type: 'multiple',
                         voter: this.user.id,
                         token: this.token
                     }
+
+                    console.log("Data to be send:" + JSON.stringify(data,null,2))
+
                     this.postData("{% url "gateway" "store" "/" %}", data)
                         .then(data => {
                             this.successVote = true;
