@@ -11,6 +11,7 @@ def classic_store(request):
     * voting: id
     * voter: id
     * vote: { "a": int, "b": int }
+    * voting_type: "yesno"
   """
   vid = request.data.get('voting')
   voting = mods.get('voting', params={'id': vid})
