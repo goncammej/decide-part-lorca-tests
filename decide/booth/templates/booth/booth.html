@@ -322,7 +322,7 @@
                     return cipher;
                 },
                 decideSend(evt) {
-                    if (this.voting.type === 'C') {
+                    if (this.voting.question.type === 'C') {
                       evt.preventDefault();
                       var v = this.decideEncrypt();
                       var data = {
@@ -342,7 +342,7 @@
                               this.succesVote = false;
                               this.showAlert("danger", '{% trans "Error: " %}' + error);
                           });
-                    } else if (this.voting.type === 'R') {
+                    } else if (this.voting.question.type === 'R') {
                       evt.preventDefault();
                       var values = document.getElementsByClassName('form-ranked-input')
                       var listValues = Array.prototype.slice.call(values).map(x => x.value)
