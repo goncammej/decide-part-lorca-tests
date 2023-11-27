@@ -21,16 +21,27 @@ class StoreTextCase(BaseTestCase):
 
     def setUp(self):
         super().setUp()
-        self.question = Question(desc='qwerty')
+        self.question = Question(desc='qwerty', type='C')
+        self.question_preference = Question(desc='qwerty', type='R')
         self.question.save()
+        self.question_preference.save()
         self.voting = Voting(pk=5001,
                              name='voting example',
                              question=self.question,
                              start_date=timezone.now(),
         )
+        self.voting_preference = Voting(pk=5002,
+                             name='voting example text',
+                             question=self.question_preference,
+                             start_date=timezone.now(),)
         self.voting.save()
+        self.voting_preference.save()
 
     def tearDown(self):
+        self.question = None
+        self.question_preference = None
+        self.voting = None
+        self.voting_preference = None
         super().tearDown()
 
     def gen_voting(self, pk):
@@ -60,7 +71,8 @@ class StoreTextCase(BaseTestCase):
             data = {
                 "voting": v,
                 "voter": random_user,
-                "vote": { "a": a, "b": b }
+                "vote": { "a": a, "b": b },
+                "voting_type": 'classic',
             }
             response = self.client.post('/store/', data, format='json')
             self.assertEqual(response.status_code, 200)
@@ -72,7 +84,8 @@ class StoreTextCase(BaseTestCase):
         data = {
             "voting": 1,
             "voter": 1,
-            "vote": { "a": 1, "b": 1 }
+            "vote": { "a": 1, "b": 1 },
+            "voting_type": 'classic',
         }
         response = self.client.post('/store/', data, format='json')
         self.assertEqual(response.status_code, 401)
@@ -87,7 +100,8 @@ class StoreTextCase(BaseTestCase):
         data = {
             "voting": VOTING_PK,
             "voter": 1,
-            "vote": { "a": CTE_A, "b": CTE_B }
+            "vote": { "a": CTE_A, "b": CTE_B },
+            "voting_type": 'classic',
         }
         user = self.get_or_create_user(1)
         self.login(user=user.username)
@@ -116,6 +130,42 @@ class StoreTextCase(BaseTestCase):
 
         self.assertEqual(len(votes), Vote.objects.count())
         self.assertEqual(votes[0], VoteSerializer(Vote.objects.all().first()).data)
+    
+    def test_store_vote_preference(self):
+        CTE_A = 96
+        CTE_B = 184
+        census = Census(voting_id=self.voting_preference.id, voter_id=1)
+        census.save()
+        data = {
+            "voting": self.voting_preference.id,
+            "voter": 1,
+            "vote": { "a": CTE_A, "b": CTE_B },
+            'voting_type': 'preference'
+        }
+        user = self.get_or_create_user(1)
+        self.login(user=user.username)
+        response = self.client.post('/store/', data, format='json')
+        self.assertEqual(response.status_code, 200)
+
+        self.assertEqual(Vote.objects.count(), 1)
+        self.assertEqual(Vote.objects.first().voting_id, self.voting_preference.id)
+        self.assertEqual(Vote.objects.first().voter_id, 1)
+        self.assertEqual(Vote.objects.first().a, CTE_A)
+        self.assertEqual(Vote.objects.first().b, CTE_B)
+    
+    def test_voting_invalid_type(self):
+        census = Census(voting_id=self.voting_preference.id, voter_id=2)
+        census.save()
+        data = {
+            "voting": self.voting_preference.id,
+            "voter": 1,
+            "vote": { "a": 1, "b": 1 },
+            'voting_type': 'invalid'
+        }
+        user = self.get_or_create_user(2)
+        self.login(user=user.username)
+        response = self.client.post('/store/', data, format='json')
+        self.assertEqual(response.status_code, 400)
 
     def test_filter(self):
         votings, voters = self.gen_votes()
@@ -168,7 +218,8 @@ class StoreTextCase(BaseTestCase):
         data = {
             "voting": 5001,
             "voter": 1,
-            "vote": { "a": 30, "b": 55 }
+            "vote": { "a": 30, "b": 55 },
+            "voting_type": 'classic',
         }
         census = Census(voting_id=5001, voter_id=1)
         census.save()
