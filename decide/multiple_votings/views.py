@@ -84,3 +84,10 @@ def list_votings(request):
 def signout(request):
     logout(request)
     return redirect('home')
+
+
+def voting_details(request,voting_id):
+    voting = Voting.objects.get(pk=voting_id)
+    return render(request, 'voting_details.html',{
+        'voting': voting,
+    })
