@@ -115,25 +115,48 @@
         </div>
 
         <!-- Voting -->
-        <div v-if="!signup">
-            <h1>[[ voting.id ]] - [[ voting.name ]]</h1>
-            <h2>[[ voting.question.desc ]]</h2>
-            <form v-for="opt in voting.question.options" :key="opt.number">
-                <div class="form-group">
-                    <input type="radio" v-model="selected"
-                                :id="'q' + opt.number"
-                                name="question"
-                                :value="opt.number">
-                        [[ opt.option ]]
+        <div v-if="!signup" class="container text-center mt-5">
+            <div class="card">
+                <div class="card-body">
+                    <h1 class="card-title display-3">Voting ID: [[ voting.id ]]</h1>
+                    <h2 class="card-subtitle mb-3 display-4">[[ voting.name ]]</h2>
+                    <p class="card-text">[[ voting.question.desc ]]</p>
+
+                    <div v-if="voting.question.type === 'C'" class="mb-3">
+                        <!-- Votación normal con opciones -->
+                        <div class="d-flex flex-wrap justify-content-center">
+                            <form v-for="opt in voting.question.options" :key="opt.number">
+                                <div class="form-check form-check-inline">
+                                    <input type="radio" v-model="selected" :id="'q' + opt.number"
+                                        class="form-check-input" name="question" :value="opt.number">
+                                    <label class="form-check-label" :for="'q' + opt.number">[[ opt.option ]]</label>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="d-flex justify-content-center mt-3">
+                            <button class="btn btn-primary btn-lg" @click="decideSend($event,'')">
+                                {{ 'Vote' }}
+                            </button>
+                        </div>
+                    </div>
+
+                    <div v-else-if="voting.question.type === 'Y'" class="d-flex justify-content-center mt-3">
+                        <!-- Votación 'Yes' o 'No' -->
+                        <button class="btn btn-success btn-lg me-3" @click="decideSend($event,'Si')">
+                            {{ 'Si' }}
+                        </button>
+                        <button class="btn btn-danger btn-lg" @click="decideSend($event,'No')">
+                            {{ 'No' }}
+                        </button>
+                    </div>
+
+                    <div v-else class="text-center mt-3">
+                        <h2 class="card-subtitle display-4">Wrongly rendered vote</h2>
+                    </div>
                 </div>
-            </form>
-            <button class="btn btn-primary mt-3" v-on:click="decideSend">
-                {% trans "Vote" %}
-            </button>
+            </div>
         </div>
-
     </div>
-
 </div>
     
 {% endblock %}
@@ -261,25 +284,55 @@
                     var cipher = ElGamal.encrypt(this.bigpk, bigmsg);
                     return cipher;
                 },
-                decideSend(evt) {
-                    evt.preventDefault();
-                    var v = this.decideEncrypt();
-                    var data = {
-                        vote: {a: v.alpha.toString(), b: v.beta.toString()},
-                        voting: this.voting.id,
-                        voter: this.user.id,
-                        token: this.token
+                decideSend(evt, valor) {
+                    if (this.voting.question.type === 'C') {
+                        evt.preventDefault();
+                        var v = this.decideEncrypt();
+                        var data = {
+                            vote: {a: v.alpha.toString(), b: v.beta.toString()},
+                            voting: this.voting.id,
+                            voter: this.user.id,
+                            token: this.token
+                        }
+                        this.postData("{% url "gateway" "store" "/" %}", data)
+                            .then(data => {
+                                this.successVote = true;
+                                this.alertShow = false;
+                                this.showAlert("success", '{% trans "Congratulations. Your vote has been sent" %}');
+                            })
+                            .catch(error => {
+                                this.succesVote = false;
+                                this.showAlert("danger", '{% trans "Error: " %}' + error);
+                            });
+                        
+                    } else if (this.voting.question.type === 'Y') {
+                        // Votación 'Si' o 'No'
+                        var selectedOption = this.voting.question.options.find(opt => opt.option === valor);
+                        this.selected = selectedOption.number;
+                        evt.preventDefault();
+                        var v = this.decideEncrypt();
+                        var data = {
+                            vote: { a: v.alpha.toString(), b: v.beta.toString() },
+                            voting: this.voting.id,
+                            voting_type: 'yesno',
+                            voter: this.user.id,
+                            token: this.token
+                        };
+
+                        this.postData("{% url "gateway" "store" "/" %}", data)
+                            .then(data => {
+                                this.successVote = true;
+                                this.alertShow = false;
+                                this.showAlert("success", '{% trans "Congratulations. Your vote has been sent" %}');
+                            })
+                            .catch(error => {
+                                this.successVote = false;
+                                this.showAlert("danger", '{% trans "Error: " %}' + error);
+                            });
+                    } else {
+                        // Tipo de votación no reconocido
+                        this.showAlert("danger", "Unknown voting type");
                     }
-                    this.postData("{% url "gateway" "store" "/" %}", data)
-                        .then(data => {
-                            this.successVote = true;
-                            this.alertShow = false;
-                            this.showAlert("success", '{% trans "Congratulations. Your vote has been sent" %}');
-                        })
-                        .catch(error => {
-                            this.succesVote = false;
-                            this.showAlert("danger", '{% trans "Error: " %}' + error);
-                        });
                 },
                 showAlert(lvl, msg) {
                     this.alertLvl = lvl;

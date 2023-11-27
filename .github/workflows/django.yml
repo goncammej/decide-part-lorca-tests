@@ -8,6 +8,10 @@ on:
     paths-ignore:
       - 'doc/**'
 
+    paths-ignore:
+      - 'doc/**'
+
+
 jobs:
   build:
     strategy:
