@@ -13,6 +13,7 @@ from . import utils
 
 VOTING_TYPES = {
   'comment': utils.classic_store,
+  'classic': utils.classic_store,
 }
 
 class StoreView(generics.ListAPIView):
@@ -30,5 +31,5 @@ class StoreView(generics.ListAPIView):
         voting_type = request.data.get('voting_type')
         if voting_type not in VOTING_TYPES.keys():
             return Response({}, status=status.HTTP_400_BAD_REQUEST)
-        VOTING_TYPES[voting_type](request)
-        return  Response({})
+        status_code = VOTING_TYPES[voting_type](request)
+        return  Response({}, status=status_code)
