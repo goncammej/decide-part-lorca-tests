@@ -6,16 +6,16 @@ from rest_framework.response import Response
 from .models import Vote
 from base import mods
 
-def classic_store(request):
-  """
+def choices_store(request):
+  """ 
     * voting: id
     * voter: id
-    * vote: { "a": int, "b": int }
+    * votes: list<{ "a": int, "b": int }>
+    * voting_type: "choices"
   """
   vid = request.data.get('voting')
   voting = mods.get('voting', params={'id': vid})
   if not voting or not isinstance(voting, list):
-      # print("por aqui 35")
       return Response({}, status=status.HTTP_401_UNAUTHORIZED)
   start_date = voting[0].get('start_date', None)
   # print ("Start date: "+  start_date)
@@ -25,13 +25,12 @@ def classic_store(request):
   #print (not_started)
   is_closed = end_date and parse_datetime(end_date) < timezone.now()
   if not_started or is_closed:
-      #print("por aqui 42")
       return Response({}, status=status.HTTP_401_UNAUTHORIZED)
 
   uid = request.data.get('voter')
-  vote = request.data.get('vote')
+  votes = request.data.get('votes')
 
-  if not vid or not uid or not vote:
+  if not vid or not uid or not votes:
       return Response({}, status=status.HTTP_400_BAD_REQUEST)
 
   # validating voter
@@ -50,14 +49,15 @@ def classic_store(request):
   if perms.status_code == 401:
       # print("por aqui 65")
       return Response({}, status=status.HTTP_401_UNAUTHORIZED)
+        
+  for v in votes:
+    a = v.get("a")
+    b = v.get("b")
 
-  a = vote.get("a")
-  b = vote.get("b")
+    defs = { "a": a, "b": b }
+    v, _ = Vote.objects.get_or_create(voting_id=vid, voter_id=uid,
+                                      defaults=defs)
+    v.a = a
+    v.b = b
 
-  defs = { "a": a, "b": b }
-  v, _ = Vote.objects.get_or_create(voting_id=vid, voter_id=uid,
-                                    defaults=defs)
-  v.a = a
-  v.b = b
-
-  v.save()
+    v.save()
