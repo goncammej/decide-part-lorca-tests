@@ -322,36 +322,56 @@
                     return cipher;
                 },
                 decideSend(evt) {
-                    evt.preventDefault();
-                    var values = document.getElementsByClassName('form-ranked-input')
-                    var listValues = Array.prototype.slice.call(values).map(x => x.value)
-                    listValues.forEach(x => console.log(typeof x))
-                    var max = {{maxOption}}
-                    var check = this.checkVote(listValues)
-                    console.log('Check: ', check)
-                    if (check.error) {
-                      this.showAlert("danger", '{% trans "Error: " %}' + check.msg);
-                      return
+                    if (this.voting.type === 'C') {
+                      evt.preventDefault();
+                      var v = this.decideEncrypt();
+                      var data = {
+                          vote: {a: v.alpha.toString(), b: v.beta.toString()},
+                          voting: this.voting.id,
+                          voter: this.user.id,
+                          voting_type: 'classic',
+                          token: this.token
+                      }
+                      this.postData("{% url "gateway" "store" "/" %}", data)
+                          .then(data => {
+                              this.successVote = true;
+                              this.alertShow = false;
+                              this.showAlert("success", '{% trans "Congratulations. Your vote has been sent" %}');
+                          })
+                          .catch(error => {
+                              this.succesVote = false;
+                              this.showAlert("danger", '{% trans "Error: " %}' + error);
+                          });
+                    } else if (this.voting.type === 'R') {
+                      evt.preventDefault();
+                      var values = document.getElementsByClassName('form-ranked-input')
+                      var listValues = Array.prototype.slice.call(values).map(x => x.value)
+                      var max = {{maxOption}}
+                      var check = this.checkVote(listValues)
+                      if (check.error) {
+                        this.showAlert("danger", '{% trans "Error: " %}' + check.msg);
+                        return
+                      }
+                      var vote = listValues.join('-')
+                      this.selected = this.stringToASCII(vote)
+                      var v = this.decideEncrypt();
+                      var data = {
+                          vote: {a: v.alpha.toString(), b: v.beta.toString()},
+                          voting: this.voting.id,
+                          voter: this.user.id,
+                          token: this.token
+                      }
+                      this.postData("{% url "gateway" "store" "/" %}", data)
+                          .then(data => {
+                              this.successVote = true;
+                              this.alertShow = false;
+                              this.showAlert("success", '{% trans "Congratulations. Your vote has been sent" %}');
+                          })
+                          .catch(error => {
+                              this.succesVote = false;
+                              this.showAlert("danger", '{% trans "Error: " %}' + error);
+                          });
                     }
-                    var vote = listValues.join('-')
-                    this.selected = this.stringToASCII(vote)
-                    var v = this.decideEncrypt();
-                    var data = {
-                        vote: {a: v.alpha.toString(), b: v.beta.toString()},
-                        voting: this.voting.id,
-                        voter: this.user.id,
-                        token: this.token
-                    }
-                    this.postData("{% url "gateway" "store" "/" %}", data)
-                        .then(data => {
-                            this.successVote = true;
-                            this.alertShow = false;
-                            this.showAlert("success", '{% trans "Congratulations. Your vote has been sent" %}');
-                        })
-                        .catch(error => {
-                            this.succesVote = false;
-                            this.showAlert("danger", '{% trans "Error: " %}' + error);
-                        });
                 },
                 showAlert(lvl, msg) {
                     this.alertLvl = lvl;
