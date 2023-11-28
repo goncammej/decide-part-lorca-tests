@@ -150,16 +150,13 @@ class Voting(models.Model):
         
         if self.question.type == 'R':
             data = {"msgs": response.json()}
-            for key, value in data.items():
-                data[key] = decimal_to_ascii(value)
+            for key, values in data.items():
+                data[key] = [decimal_to_ascii(value) for value in values]
             self.tally = data
             self.save()
         else:
             self.tally = response.json()
             self.save()
-
-        # self.tally = response.json()
-        # self.save()
 
         self.do_postproc()
 
@@ -183,10 +180,11 @@ class Voting(models.Model):
         if self.question.type == 'R':
             ranked_options = self.question.ranked_options.all()
             vote_counts= {opt.number: 0 for opt in ranked_options}
-            for msg, vote in tally.items():
-                list_preferences = vote.split('-')
-                for i, vote in enumerate(list_preferences):
-                    vote_counts[int(vote)] += len(list_preferences) - i 
+            for msg, votes in tally.items():
+                for vote in votes:
+                    list_preferences = vote.split('-') 
+                    for i, vote in enumerate(list_preferences):
+                        vote_counts[int(vote)] += len(list_preferences) - i 
 
             opts = []
             for opt in ranked_options:
