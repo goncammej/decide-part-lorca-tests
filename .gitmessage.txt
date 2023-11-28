@@ -1,16 +1,12 @@
-
-
 # No more than 50 chars. #### 50 chars is here:  #
 
 # Wrap at 72 chars. ################################## which is here:  #
 
 tipo: asunto #id
 
-
-
-tipo: asunto #id
-
 cuerpo
+
+### recordatorio: los commits se realizarán en inglés.
 
 ### tipo
 # feat (nueva funcionalidad)
@@ -29,4 +25,4 @@ cuerpo
 # Se utilizará en caso de que el asunto no sea suficientemente descriptivo.
 
 ### Ejemplo
-# conf : Actualizado docker-compose.yml #1
+# conf : Updated docker-compose.yml #1
