@@ -163,7 +163,6 @@ def createCensus(request):
             return redirect('census')
     return render(request, 'census/census_create.html',{'form': CreationCensusForm})
 
-    
 
 ############BORRAR CENSOS
 def deleteCensus(request):
@@ -176,9 +175,6 @@ def deleteCensus(request):
         census.delete()
         messages.success(request, 'Census deleted successfully')
         return redirect('census')
-
-def censusDeleted(request):
-    return render(request,'census/census.html')
 
 def censusList(request):
     queryset = Census.objects.all()

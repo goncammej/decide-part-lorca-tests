@@ -9,7 +9,7 @@ urlpatterns = [
     path("export/<int:voting_id>/", views.export_census, name="export_census_of_voting"),
     path("import/", views.CensusImportView.as_view(), name="import_census"),
 
-    path('details/',views.GetId),
+    path('details/',views.GetId, name='census_details'),
     path("census/", views.census, name="census"),
     path('create/', views.createCensus, name='census_create'),
     path('census_list/', views.censusList, name='census_list'),
