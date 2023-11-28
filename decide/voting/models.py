@@ -1,3 +1,4 @@
+import binascii
 from django.db import models
 from django.db.models import JSONField
 from django.db.models.signals import post_save
@@ -5,6 +6,7 @@ from django.dispatch import receiver
 
 from base import mods
 from base.models import Auth, Key
+import json
 
 
 class Question(models.Model):
@@ -94,6 +96,7 @@ class Voting(models.Model):
         auth = self.auths.first()
         shuffle_url = "/shuffle/{}/".format(self.id)
         decrypt_url = "/decrypt/{}/".format(self.id)
+        decrypt_aes_url = "/decrypt_aes/{}/".format(self.id)
         auths = [{"name": a.name, "url": a.url} for a in self.auths.all()]
 
         # first, we do the shuffle
@@ -112,11 +115,35 @@ class Voting(models.Model):
         if response.status_code != 200:
             # TODO: manage error
             pass
-
-        self.tally = response.json()
-        self.save()
-
+        
+        def decimal_to_ascii(decimal_string):
+            decimal_string = str(decimal_string).replace('[', '').replace(']', '')
+            try:
+                # Convert the decimal string to a list of ASCII characters with length 4
+                while len(decimal_string) % 3 != 0:
+                    decimal_string = '0' + decimal_string
+                ascii_string = ''
+                for i in range(0, len(decimal_string), 3):
+                    ascii_char = decimal_string[i:i+3]
+                    ascii_string += chr(int(ascii_char))
+                return ascii_string
+            except ValueError:
+                # Handle the case where the input is not a valid decimal string
+                return "Invalid decimal string"
+        
+        if self.question.type == 'T':
+            data = {"msgs": response.json()}
+            for key, values in data.items():
+                data[key] = [decimal_to_ascii(v) for v in values]
+            self.tally = data
+            self.save()
+        else:
+            self.tally = response.json()
+            self.save()
+            
         self.do_postproc()
+    
+        
 
     def do_postproc(self):
         tally = self.tally
@@ -133,8 +160,17 @@ class Voting(models.Model):
                 'number': opt.number,
                 'votes': votes
             })
+        #postproc for text questions
+        if self.question.type == 'T':
+            text_votes = []
+            for msg, votes in tally.items():
+                for vote in votes:
+                    text_votes.append({'vote': vote})
 
-        data = { 'type': 'IDENTITY', 'options': opts }
+            data = {'type': 'TEXT', 'text_votes': text_votes}
+        else:
+            data = { 'type': 'IDENTITY', 'options': opts }
+
         postp = mods.post('postproc', json=data)
 
         self.postproc = postp
