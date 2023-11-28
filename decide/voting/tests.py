@@ -54,6 +54,22 @@ class VotingTestCase(BaseTestCase):
         v.auths.add(a)
 
         return v
+    
+    def create_multiple_choice_voting(self):
+        q = Question(desc='test multiple choice question', type='M')
+        q.save()
+        for i in range(5):
+            opt = QuestionOption(question=q, option='option {}'.format(i+1))
+            opt.save()
+        v = Voting(name='test voting', question=q)
+        v.save()
+
+        a, _ = Auth.objects.get_or_create(url=settings.BASEURL,
+                                          defaults={'me': True, 'name': 'test auth'})
+        a.save()
+        v.auths.add(a)
+
+        return v
 
     def create_voters(self, v):
         for i in range(100):
@@ -115,6 +131,30 @@ class VotingTestCase(BaseTestCase):
         for q in v.postproc:
             self.assertEqual(tally.get(q["number"], 0), q["votes"])
 
+    def test_complete_multiple_choice_voting(self):
+        v = self.create_multiple_choice_voting()
+        self.create_voters(v)
+
+        v.create_pubkey()
+        v.start_date = timezone.now()
+        v.save()
+
+        # clear = self.store_votes(v)
+
+        # self.login()  # set token
+        # v.tally_votes(self.token)
+
+        # tally = v.tally
+        # tally.sort()
+        # tally = {k: len(list(x)) for k, x in itertools.groupby(tally)}
+
+        # for q in v.question.options.all():
+        #     self.assertEqual(tally.get(q.number, 0), clear.get(q.number, 0))
+
+        # for q in v.postproc:
+        #     self.assertEqual(tally.get(q["number"], 0), q["votes"])
+
+
     def test_create_voting_from_api(self):
         data = {'name': 'Example'}
         response = self.client.post('/voting/', data, format='json')
@@ -134,6 +174,34 @@ class VotingTestCase(BaseTestCase):
             'name': 'Example',
             'desc': 'Description example',
             'question': 'I want a ',
+            'question_opt': ['cat', 'dog', 'horse']
+        }
+
+        response = self.client.post('/voting/', data, format='json')
+        self.assertEqual(response.status_code, 201)
+
+    def test_create_multiple_choice_voting_from_api(self):
+        data = {'name': 'Example'}
+        response = self.client.post('/voting/', data, format='json')
+        self.assertEqual(response.status_code, 401)
+
+        # login with user no admin
+        self.login(user='noadmin')
+        response = mods.post('voting', params=data, response=True)
+        self.assertEqual(response.status_code, 403)
+
+        # login with user admin
+        self.login()
+        response = mods.post('voting', params=data, response=True)
+        self.assertEqual(response.status_code, 400)
+
+        data = {
+            'name': 'Example',
+            'desc': 'Description example',
+            'question': {
+                'desc': 'I want a ',
+                'type': 'M'
+            },
             'question_opt': ['cat', 'dog', 'horse']
         }
 
