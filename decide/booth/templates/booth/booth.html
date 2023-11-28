@@ -15,7 +15,7 @@
     <nav class="navbar navbar-dark bg-primary">
         <div class="container-fluid">
             <div class="navbar-brand" >Decide</div>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <button id="menu-toggle" class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarSupportedContent">
@@ -25,7 +25,7 @@
                     </li>
                     <li class="nav-item" v-if="signup">
                         <!-- Button trigger modal -->
-                        <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#registerModal">
+                        <button id="goto-logging-button" type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#registerModal">
                             Login
                         </button>
                     </li>
@@ -106,7 +106,7 @@
                                         v-model="form.password"
                                         required />
                                 </div>
-                                <button class="btn btn-primary mt-3" type="submit" data-bs-dismiss="modal">{% trans "Login" %}</button>
+                                <button id="process-login-button" class="btn btn-primary mt-3" type="submit" data-bs-dismiss="modal">{% trans "Login" %}</button>
                             </form>
                         </div>
                     </div>
@@ -139,17 +139,6 @@
                             </button>
                         </div>
                     </div>
-
-                    <div v-else-if="voting.question.type === 'Y'" class="d-flex justify-content-center mt-3">
-                        <!-- Votación 'Yes' o 'No' -->
-                        <button class="btn btn-success btn-lg me-3" @click="decideSend($event,'Si')">
-                            {{ 'Si' }}
-                        </button>
-                        <button class="btn btn-danger btn-lg" @click="decideSend($event,'No')">
-                            {{ 'No' }}
-                        </button>
-                    </div>
-
                     <div v-else-if="voting.question.type === 'T'" class="d-flex justify-content-center mt-3">
                         <!-- <h2>[[voting.question]]</h2> -->
                         <!-- Votación 'Yes' o 'No' -->
@@ -157,7 +146,7 @@
                             <textarea class="form-control" id="floatingTextarea2" style="height: 100px"></textarea>
                             <label for="floatingTextarea2">Deja aquí tu comentario</label>
                             <br>
-                            <button class="btn btn-primary btn-lg" @click="decideSend($event,'')">
+                            <button id="send-vote" class="btn btn-primary btn-lg" @click="decideSend($event,'')">
                                 {{ 'Vote' }}
                             </button>
                         </div>
@@ -341,6 +330,7 @@
                         var data = {
                             vote: { a: v.alpha.toString(), b: v.beta.toString() },
                             voting: this.voting.id,
+                            voting_type: "yesno"
                             voter: this.user.id,
                             token: this.token
                         };
@@ -363,6 +353,7 @@
                         var data = {
                             vote: { a: v.alpha.toString(), b: v.beta.toString() },
                             voting: this.voting.id,
+                            voting_type: 'comment',
                             voter: this.user.id,
                             token: this.token
                         };
