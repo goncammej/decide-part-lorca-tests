@@ -133,8 +133,30 @@ class Voting(models.Model):
             # TODO: manage error
             pass
 
-        self.tally = response.json()
-        self.save()
+        def decimal_to_ascii(decimal_string):
+            decimal_string = str(decimal_string).replace('[', '').replace(']', '')
+            try:
+                # Convert the decimal string to a list of ASCII characters with length 4
+                while len(decimal_string) % 3 != 0:
+                    decimal_string = '0' + decimal_string
+                ascii_string = ''
+                for i in range(0, len(decimal_string), 3):
+                    ascii_char = decimal_string[i:i+3]
+                    ascii_string += chr(int(ascii_char))
+                return ascii_string
+            except ValueError:
+                # Handle the case where the input is not a valid decimal string
+                return "Invalid decimal string"
+        
+        if self.question.type == 'R':
+            data = {"msgs": response.json()}
+            for key, values in data.items():
+                data[key] = [decimal_to_ascii(value) for value in values]
+            self.tally = data
+            self.save()
+        else:
+            self.tally = response.json()
+            self.save()
 
         self.do_postproc()
 
@@ -153,6 +175,25 @@ class Voting(models.Model):
                 'number': opt.number,
                 'votes': votes
             })
+        
+        #postproc for ranked questions
+        if self.question.type == 'R':
+            ranked_options = self.question.ranked_options.all()
+            vote_counts= {opt.number: 0 for opt in ranked_options}
+            for msg, votes in tally.items():
+                for vote in votes:
+                    list_preferences = vote.split('-') 
+                    for i, vote in enumerate(list_preferences):
+                        vote_counts[int(vote)] += len(list_preferences) - i 
+
+            opts = []
+            for opt in ranked_options:
+                votes = vote_counts[opt.number]
+                opts.append({
+                    'option': opt.option,
+                    'number': opt.number,
+                    'votes': votes
+                })
 
         data = { 'type': 'IDENTITY', 'options': opts }
         postp = mods.post('postproc', json=data)
