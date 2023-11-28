@@ -1,6 +1,6 @@
 import random
 from django.contrib.auth.models import User
-from django.test import TestCase
+from django.test import Client, TestCase
 from django.conf import settings
 from django.urls import reverse
 from rest_framework.test import APIClient
@@ -30,7 +30,6 @@ class CensusTestCase(BaseTestCase):
         super().setUp()
         self.census = Census(voting_id=1, voter_id=1)
         self.census.save()
-
 
     def test_create_census(self):
         # Define the URL and the data
