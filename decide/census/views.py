@@ -142,10 +142,10 @@ class CensusImportView(TemplateView):
                     Census.objects.create(voting_id=voting_id, voter_id=voter_id)
                 except Exception as e:
                     messages.error(request, f"Error importing data: {str(e)}")
-                    return HttpResponseRedirect("/census/import_census/")
+                    return HttpResponseRedirect("/census/import/")
 
             messages.success(request, "Data imported successfully!")
-            return HttpResponseRedirect("/census/import_census/")
+            return HttpResponseRedirect("/census/import/")
         if request.method == "POST" and not request.FILES:
             messages.error(request, "No file selected!")
             return HttpResponseRedirect("/census/import/")
