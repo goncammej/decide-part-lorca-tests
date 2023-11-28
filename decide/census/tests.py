@@ -63,19 +63,23 @@ class CensusTestCase(BaseTestCase):
             census.full_clean()
 
     def test_delete_census(self):
-        self.client.login(username='decide', password='decide')  # Replace with valid credentials
+        # Delete any existing Census objects to avoid IntegrityError
+        Census.objects.all().delete()
+        
+        # Create a Census object to delete
+        census_to_delete = Census.objects.create(voting_id=1, voter_id=1)
 
         # Define the URL and the data
         url = reverse('census_deleted')  # replace with your URL name
-        data = {'Votingid': 1, 'Voterid': 1}  # Replace with a valid Voterid
+        data = {'voting_id': census_to_delete.voting_id, 'voter_id': census_to_delete.voter_id}
 
         # Make the POST request
         response = self.client.post(url, data, follow=True)
 
         # Check the status code and the response data
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(Census.objects.count(), 0)
-        
+        self.assertFalse(Census.objects.filter(voting_id=census_to_delete.voting_id, voter_id=census_to_delete.voter_id).exists())
+            
     def test_delete_census_invalid_voting_id(self):
         with self.assertRaises(ValueError):
             # Attempt to delete a census with an invalid voting_id

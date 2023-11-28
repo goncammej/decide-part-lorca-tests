@@ -80,10 +80,10 @@
                     Delete a census </h5>
                     <p style="color: red;">{{error}}</p>
                   <p class="card-text">Introduce voting id and voter id to delete that census entry.</p>
-                  <form action=" /census/delete" method="get">
+                  <form action=" /census/delete/" method="post">
                     {% csrf_token %}
-                    <input type="text" name="Votingid" required = 'required'  placeholder="VotingId ">
-                    <input type="text"  required = 'required' name="Voterid" placeholder="VoterId ">
+                    <input type="text" name="voting_id" required = 'required'  placeholder="voting_id ">
+                    <input type="text" name="voter_id" required = 'required' placeholder="voter_id ">
                     <button type="submit"> Delete </button>
                   </form>
                   {% if messages %}

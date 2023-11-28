@@ -166,9 +166,7 @@ def createCensus(request):
 
 ############BORRAR CENSOS
 def deleteCensus(request):
-    Voterid = request.GET['Voterid']
-    Votingid = request.GET['Votingid']
-    census = Census.objects.filter(voting_id=int(Votingid),voter_id = int(Voterid))
+    census = Census.objects.filter(voting_id=request.POST['voting_id'], voter_id = request.POST['voter_id'])
     if len(census) == 0: 
         return render(request,'census/census.html',{'error':'Census does not exist.Try other census'})
     if len(census) != 0:
