@@ -85,6 +85,7 @@ class VotingTestCase(BaseTestCase):
                         'voting': v.id,
                         'voter': voter.voter_id,
                         'vote': { 'a': a, 'b': b },
+                        'voting_type': 'classic',
                     }
                     clear[opt.number] += 1
                     user = self.get_or_create_user(voter.voter_id)
