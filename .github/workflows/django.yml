@@ -2,6 +2,8 @@ name: Decide-Lorca application
 
 on:
   pull_request:
+    types:
+      - labeled
     branches:
       - develop
       - main
@@ -10,15 +12,16 @@ on:
 
 jobs:
   build:
+    if: ${{ github.event.label.name == 'ready' }}
     strategy:
       matrix:
-        pyversion: ['3.8','3.9']
+        pyversion: ['3.10']
 
     runs-on: ubuntu-latest
 
     services:
       postgres:
-        image: postgres:11.18-bullseye
+        image: postgres:14.9
         env:
           POSTGRES_USER: decide
           POSTGRES_PASSWORD: decide
@@ -60,7 +63,7 @@ jobs:
           coverage-reports: decide/coverage.xml
 
   deploy:
-    if: ${{ github.base_ref == 'main' }}
+    if: ${{ github.base_ref == 'main' && github.event.label.name == 'ready' }}
     runs-on: ubuntu-latest
     needs: build
     steps:
