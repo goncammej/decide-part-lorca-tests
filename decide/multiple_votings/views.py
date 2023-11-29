@@ -1,11 +1,12 @@
 from voting.models import Voting
 from django.http import HttpResponse
-from django.shortcuts import render, redirect
+from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.models import User
 from django.contrib.auth import login, logout, authenticate
 from django.db import IntegrityError
 from .forms import BaseVotingForm
+from django.contrib import messages
 
 def home(request):
     return render(request, 'home.html')
@@ -73,6 +74,7 @@ def multiple_votings(request):
                 'error': 'Bad data',
             })
 
+
 def list_votings(request):
     votings = Voting.objects.all()
     user = request.user
@@ -87,7 +89,21 @@ def signout(request):
 
 
 def voting_details(request,voting_id):
-    voting = Voting.objects.get(pk=voting_id)
+    voting = get_object_or_404(Voting, pk=voting_id)
     return render(request, 'voting_details.html',{
         'voting': voting,
     })
+
+def voting_delete(request, voting_id):
+    voting = get_object_or_404(Voting, pk=voting_id)
+
+    if request.method == 'POST':
+        # Check if the delete button was clicked
+        if 'delete_button' in request.POST:
+            # Delete the voting instance
+            voting.delete()
+            messages.success(request, 'La votación ha sido eliminada con éxito.')
+            return redirect('list_votings')  # Replace with the desired URL or view name
+
+    # Render the template with the voting instance
+    return render(request, 'list_votings.html', {'votings': Voting.objects.all(), 'user': request.user})
