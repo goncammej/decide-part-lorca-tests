@@ -22,7 +22,7 @@ class VisualizerView(TemplateView):
             num_census=0
             num_votes=0
             participation="-"
-            print(context['voting'])
+
             if voting[0].get('start_date'):
                 num_census = Census.objects.filter(voting_id=voting_id).count()
                 num_votes = Vote.objects.filter(voting_id=voting_id)
