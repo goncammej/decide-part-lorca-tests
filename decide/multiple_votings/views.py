@@ -1,3 +1,4 @@
+from django.utils import timezone
 from voting.models import Voting
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, render, redirect
@@ -94,16 +95,40 @@ def voting_details(request,voting_id):
         'voting': voting,
     })
 
+
 def voting_delete(request, voting_id):
     voting = get_object_or_404(Voting, pk=voting_id)
 
     if request.method == 'POST':
-        # Check if the delete button was clicked
+        
         if 'delete_button' in request.POST:
-            # Delete the voting instance
+            
             voting.delete()
             messages.success(request, 'La votación ha sido eliminada con éxito.')
-            return redirect('list_votings')  # Replace with the desired URL or view name
+            return redirect('list_votings')  
 
-    # Render the template with the voting instance
+    return render(request, 'list_votings.html', {'votings': Voting.objects.all(), 'user': request.user})
+
+
+def start_voting(request, voting_id):
+    voting = get_object_or_404(Voting, pk=voting_id)
+    if request.method == 'POST':
+        if 'start_voting_button' in request.POST:
+            voting.create_pubkey()
+            voting.start_date = timezone.now()
+            voting.save()
+            messages.success(request, 'Voting started successfully.')
+            return redirect('list_votings')  
+    return render(request, 'list_votings.html', {'votings': Voting.objects.all(), 'user': request.user})
+
+
+
+def end_voting(request, voting_id):
+    voting = get_object_or_404(Voting, pk=voting_id)
+    if request.method == 'POST':
+        if 'end_voting_button' in request.POST:
+            voting.end_date = timezone.now()
+            voting.save()
+            messages.success(request, 'Voting started successfully.')
+            return redirect('list_votings')  
     return render(request, 'list_votings.html', {'votings': Voting.objects.all(), 'user': request.user})

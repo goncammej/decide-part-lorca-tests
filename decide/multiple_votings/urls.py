@@ -1,6 +1,6 @@
 from django.urls   import path
 from django.views.generic import TemplateView
-from multiple_votings.views import home, signup,multiple_votings,signout,signin,list_votings,voting_details,voting_delete
+from multiple_votings.views import home, signup,multiple_votings,signout,signin,list_votings,voting_details,voting_delete,start_voting,end_voting
 
 urlpatterns = [ 
     path('', home, name='home'),
@@ -11,6 +11,8 @@ urlpatterns = [
     path('list_votings/',list_votings,name='list_votings'),
     path('list_votings/<int:voting_id>/',voting_details,name='voting_details'),
     path('list_votings/<int:voting_id>/delete/', voting_delete, name='voting_delete'),
+    path('list_votings/<int:voting_id>/start/', start_voting, name='start_voting'),
+    path('list_votings/<int:voting_id>/end/', end_voting, name='end_voting'),
 ]
 
 

@@ -34,20 +34,22 @@
                 {% csrf_token %}
                 <input type="hidden" name="voting_id" value="{{ voting.id }}" />
                 <button type="submit" name="delete_button">❌ Delete</button>
-                
+
             </form>
             <button>
         
-            <button>
-                📆 Start_Voting
-            </button>
+                <form method="post" action="{% url 'start_voting' voting.id %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="voting_id" value="{{ voting.id }}" />
+                    <button type="submit" name="start_voting_button">📆 Start Date</button>
+                </form>
             <button>
                 ✏ Update
             </button>
 
         </div>
         {% endif %}
-        {% if voting.end_date == null %}
+        {% if voting.end_date == null and voting.start_date != null %}
         <div>
             <h1>⏳{{voting.name}}</h1>
             <p>{{voting.desc}}</p>
@@ -56,9 +58,12 @@
                 <input type="hidden" name="voting_id" value="{{ voting.id }}" />
                 <button type="submit" name="delete_button">❌ Delete</button>
             </form>
-            <button>
-                📅 End_Voting
-            </button>
+            
+            <form method="post" action="{% url 'end_voting' voting.id %}">
+                {% csrf_token %}
+                <input type="hidden" name="voting_id" value="{{ voting.id }}" />
+                <button type="submit" name="end_voting_button">📆 End Date</button>
+            </form>
             <button>
                 ✏ Update
             </button>
@@ -78,6 +83,16 @@
         <button>
             🗳 Vote
         </button>
+       
+
+    </div>
+    {% endif %}
+
+    {% if voting.end_date != null and voting.start_date != null %}
+    <div>
+        <h1>⏳{{voting.name}}</h1>
+        <p>{{voting.desc}}</p>
+        
         <button>
             👁 Mirar
         </button>
