@@ -12,8 +12,10 @@ class BaseVotingForm(ModelForm):
         fields = ['name','desc', 'question']
   
         
-
-
+class UpdateVotingForm(ModelForm):
+    class Meta:
+        model = Voting
+        fields = ['name', 'desc', 'question'] 
 
 
 

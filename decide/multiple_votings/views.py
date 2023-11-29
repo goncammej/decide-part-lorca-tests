@@ -6,8 +6,9 @@ from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.models import User
 from django.contrib.auth import login, logout, authenticate
 from django.db import IntegrityError
-from .forms import BaseVotingForm
+from .forms import BaseVotingForm, UpdateVotingForm
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 
 def home(request):
     return render(request, 'home.html')
@@ -76,6 +77,7 @@ def multiple_votings(request):
             })
 
 
+@login_required
 def list_votings(request):
     votings = Voting.objects.all()
     user = request.user
@@ -84,11 +86,12 @@ def list_votings(request):
         'user': user,
     })
 
+@login_required
 def signout(request):
     logout(request)
     return redirect('home')
 
-
+@login_required
 def voting_details(request,voting_id):
     voting = get_object_or_404(Voting, pk=voting_id)
     return render(request, 'voting_details.html',{
@@ -132,3 +135,18 @@ def end_voting(request, voting_id):
             messages.success(request, 'Voting started successfully.')
             return redirect('list_votings')  
     return render(request, 'list_votings.html', {'votings': Voting.objects.all(), 'user': request.user})
+
+
+def update_voting(request, voting_id):
+    voting = get_object_or_404(Voting, pk=voting_id)
+
+    if request.method == 'POST':
+        form = UpdateVotingForm(request.POST, instance=voting)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Voting updated successfully.')
+            return redirect('list_votings')  # Replace with the desired URL or view name
+    else:
+        form = UpdateVotingForm(instance=voting)
+
+    return render(request, 'update_voting.html', {'form': form, 'voting': voting})

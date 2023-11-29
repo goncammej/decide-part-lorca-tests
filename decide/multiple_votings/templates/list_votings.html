@@ -20,9 +20,11 @@
                 <button>
                     🗳 Tally
                 </button>
-                <button>
-                    ✏ Update
-                </button>
+                <form method="post" action="{% url 'update_voting' voting.id %}">
+                    {% csrf_token %}
+                    {{ form.as_p }}
+                    <button type="submit">✏ Update</button>
+                </form>
 
             </div>
         {% endif %}
@@ -43,9 +45,11 @@
                     <input type="hidden" name="voting_id" value="{{ voting.id }}" />
                     <button type="submit" name="start_voting_button">📆 Start Date</button>
                 </form>
-            <button>
-                ✏ Update
-            </button>
+                <form method="post" action="{% url 'update_voting' voting.id %}">
+                    {% csrf_token %}
+                    {{ form.as_p }}
+                    <button type="submit">✏ Update</button>
+                </form>
 
         </div>
         {% endif %}
