@@ -11,7 +11,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 
 def home(request):
-    return render(request, 'home.html')
+    return render(request, 'home.html', {'user': request.user})
 
 
 def signup(request):
@@ -52,7 +52,7 @@ def signin(request):
         else:
             login(request, user)
             if user.is_superuser:
-                return redirect('multiple_votings')
+                return redirect('http://127.0.0.1:8000/')
             return redirect('list_votings')
 
 
@@ -89,7 +89,7 @@ def list_votings(request):
 @login_required
 def signout(request):
     logout(request)
-    return redirect('home')
+    return redirect('http://127.0.0.1:8000/')
 
 @login_required
 def voting_details(request,voting_id):
