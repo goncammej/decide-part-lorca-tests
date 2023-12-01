@@ -94,6 +94,7 @@ class VotingTestCase(BaseTestCase):
                 data = {
                     'voting': v.id,
                     'voter': voter.voter_id,
+                    'voting_type': 'classic',
                     'vote': { 'a': a, 'b': b },
                 }
                 clear[opt.number] += 1
