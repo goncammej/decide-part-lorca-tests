@@ -395,7 +395,7 @@ class QuestionsTests(StaticLiveServerTestCase):
         QuestionOption(number=1, option='test option', question=q).save()
         opt = QuestionOption.objects.get(option='test option')
 
-        self.assertEqual(opt.number, 2)
+        self.assertEqual(opt.number, 1)
         self.assertEqual(opt.option, 'test option')
         self.assertEqual(opt.question, q)
     
