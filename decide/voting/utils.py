@@ -11,7 +11,7 @@ def future_stop_task_manager(voting_id):
     
         future_stop = voting.future_stop
         
-        task = app.tasks.get(f'future_stop_voting_task-{voting_id}-{voting.created_at}')  # Replace with your actual task path
+        task = app.tasks.get(f'future_stop_voting_task-{voting_id}-{voting.created_at}')
         if task:
             app.control.revoke(f'future_stop_voting_task-{voting_id}-{voting.created_at}', terminate=True)
 
