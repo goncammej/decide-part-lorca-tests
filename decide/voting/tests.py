@@ -132,6 +132,36 @@ class VotingTestCase(BaseTestCase):
         for q in v.postproc:
             self.assertEqual(tally.get(q["number"], 0), q["votes"])
 
+    def store_multiple_choice_votes(self, v):
+        voters = list(Census.objects.filter(voting_id=v.id))
+        voter = voters.pop()
+        options = v.question.options.all()
+
+        clear = {}
+
+        for opt in v.question.options.all():
+            clear[opt.number] = 0
+        
+        for i in range(random.randint(0, 5)):
+            votes = []
+            for j in range(random.randint(0, len(options))):
+                a, b = self.encrypt_msg(options[j].number, v)
+                choice = { 'a': a, 'b': b }
+                votes.append(choice)
+                clear[options[j].number] += 1
+            
+            data = {
+                'voting': v.id,
+                'voter': voter.voter_id,
+                'votes': votes,
+                'voting_type': 'choices'
+            }
+            user = self.get_or_create_user(voter.voter_id)
+            self.login(user=user.username)
+            voter = voters.pop()
+            mods.post('store', json=data)
+        return clear
+    
     def test_complete_multiple_choice_voting(self):
         v = self.create_multiple_choice_voting()
         self.create_voters(v)
@@ -140,20 +170,20 @@ class VotingTestCase(BaseTestCase):
         v.start_date = timezone.now()
         v.save()
 
-        # clear = self.store_votes(v)
+        clear = self.store_multiple_choice_votes(v)
 
-        # self.login()  # set token
-        # v.tally_votes(self.token)
+        self.login()  # set token
+        v.tally_votes(self.token)
 
-        # tally = v.tally
-        # tally.sort()
-        # tally = {k: len(list(x)) for k, x in itertools.groupby(tally)}
+        tally = v.tally
+        tally.sort()
+        tally = {k: len(list(x)) for k, x in itertools.groupby(tally)}
 
-        # for q in v.question.options.all():
-        #     self.assertEqual(tally.get(q.number, 0), clear.get(q.number, 0))
+        for q in v.question.options.all():
+            self.assertEqual(tally.get(q.number, 0), clear.get(q.number, 0))
 
-        # for q in v.postproc:
-        #     self.assertEqual(tally.get(q["number"], 0), q["votes"])
+        for q in v.postproc:
+            self.assertEqual(tally.get(q["number"], 0), q["votes"])
 
 
     def test_create_voting_from_api(self):
