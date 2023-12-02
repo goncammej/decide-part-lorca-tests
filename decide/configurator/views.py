@@ -1,3 +1,4 @@
 from django.shortcuts import render
 
-# Create your views here.
+def configurator(request):
+    return render(request, 'configurator/configurator.html')

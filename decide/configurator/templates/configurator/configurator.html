@@ -1,0 +1,55 @@
+{% extends "base.html"%}
+
+{% load i18n static %}
+
+{% block extrahead %}
+<link
+  type="text/css"
+  rel="stylesheet"
+  href="https://unpkg.com/bootstrap/dist/css/bootstrap.min.css"
+/>
+{% endblock %}
+
+{% block title %}Decide!{% endblock %}
+
+{% block content %}
+<div class="container text-center">
+    <h1 class="display-4 mb-4">Choose a voting type</h1>
+
+    <div class="row mb-4">
+        <div class="col bg-light border border-dark rounded p-3">
+            <h3>Standard</h3>
+            <p>Standard votings are used to determine the most favored option among a set of options.</p>
+            <a href="#" class="btn btn-primary">Create</a>
+        </div>
+        <div class="col bg-light border border-dark rounded p-3 mx-4">
+            <h3>Yes/No</h3>
+            <p>In Yes/No votings participants choose either "Yes" or "No" in response to a specific question.</p>
+            <a href="#" class="btn btn-primary">Create</a>
+        </div>
+        <div class="col bg-light border border-dark rounded p-3">
+            <h3>Multiple choice</h3>
+            <p>In Multiple choice votings participants choose one or more options from a list of options.</p>
+            <a href="#" class="btn btn-primary">Create</a>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col bg-light border border-dark rounded p-3">
+            <h3>Preference</h3>
+            <p>In Preference votings participants rank options based on their personal preferences.</p>
+            <a href="#" class="btn btn-primary">Create</a>
+        </div>
+        <div class="col bg-light border border-dark rounded p-3 mx-4">
+            <h3>Multiple questions</h3>
+            <p>In Multiple questions votings participants answer multiple questions with a single vote.</p>
+            <a href="#" class="btn btn-primary">Create</a>
+        </div>
+        <div class="col bg-light border border-dark rounded p-3">
+            <h3>Comment</h3>
+            <p>In Comment votings participants can comment on a specific question.</p>
+            <a href="#" class="btn btn-primary">Create</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
