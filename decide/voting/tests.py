@@ -97,6 +97,7 @@ class VotingTestCase(BaseTestCase):
                 data = {
                     'voting': v.id,
                     'voter': voter.voter_id,
+                    'voting_type': 'classic',
                     'vote': { 'a': a, 'b': b },
                 }
                 clear[opt.number] += 1
@@ -430,7 +431,7 @@ class QuestionTestCases(BaseTestCase):
         QuestionOption(number=1, option='test classic option', question=q).save()
         opt = QuestionOption.objects.get(option='test classic option')
 
-        self.assertEqual(opt.number, 2)
+        self.assertEqual(opt.number, 1)
         self.assertEqual(opt.option, 'test classic option')
         self.assertEqual(opt.question, q)
 
