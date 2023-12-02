@@ -39,8 +39,8 @@ class VotingTestCase(BaseTestCase):
         k.k = ElGamal.construct((p, g, y))
         return k.encrypt(msg)
 
-    def create_voting(self):
-        q = Question(desc='test question')
+    def create_classic_voting(self):
+        q = Question(desc='test question', type='C')
         q.save()
         for i in range(5):
             opt = QuestionOption(question=q, option='option {}'.format(i+1))
@@ -86,7 +86,7 @@ class VotingTestCase(BaseTestCase):
         user.save()
         return user
 
-    def store_votes(self, v):
+    def store_classic_votes(self, v):
         voters = list(Census.objects.filter(voting_id=v.id))
         voter = voters.pop()
 
@@ -99,6 +99,7 @@ class VotingTestCase(BaseTestCase):
                     'voting': v.id,
                     'voter': voter.voter_id,
                     'vote': { 'a': a, 'b': b },
+                    'voting_type': 'classic'
                 }
                 clear[opt.number] += 1
                 user = self.get_or_create_user(voter.voter_id)
@@ -109,14 +110,14 @@ class VotingTestCase(BaseTestCase):
 
     @tag("slow")
     def test_complete_voting(self):
-        v = self.create_voting()
+        v = self.create_classic_voting()
         self.create_voters(v)
 
         v.create_pubkey()
         v.start_date = timezone.now()
         v.save()
 
-        clear = self.store_votes(v)
+        clear = self.store_classic_votes(v)
 
         self.login()  # set token
         v.tally_votes(self.token)
@@ -209,7 +210,7 @@ class VotingTestCase(BaseTestCase):
         self.assertEqual(response.status_code, 201)
 
     def test_update_voting(self):
-        voting = self.create_voting()
+        voting = self.create_classic_voting()
 
         data = {'action': 'start'}
         #response = self.client.post('/voting/{}/'.format(voting.pk), data, format='json')
