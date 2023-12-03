@@ -10,17 +10,23 @@
 />
 {% endblock %}
 
-{% block title %}Decide!{% endblock %}
-
 {% block content %}
 <div class="container text-center">
     <h1 class="display-4 mb-4">Choose a voting type</h1>
+
+    {% if messages %}
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }}">
+        {{ message }}
+    </div>
+    {% endfor %}
+    {% endif %}
 
     <div class="row mb-4">
         <div class="col bg-light border border-dark rounded p-3">
             <h3>Standard</h3>
             <p>Standard votings are used to determine the most favored option among a set of options.</p>
-            <a href="#" class="btn btn-primary">Create</a>
+            <a href="{% url 'create_standard' %}" class="btn btn-primary">Create</a>
         </div>
         <div class="col bg-light border border-dark rounded p-3 mx-4">
             <h3>Yes/No</h3>
