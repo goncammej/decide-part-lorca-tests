@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import Question, QuestionOption, QuestionOptionRanked, Voting
+from .models import Question, QuestionOption, QuestionOptionRanked, Voting, QuestionOptionYesNo
 from base.serializers import KeySerializer, AuthSerializer
 
 
@@ -15,8 +15,12 @@ class QuestionOptionRankedSerializer(serializers.HyperlinkedModelSerializer):
         fields = ('number', 'option')
 
 
+class QuestionOptionYesNoSerializer(serializers.HyperlinkedModelSerializer):
+    class Meta:
+        model = QuestionOptionYesNo
+        fields = ('number', 'option')
+        
 class QuestionSerializer(serializers.HyperlinkedModelSerializer):
-
     options = serializers.SerializerMethodField()
 
     def get_options(self, instance):
@@ -24,6 +28,12 @@ class QuestionSerializer(serializers.HyperlinkedModelSerializer):
             serializer = QuestionOptionSerializer(instance.options.all(), many=True).data
         elif instance.type == 'R':
             serializer = QuestionOptionRankedSerializer(instance.ranked_options.all(), many=True).data
+        elif instance.type == 'Y':
+            serializer = QuestionOptionYesNoSerializer(instance.yesno_options.all(), many=True).data
+        elif instance.type == 'M':
+            serializer = QuestionOptionSerializer(instance.options.all(), many=True).data
+        elif instance.type == 'T':
+            serializer = None
         return serializer
     
     class Meta:
