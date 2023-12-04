@@ -5,21 +5,204 @@ from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from django.utils import timezone
 
 from base.tests import BaseTestCase
+from voting.models import Question, Voting, QuestionOption, Auth, QuestionOptionYesNo
 import time
 from census.models import Census
-from voting.models import QuestionOptionYesNo
-from voting.models import Question, Voting, Auth
+from mixnet.models import Auth
 from django.contrib.auth.models import User
-
-
 from selenium import webdriver
+from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.keys import Keys
 
-class AdminTestCase(StaticLiveServerTestCase):
+class MultipleChoiceQuestionBoothTest(StaticLiveServerTestCase):
 
+    def create_voting(self):
+        q = Question(desc='test question')
+        q.save()
+        for i in range(5):
+            opt = QuestionOption(question=q, option='option {}'.format(i+1))
+            opt.save()
+
+        v = Voting(name='test voting', question=q)
+        v.save()
+
+        a, _ = Auth.objects.get_or_create(url=settings.BASEURL,
+                                          defaults={'me': True, 'name': 'test auth'})
+        a.save()
+        v.auths.add(a)
+        return v
+    
+    def get_or_create_user(self, pk):
+
+        user, _ = User.objects.get_or_create(pk=pk)
+        user.username = 'user{}'.format(pk)
+        user.set_password('qwerty')
+        user.save()
+        return user
+      
+    def setUp(self):
+        #Crea un usuario admin y otro no admin
+        self.base = BaseTestCase()
+        self.base.setUp()
+        
+        self.v = self.create_voting()
+        self.v.question.type = 'M'
+        self.v.question.save()
+
+        #Añadimos al usuario noadmin al censo y empezamos la votacion
+        user = self.get_or_create_user(1)
+        user.is_active = True
+        user.save()
+
+        c = Census(voter_id=user.id, voting_id=self.v.id)
+        c.save()
+
+        self.v.create_pubkey()
+        self.v.start_date = timezone.now()
+        self.v.save()
+
+        #Opciones de Chrome
+        options = webdriver.ChromeOptions()
+        options.headless = True
+        self.driver = webdriver.Chrome(options=options)
+
+        super().setUp()            
+            
+    def tearDown(self):           
+        super().tearDown()
+        self.driver.quit()
+
+        self.base.tearDown()
+    
+
+    def test_testquestionmultipleoptions(self):
+        self.driver.get(f'{self.live_server_url}/booth/{self.v.id}/')
+        self.driver.set_window_size(910, 1016)
+        time.sleep(1)
+        self.driver.find_element(By.CSS_SELECTOR, ".navbar-toggler-icon").click()
+        time.sleep(1)
+        self.driver.find_element(By.CSS_SELECTOR, ".btn-secondary").click()
+
+        time.sleep(1)
+        self.driver.find_element(By.ID, "username").send_keys("noadmin")
+        time.sleep(1)
+
+        self.driver.find_element(By.ID, "password").send_keys("qwerty")
+        time.sleep(1)
+
+        self.driver.find_element(By.CSS_SELECTOR, ".btn-primary").click()
+        time.sleep(1)
+
+        self.driver.find_element(By.CSS_SELECTOR, "form:nth-child(1) > .form-check").click()
+        time.sleep(1)
+
+        self.driver.find_element(By.CSS_SELECTOR, "form:nth-child(2) > .form-check").click()
+        time.sleep(1)
+
+        self.driver.find_element(By.CSS_SELECTOR, "form:nth-child(3) > .form-check").click()
+        
+        checkboxes = self.driver.find_elements(By.CSS_SELECTOR, '.form-check input[type="checkbox"]')
+
+        selected_checkboxes = [checkbox for checkbox in checkboxes if checkbox.is_selected()]
+
+
+        self.driver.find_element(By.CSS_SELECTOR, ".btn-primary").click()
+
+        self.assertTrue(len(selected_checkboxes)==3)
+        self.assertTrue(len(self.driver.find_elements(By.CSS_SELECTOR, 'form'))==5)
+    
+
+
+class CommentBoothTestCase(StaticLiveServerTestCase):
+    
+    def create_voting(self):
+        q = Question(desc='test question', type='T')
+        q.save()
+        v = Voting(name='test voting', question=q)
+        v.save()
+
+        a, _ = Auth.objects.get_or_create(url=settings.BASEURL,
+                                          defaults={'me': True, 'name': 'test auth'})
+        a.save()
+        v.auths.add(a)
+        return v
+
+    def get_or_create_user(self,pk):
+        user, _ = User.objects.get_or_create(pk=pk)
+        user.username = 'user{}'.format(pk)
+        user.set_password('qwerty')
+        user.save()
+        return user
+
+    def setUp(self):
+        #Crea un usuario admin y otro no admin
+        self.base = BaseTestCase()
+        self.base.setUp()
+
+        v = self.create_voting()
+
+        v.question.save()
+        self.v = v
+        #Añadimos al usuario noadmin al censo y empezamos la votacion
+        user = self.get_or_create_user(1)
+        user.is_active = True
+        user.save()
+        c = Census(voter_id=user.id, voting_id=v.id)
+        c.save()
+
+        v.create_pubkey()
+        v.start_date = timezone.now()
+        v.save()
+
+        #Opciones de Chrome
+        options = webdriver.ChromeOptions()
+        options.headless = True
+        self.driver = webdriver.Chrome(options=options)
+
+        super().setUp()            
+            
+    def tearDown(self):           
+        super().tearDown()
+        self.driver.quit()
+
+        self.base.tearDown()
+
+    def test_commentquestion(self):
+
+
+        self.driver.get(f'{self.live_server_url}/booth/{self.v.id}/')
+        self.driver.set_window_size(910, 1016)
+        time.sleep(1)
+
+        self.driver.find_element(By.ID, "menu-toggle").click()
+        time.sleep(1)
+        self.driver.find_element(By.ID, "goto-logging-button").click()
+
+        time.sleep(1)
+        self.driver.find_element(By.ID, "username").send_keys("noadmin")
+        time.sleep(1)
+
+        self.driver.find_element(By.ID, "password").send_keys("qwerty")
+        time.sleep(1)
+
+        self.driver.find_element(By.ID, "process-login-button").click()
+        time.sleep(1)
+
+        self.driver.find_element(By.ID, "floatingTextarea2").send_keys("Comentario de prueba")
+        time.sleep(1)
+        # Realizar la votación clickando en Vote 
+        self.driver.find_element(By.ID, "send-vote").click()
+        time.sleep(1)
+
+        # Verificar que la votación se realizó correctamente
+        success_alert = self.driver.page_source
+        expected_text = "Congratulations. Your vote has been sent"
+        self.assertTrue(expected_text in success_alert, "La alerta de éxito no está presente después de votar")
+
+class YesNoBoothTestCase(StaticLiveServerTestCase):
+  
     def create_voting(self):
         q = Question(desc='test question', type='Y')
         q.save()
@@ -42,7 +225,7 @@ class AdminTestCase(StaticLiveServerTestCase):
         user.set_password('qwerty')
         user.save()
         return user
-
+    
     def setUp(self):
         #Crea un usuario admin y otro no admin
         self.base = BaseTestCase()
@@ -74,7 +257,7 @@ class AdminTestCase(StaticLiveServerTestCase):
         super().tearDown()
         self.driver.quit()
 
-        self.base.tearDown()
+        self.base.tearDown()  
     
     def test_testquestionyesno(self):
         self.driver.get(f'{self.live_server_url}/booth/{self.v.id}/')
@@ -102,29 +285,4 @@ class AdminTestCase(StaticLiveServerTestCase):
         success_alert = self.driver.page_source
         expected_text = "Congratulations. Your vote has been sent"
         self.assertTrue(expected_text in success_alert, "La alerta de éxito no está presente después de votar")
-
-
-
-        # time.sleep(1)
-        # navbar_toggle = WebDriverWait(self.driver, 10).until(EC.presence_of_element_located((By.CSS_SELECTOR, ".navbar-toggler-icon")))
-        # navbar_toggle.click()
-
-        # # Esperar a que aparezca y hacer clic en el botón secundario
-        # btn_secondary = WebDriverWait(self.driver, 10).until(EC.element_to_be_clickable((By.CSS_SELECTOR, ".btn-secondary")))
-        # btn_secondary.click()
-
-        # # Esperar a que el campo de nombre de usuario esté presente y escribir el nombre de usuario
-        # username_field = WebDriverWait(self.driver, 10).until(EC.presence_of_element_located((By.ID, "username")))
-        # username_field.send_keys("noadmin")
-
-        # # Esperar a que el campo de contraseña esté presente y escribir la contraseña
-        # password_field = WebDriverWait(self.driver, 10).until(EC.presence_of_element_located((By.ID, "password")))
-        # password_field.send_keys("qwerty")
-
-        # # Hacer clic en el botón de inicio de sesión
-        # login_button = WebDriverWait(self.driver, 10).until(EC.element_to_be_clickable((By.CSS_SELECTOR, ".btn-primary")))
-        # login_button.click()
-
-        # Esperar a que los elementos de las opciones estén presentes y seleccionarlos
-
-            
+  
