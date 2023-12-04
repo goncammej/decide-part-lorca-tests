@@ -30,6 +30,10 @@ def tally(ModelAdmin, request, queryset):
 class QuestionAdmin(admin.ModelAdmin):
     list_display = ('desc', 'type')
 
+class QuestionOptionYesNoAdmin(admin.ModelAdmin):
+    list_display = ('question', 'number', 'option')
+
+
 class VotingAdmin(admin.ModelAdmin):
     list_display = ('name', 'start_date', 'end_date')
     readonly_fields = ('start_date', 'end_date', 'pub_key',
