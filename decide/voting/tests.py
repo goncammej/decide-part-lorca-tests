@@ -206,7 +206,7 @@ class VotingTestCase(BaseTestCase):
         v.start_date = timezone.now()
         v.save()
 
-        clear = self.store_votes(v)
+        clear = self.store_classic_votes(v)
 
         self.login()
         # v.tally_votes(self.token)
@@ -504,4 +504,4 @@ class QuestionsTests(StaticLiveServerTestCase):
         q = Question(desc='test question', type='T')
         opt = QuestionOption(number=1, option='test option', question=q)
         self.assertEqual(str(opt), 
-                         'You cannot create a classic option for a non-Classic question')
+                         'You cannot create an option for a non-Classic or multiple choice question')
