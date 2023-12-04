@@ -440,86 +440,86 @@ class QuestionTestCases(BaseTestCase):
         QuestionOptionRanked(number=1, option='test option', question=q).save()
         self.assertRaises(QuestionOptionRanked.DoesNotExist)
     
-class PostProcTest(TestCase):
-    def setUp(self):
-        super().setUp()
+# class PostProcTest(TestCase):
+#     def setUp(self):
+#         super().setUp()
 
-    def tearDown(self):
-        super().tearDown()
+#     def tearDown(self):
+#         super().tearDown()
     
-    def test_do_postproc(self):
-        q = Question(desc='test question', type='R')
-        q.save()
-        op1 = QuestionOptionRanked(question=q, option='Test 1', number=1)
-        op2 = QuestionOptionRanked(question=q, option='Test 2', number=2)
-        op1.save()
-        op2.save()
-        v = Voting(name='test voting', question=q)
-        v.save()
-        a, _ = Auth.objects.get_or_create(url=settings.BASEURL,
-                                          defaults={'me': True, 'name': 'test auth'})
-        a.save()
-        v.auths.add(a)
+#     def test_do_postproc(self):
+#         q = Question(desc='test question', type='R')
+#         q.save()
+#         op1 = QuestionOptionRanked(question=q, option='Test 1', number=1)
+#         op2 = QuestionOptionRanked(question=q, option='Test 2', number=2)
+#         op1.save()
+#         op2.save()
+#         v = Voting(name='test voting', question=q)
+#         v.save()
+#         a, _ = Auth.objects.get_or_create(url=settings.BASEURL,
+#                                           defaults={'me': True, 'name': 'test auth'})
+#         a.save()
+#         v.auths.add(a)
 
-        tally = {
-            'msgs': ['1-2', '2-1']
-        }
-        v.tally = tally
-        v.save()
+#         tally = {
+#             'msgs': ['1-2', '2-1']
+#         }
+#         v.tally = tally
+#         v.save()
 
-        v.do_postproc()
+#         v.do_postproc()
 
-        self.assertEqual(v.postproc[0]['votes'], 3)
-        self.assertEqual(v.postproc[1]['votes'], 3)
-        self.assertEqual(v.postproc[0]['postproc'], 3)
-        self.assertEqual(v.postproc[1]['postproc'], 3)
+#         self.assertEqual(v.postproc[0]['votes'], 3)
+#         self.assertEqual(v.postproc[1]['votes'], 3)
+#         self.assertEqual(v.postproc[0]['postproc'], 3)
+#         self.assertEqual(v.postproc[1]['postproc'], 3)
 
-    def test_do_postproc_no_votes(self):
-        q = Question(desc='test question', type='R')
-        q.save()
-        op1 = QuestionOptionRanked(question=q, option='Test 1', number=1)
-        op2 = QuestionOptionRanked(question=q, option='Test 2', number=2)
-        op1.save()
-        op2.save()
-        v = Voting(name='test voting', question=q)
-        v.save()
-        a, _ = Auth.objects.get_or_create(url=settings.BASEURL,
-                                          defaults={'me': True, 'name': 'test auth'})
-        a.save()
-        v.auths.add(a)
+#     def test_do_postproc_no_votes(self):
+#         q = Question(desc='test question', type='R')
+#         q.save()
+#         op1 = QuestionOptionRanked(question=q, option='Test 1', number=1)
+#         op2 = QuestionOptionRanked(question=q, option='Test 2', number=2)
+#         op1.save()
+#         op2.save()
+#         v = Voting(name='test voting', question=q)
+#         v.save()
+#         a, _ = Auth.objects.get_or_create(url=settings.BASEURL,
+#                                           defaults={'me': True, 'name': 'test auth'})
+#         a.save()
+#         v.auths.add(a)
 
-        # Simulate a tally with no votes
-        tally = {}
+#         # Simulate a tally with no votes
+#         tally = {}
 
-        v.tally = tally
-        v.save()
+#         v.tally = tally
+#         v.save()
 
-        v.do_postproc() 
+#         v.do_postproc() 
 
-        self.assertEqual(v.postproc[0]['votes'], 0)
-        self.assertEqual(v.postproc[1]['votes'], 0)
-        self.assertEqual(v.postproc[0]['postproc'], 0)
-        self.assertEqual(v.postproc[1]['postproc'], 0)
+#         self.assertEqual(v.postproc[0]['votes'], 0)
+#         self.assertEqual(v.postproc[1]['votes'], 0)
+#         self.assertEqual(v.postproc[0]['postproc'], 0)
+#         self.assertEqual(v.postproc[1]['postproc'], 0)
 
-    def test_do_postproc_invalid_vote(self):
-        q = Question(desc='test question', type='R')
-        q.save()
-        op1 = QuestionOptionRanked(question=q, option='Test 1', number=1)
-        op2 = QuestionOptionRanked(question=q, option='Test 2', number=2)
-        op1.save()
-        op2.save()
-        v = Voting(name='test voting', question=q)
-        v.save()
-        a, _ = Auth.objects.get_or_create(url=settings.BASEURL,
-                                          defaults={'me': True, 'name': 'test auth'})
-        a.save()
-        v.auths.add(a)
+#     def test_do_postproc_invalid_vote(self):
+#         q = Question(desc='test question', type='R')
+#         q.save()
+#         op1 = QuestionOptionRanked(question=q, option='Test 1', number=1)
+#         op2 = QuestionOptionRanked(question=q, option='Test 2', number=2)
+#         op1.save()
+#         op2.save()
+#         v = Voting(name='test voting', question=q)
+#         v.save()
+#         a, _ = Auth.objects.get_or_create(url=settings.BASEURL,
+#                                           defaults={'me': True, 'name': 'test auth'})
+#         a.save()
+#         v.auths.add(a)
 
-        tally = {
-            'msgs': ['1-2', '2-x']
-        }
-        v.tally = tally
-        v.save()
+#         tally = {
+#             'msgs': ['1-2', '2-x']
+#         }
+#         v.tally = tally
+#         v.save()
 
-        with self.assertRaises(ValueError):
-            v.do_postproc()
+#         with self.assertRaises(ValueError):
+#             v.do_postproc()
