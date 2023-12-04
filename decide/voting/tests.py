@@ -39,8 +39,24 @@ class VotingTestCase(BaseTestCase):
         k.k = ElGamal.construct((p, g, y))
         return k.encrypt(msg)
 
-    def create_voting(self):
-        q = Question(desc='test question')
+    def create_classic_voting(self):
+        q = Question(desc='test question', type='C')
+        q.save()
+        for i in range(5):
+            opt = QuestionOption(question=q, option='option {}'.format(i+1))
+            opt.save()
+        v = Voting(name='test voting', question=q)
+        v.save()
+
+        a, _ = Auth.objects.get_or_create(url=settings.BASEURL,
+                                          defaults={'me': True, 'name': 'test auth'})
+        a.save()
+        v.auths.add(a)
+
+        return v
+    
+    def create_multiple_choice_voting(self):
+        q = Question(desc='test multiple choice question', type='M')
         q.save()
         for i in range(5):
             opt = QuestionOption(question=q, option='option {}'.format(i+1))
@@ -82,7 +98,7 @@ class VotingTestCase(BaseTestCase):
         user.save()
         return user
 
-    def store_votes(self, v):
+    def store_classic_votes(self, v):
         voters = list(Census.objects.filter(voting_id=v.id))
         voter = voters.pop()
 
@@ -96,6 +112,7 @@ class VotingTestCase(BaseTestCase):
                     'voter': voter.voter_id,
                     'voting_type': 'classic',
                     'vote': { 'a': a, 'b': b },
+                    'voting_type': 'classic'
                 }
                 clear[opt.number] += 1
                 user = self.get_or_create_user(voter.voter_id)
@@ -106,14 +123,67 @@ class VotingTestCase(BaseTestCase):
 
     @tag("slow")
     def test_complete_voting(self):
-        v = self.create_voting()
+        v = self.create_classic_voting()
         self.create_voters(v)
 
         v.create_pubkey()
         v.start_date = timezone.now()
         v.save()
 
-        clear = self.store_votes(v)
+        clear = self.store_classic_votes(v)
+
+        self.login()  # set token
+        v.tally_votes(self.token)
+
+        tally = v.tally
+        tally.sort()
+        tally = {k: len(list(x)) for k, x in itertools.groupby(tally)}
+
+        for q in v.question.options.all():
+            self.assertEqual(tally.get(q.number, 0), clear.get(q.number, 0))
+
+        for q in v.postproc:
+            self.assertEqual(tally.get(q["number"], 0), q["votes"])
+
+    def store_multiple_choice_votes(self, v):
+        voters = list(Census.objects.filter(voting_id=v.id))
+        voter = voters.pop()
+        options = v.question.options.all()
+
+        clear = {}
+
+        for opt in v.question.options.all():
+            clear[opt.number] = 0
+        
+        for i in range(random.randint(0, 5)):
+            votes = []
+            for j in range(random.randint(0, len(options))):
+                a, b = self.encrypt_msg(options[j].number, v)
+                choice = { 'a': a, 'b': b }
+                votes.append(choice)
+                clear[options[j].number] += 1
+            
+            data = {
+                'voting': v.id,
+                'voter': voter.voter_id,
+                'votes': votes,
+                'voting_type': 'choices'
+            }
+            user = self.get_or_create_user(voter.voter_id)
+            self.login(user=user.username)
+            voter = voters.pop()
+            mods.post('store', json=data)
+        return clear
+    
+    def test_complete_multiple_choice_voting(self):
+        v = self.create_multiple_choice_voting()
+        self.create_voters(v)
+
+        v.create_pubkey()
+        v.start_date = timezone.now()
+        v.save()
+
+        clear = self.store_multiple_choice_votes(v)
 
         self.login()  # set token
         v.tally_votes(self.token)
@@ -136,7 +206,7 @@ class VotingTestCase(BaseTestCase):
         v.start_date = timezone.now()
         v.save()
 
-        clear = self.store_votes(v)
+        clear = self.store_classic_votes(v)
 
         self.login()
         # v.tally_votes(self.token)
@@ -150,6 +220,7 @@ class VotingTestCase(BaseTestCase):
 
         # for q in v.postproc:
         #     self.assertEqual(tally.get(q["number"], 0), q["votes"])
+
 
     def test_create_voting_from_api(self):
         data = {'name': 'Example'}
@@ -175,6 +246,35 @@ class VotingTestCase(BaseTestCase):
 
         response = self.client.post('/voting/', data, format='json')
         self.assertEqual(response.status_code, 201)
+        
+    def test_create_multiple_choice_voting_from_api(self):
+        data = {'name': 'Example'}
+        response = self.client.post('/voting/', data, format='json')
+        self.assertEqual(response.status_code, 401)
+
+        # login with user no admin
+        self.login(user='noadmin')
+        response = mods.post('voting', params=data, response=True)
+        self.assertEqual(response.status_code, 403)
+
+        # login with user admin
+        self.login()
+        response = mods.post('voting', params=data, response=True)
+        self.assertEqual(response.status_code, 400)
+
+        data = {
+          'name': 'Example',
+            'desc': 'Description example',
+            'question': {
+                'desc': 'I want a ',
+                'type': 'M'
+            },
+            'question_opt': ['cat', 'dog', 'horse']
+          }
+
+        response = self.client.post('/voting/', data, format='json')
+        self.assertEqual(response.status_code, 201)
+
 
     def test_create_voting_from_api_comment(self):
         data = {'name': 'Voting text'}
@@ -199,13 +299,14 @@ class VotingTestCase(BaseTestCase):
                 'type': 'T'
             },
             'question_opt':[]
+
         }
 
         response = self.client.post('/voting/', data, format='json')
         self.assertEqual(response.status_code, 201)
 
     def test_update_voting(self):
-        voting = self.create_voting()
+        voting = self.create_classic_voting()
 
         data = {'action': 'start'}
         #response = self.client.post('/voting/{}/'.format(voting.pk), data, format='json')
@@ -403,4 +504,4 @@ class QuestionsTests(StaticLiveServerTestCase):
         q = Question(desc='test question', type='T')
         opt = QuestionOption(number=1, option='test option', question=q)
         self.assertEqual(str(opt), 
-                         'You cannot create a classic option for a non-Classic question')
+                         'You cannot create an option for a non-Classic or multiple choice question')
