@@ -16,6 +16,8 @@ class QuestionSerializer(serializers.HyperlinkedModelSerializer):
     def get_options(self, instance):
         if instance.type == 'C':
             serializer = QuestionOptionSerializer(instance.options.all(), many=True).data
+        elif instance.type == 'M':
+            serializer = QuestionOptionSerializer(instance.options.all(), many=True).data
         elif instance.type == 'T':
             serializer = None
         return serializer
@@ -23,8 +25,6 @@ class QuestionSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Question
         fields = ('desc', 'options', 'type')
-
-
 
 class VotingSerializer(serializers.HyperlinkedModelSerializer):
     question = QuestionSerializer(many=False)

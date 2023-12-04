@@ -13,7 +13,9 @@ class Question(models.Model):
     desc = models.TextField()
     TYPES = [
             ('C', 'Classic question'),
+            ('M', 'Multiple choice question'),
             ('T', 'Text question')
+
             ]
     type = models.CharField(max_length=1, choices=TYPES, default='C')
 
@@ -32,14 +34,14 @@ class QuestionOption(models.Model):
     def save(self):
         if not self.number:
             self.number = self.question.options.count() + 2
-        if self.question.type == 'C':
+        if self.question.type in ['C','M']:
             return super().save()
 
     def __str__(self):
-        if self.question.type == 'C':
+        if self.question.type in ['C','M']:
             return '{} ({})'.format(self.option, self.number)
         else:
-            return 'You cannot create a classic option for a non-Classic question'
+            return 'You cannot create an option for a non-Classic or multiple choice question'
 
 class Voting(models.Model):
     name = models.CharField(max_length=200)

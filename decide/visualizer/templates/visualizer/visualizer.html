@@ -43,7 +43,8 @@
                 </table>
             </div>
             <div v-else>    
-                <div v-if="voting.question.type === 'C'" class="mb-3">
+                <div v-if="voting.question.type === 'C' || voting.question.type === 'R' || voting.question.type === 'M'" class="mb-3">
+
                     <h2 class="heading">Results:</h2>
                     <table class="table table-bordered table-striped">
                         <thead>
@@ -91,6 +92,39 @@
                     </table>
 
                 </div>
+                <div v-else-if="voting.question.type === 'Y'" class="d-flex justify-content-center mt-3">
+                    <h3>Yes/No voting Results:</h3>
+                    <div class="container mt-3">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <table class="table">
+                                    <tr v-for="(opt, index) in voting.postproc" :key="index">
+                                        <td class="bg-primary text-white p-2 rounded">
+                                            <strong>[[ opt.option ]]:</strong> <span class="text-muted">[[ opt.postproc ]] votes</span>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                    
+                        <div class="row">
+                            <div class="col-md-12">
+                                <select id="chart-select" onchange="showChart()" class="mb-2">
+                                    <option value="bar-chart">Bar Chart</option>
+                                    <option value="polar-chart-post">Polar Chart (Score)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div id="chart-container">
+                                    <canvas id="bar-chart"></canvas>
+                                    <canvas id="polar-chart-post" style="display:none"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>                 
+                </div>
             </div>
         </div>
     </div>
@@ -135,7 +169,7 @@
         let labels = voting.postproc.map((opt) => opt.option)
         let postproc = voting.postproc.map((opt) => opt.postproc)
         let votes = voting.postproc.map((opt) => opt.votes)
-
+        
         let ctx = document.getElementById("bar-chart").getContext("2d");
         let chart = new Chart(ctx, {
             type: "bar",
