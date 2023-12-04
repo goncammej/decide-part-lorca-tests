@@ -7,9 +7,6 @@ from mixnet.models import Auth
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from django.conf import settings
-from base import mods
-import time
-from voting.tests import VotingTestCase
 
 class VisualizerTestCase(StaticLiveServerTestCase):
     def create_voting(self):
