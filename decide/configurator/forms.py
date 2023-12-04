@@ -62,3 +62,44 @@ class ClassicForm(forms.ModelForm):
         self.fields["more_options"].widget.attrs.update(
             {"class": "form-control", "id": "id_options"}
         )
+
+
+class OpenQuestionForm(forms.ModelForm):
+    question_desc = forms.CharField(label="Question")
+
+    class Meta:
+        model = Voting
+        fields = ["name", "desc"]
+
+    def save(self):
+        # Create Question
+        question_desc = self.cleaned_data["question_desc"]
+        question = Question(desc=question_desc, type="T")
+        question.save()
+
+        # Create Auth
+        if not Auth.objects.filter(url=settings.BASEURL).exists():
+            auth = Auth(name="Auth", url=settings.BASEURL)
+            auth.save()
+        else:
+            auth = Auth.objects.get(url=settings.BASEURL)
+
+        # Create Voting
+        voting = Voting(
+            name=self.cleaned_data["name"],
+            desc=self.cleaned_data["desc"],
+            question=question,
+            start_date=timezone.now(),
+        )
+        voting.save()
+        voting.auths.add(auth)
+        voting.create_pubkey()
+        voting.save()
+
+        return voting
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["name"].widget.attrs.update({"class": "form-control"})
+        self.fields["desc"].widget.attrs.update({"class": "form-control", "rows": 3})
+        self.fields["question_desc"].widget.attrs.update({"class": "form-control"})
