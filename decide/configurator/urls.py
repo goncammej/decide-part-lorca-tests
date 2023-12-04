@@ -9,4 +9,5 @@ urlpatterns = [
         views.CreateOpenQuestionView.as_view(),
         name="create_open_question",
     ),
+    path("manage_census/", views.ManageCensusView.as_view(), name="manage_census"),
 ]

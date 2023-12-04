@@ -4,6 +4,7 @@ from django.shortcuts import redirect
 from django.urls import reverse
 from django.contrib import messages
 from .forms import ClassicForm, OpenQuestionForm
+from voting.models import Voting
 
 
 def configurator(request):
@@ -21,9 +22,10 @@ class CreateClassicView(TemplateView):
     def post(self, request, *args, **kwargs):
         form = ClassicForm(request.POST)
         if form.is_valid():
-            form.save()
+            new_voting = form.save()
+            request.session["voting_id"] = new_voting.id
             messages.success(request, "Classic voting created successfully!")
-            return redirect(reverse("configurator"))
+            return redirect(reverse("manage_census"))
         else:
             return self.render_to_response(self.get_context_data(form=form))
 
@@ -39,8 +41,19 @@ class CreateOpenQuestionView(TemplateView):
     def post(self, request, *args, **kwargs):
         form = OpenQuestionForm(request.POST)
         if form.is_valid():
-            form.save()
+            new_voting = form.save()
+            request.session["voting_id"] = new_voting.id
             messages.success(request, "Open question voting created successfully!")
-            return redirect(reverse("configurator"))
+            return redirect(reverse("manage_census"))
         else:
             return self.render_to_response(self.get_context_data(form=form))
+
+
+class ManageCensusView(TemplateView):
+    template_name = "configurator/manage_census.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        voting_id = self.request.session.get("voting_id")
+        context["voting"] = Voting.objects.get(id=voting_id)
+        return context
