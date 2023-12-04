@@ -26,8 +26,6 @@ class StoreChoiceCase(BaseTestCase):
         self.question.save()
         self.question_choices.save()
         
-        self.question.save()
-        self.question_yesno.save()
         self.voting = Voting(pk=5001,
                              name='voting example',
                              question=self.question,
