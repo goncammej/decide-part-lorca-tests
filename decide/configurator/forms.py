@@ -17,9 +17,7 @@ class ClassicForm(forms.ModelForm):
 
     def save(self):
         # Create Question
-        question_desc = self.cleaned_data["question_desc"]
-        question = Question(desc=question_desc, type="C")
-        question.save()
+        question = create_question(self, "C")
 
         # Create Options for the Question
         option1 = self.cleaned_data["option1"]
@@ -31,24 +29,8 @@ class ClassicForm(forms.ModelForm):
             for option in more_options:
                 QuestionOption(question=question, option=option).save()
 
-        # Create Auth
-        if not Auth.objects.filter(url=settings.BASEURL).exists():
-            auth = Auth(name="Auth", url=settings.BASEURL)
-            auth.save()
-        else:
-            auth = Auth.objects.get(url=settings.BASEURL)
-
         # Create Voting
-        voting = Voting(
-            name=self.cleaned_data["name"],
-            desc=self.cleaned_data["desc"],
-            question=question,
-            start_date=timezone.now(),
-        )
-        voting.save()
-        voting.auths.add(auth)
-        voting.create_pubkey()
-        voting.save()
+        voting = create_voting(self, question)
 
         return voting
 
@@ -73,28 +55,10 @@ class OpenQuestionForm(forms.ModelForm):
 
     def save(self):
         # Create Question
-        question_desc = self.cleaned_data["question_desc"]
-        question = Question(desc=question_desc, type="T")
-        question.save()
-
-        # Create Auth
-        if not Auth.objects.filter(url=settings.BASEURL).exists():
-            auth = Auth(name="Auth", url=settings.BASEURL)
-            auth.save()
-        else:
-            auth = Auth.objects.get(url=settings.BASEURL)
+        question = create_question(self, "T")
 
         # Create Voting
-        voting = Voting(
-            name=self.cleaned_data["name"],
-            desc=self.cleaned_data["desc"],
-            question=question,
-            start_date=timezone.now(),
-        )
-        voting.save()
-        voting.auths.add(auth)
-        voting.create_pubkey()
-        voting.save()
+        voting = create_voting(self, question)
 
         return voting
 
@@ -103,3 +67,37 @@ class OpenQuestionForm(forms.ModelForm):
         self.fields["name"].widget.attrs.update({"class": "form-control"})
         self.fields["desc"].widget.attrs.update({"class": "form-control", "rows": 3})
         self.fields["question_desc"].widget.attrs.update({"class": "form-control"})
+
+
+def create_question(self, type):
+    question_desc = self.cleaned_data["question_desc"]
+    question = Question(desc=question_desc, type=type)
+    question.save()
+    return question
+
+
+def create_auth():
+    if not Auth.objects.filter(url=settings.BASEURL).exists():
+        auth = Auth(name="Auth", url=settings.BASEURL)
+        auth.save()
+    else:
+        auth = Auth.objects.get(url=settings.BASEURL)
+    return auth
+
+
+def create_voting(self, question):
+    # Create Auth
+    auth = create_auth()
+
+    # Create Voting
+    voting = Voting(
+        name=self.cleaned_data["name"],
+        desc=self.cleaned_data["desc"],
+        question=question,
+        start_date=timezone.now(),
+    )
+    voting.save()
+    voting.auths.add(auth)
+    voting.create_pubkey()
+    voting.save()
+    return voting
