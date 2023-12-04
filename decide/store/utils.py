@@ -47,6 +47,12 @@ def classic_store(request):
   perms = mods.get('census/{}'.format(vid), params={'voter_id': uid}, response=True)
   if perms.status_code == 401:
       return status.HTTP_401_UNAUTHORIZED
+  
+
+  vote_db = Vote.objects.filter(voter_id=uid, voting_id=vid).first()
+
+  if vote_db != None:
+      return status.HTTP_400_BAD_REQUEST
 
   a = vote.get("a")
 
@@ -100,6 +106,11 @@ def choices_store(request):
   perms = mods.get('census/{}'.format(vid), params={'voter_id': uid}, response=True)
   if perms.status_code == 401:
       return status.HTTP_401_UNAUTHORIZED
+  
+  vote = Vote.objects.filter(voter_id=uid, voting_id=vid).first()
+
+  if vote != None:
+      return status.HTTP_400_BAD_REQUEST
         
   for v in votes:
     a = v.get("a")
