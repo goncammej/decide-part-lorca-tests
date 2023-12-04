@@ -48,12 +48,6 @@ def classic_store(request):
   if perms.status_code == 401:
       return status.HTTP_401_UNAUTHORIZED
   
-
-  vote_db = Vote.objects.filter(voter_id=uid, voting_id=vid).first()
-
-  if vote_db != None:
-      return status.HTTP_400_BAD_REQUEST
-
   a = vote.get("a")
 
   b = vote.get("b")
@@ -110,7 +104,7 @@ def choices_store(request):
   vote = Vote.objects.filter(voter_id=uid, voting_id=vid).first()
 
   if vote != None:
-      return status.HTTP_400_BAD_REQUEST
+      Vote.objects.filter(voter_id=uid, voting_id=vid).delete()  
         
   for v in votes:
     a = v.get("a")
