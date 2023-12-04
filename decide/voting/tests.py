@@ -4,15 +4,10 @@ from django.utils import timezone
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
-from django.test import TestCase, tag
-from rest_framework.test import APIClient
-from rest_framework.test import APITestCase
+from django.test import tag
 
 from selenium import webdriver
-from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.common.keys import Keys
 
 from base import mods
 from base.tests import BaseTestCase
@@ -21,7 +16,6 @@ from mixnet.mixcrypt import ElGamal
 from mixnet.mixcrypt import MixCrypt
 from mixnet.models import Auth
 from voting.models import QuestionOptionYesNo, Voting, Question, QuestionOption
-from datetime import datetime
 
 
 class VotingTestCase(BaseTestCase):
@@ -38,6 +32,28 @@ class VotingTestCase(BaseTestCase):
         k = MixCrypt(bits=bits)
         k.k = ElGamal.construct((p, g, y))
         return k.encrypt(msg)
+    
+    def store_yesno_votes(self, v):
+        voters = list(Census.objects.filter(voting_id=v.id))
+        voter = voters.pop()
+
+        clear = {}
+        for opt in v.question.options.all():
+            clear[opt.number] = 0
+            for i in range(random.randint(0, 5)):
+                a, b = self.encrypt_msg(opt.number, v)
+                data = {
+                    'voting': v.id,
+                    'voter': voter.voter_id,
+                    'voting_type': 'classic',
+                    'vote': { 'a': a, 'b': b },
+                }
+                clear[opt.number] += 1
+                user = self.get_or_create_user(voter.voter_id)
+                self.login(user=user.username)
+                voter = voters.pop()
+                mods.post('store', json=data)
+        return clear
 
     def create_classic_voting(self):
         q = Question(desc='test question', type='C')
@@ -55,7 +71,6 @@ class VotingTestCase(BaseTestCase):
 
         return v
     
-
     def create_yesno_voting(self):
         q = Question(desc='Yes/No test question', type='Y')
         q.save()
@@ -63,6 +78,13 @@ class VotingTestCase(BaseTestCase):
             opt = QuestionOptionYesNo(question=q, option='option {}'.format(i+1))
             opt.save()
         v = Voting(name='test Yes/No voting', question=q)
+        v.save()
+
+        a, _ = Auth.objects.get_or_create(url=settings.BASEURL,defaults={'me': True, 'name': 'test auth'})
+        a.save()
+        v.auths.add(a)
+
+        return v
 
     def create_multiple_choice_voting(self):
         q = Question(desc='test multiple choice question', type='M')
@@ -218,40 +240,31 @@ class VotingTestCase(BaseTestCase):
         clear = self.store_classic_votes(v)
 
         self.login()
-        # v.tally_votes(self.token)
-
-        # tally = v.tally
-        # tally.sort()
-        # tally = {k: len(list(x)) for k, x in itertools.groupby(tally)}
-
-        # for q in v.question.options.all():
-        #     self.assertEqual(tally.get(q.number, 0), clear.get(q.number, 0))
-
-        # for q in v.postproc:
-        #     self.assertEqual(tally.get(q["number"], 0), q["votes"])
 
     def test_create_voting_from_api(self):
         data = {'name': 'Example'}
         response = self.client.post('/voting/', data, format='json')
         self.assertEqual(response.status_code, 401)
-        v = self.create_yesno_voting()
-        self.create_voters(v)
 
-        v.create_pubkey()
-        v.start_date = timezone.now()
-        v.save()
+        # login with user no admin
+        self.login(user='noadmin')
+        response = mods.post('voting', params=data, response=True)
+        self.assertEqual(response.status_code, 403)
 
-        clear = self.store_votes(v)
-
+        # login with user admin
         self.login()
-        v.tally_votes(self.token)
+        response = mods.post('voting', params=data, response=True)
+        self.assertEqual(response.status_code, 400)
 
-        tally = v.tally
-        tally.sort()
-        tally = {k: len(list(x)) for k, x in itertools.groupby(tally)}
+        data = {
+            'name': 'Example',
+            'desc': 'Description example',
+            'question': 'I want a ',
+            'question_opt': ['cat', 'dog', 'horse']
+        }
+
         response = self.client.post('/voting/', data, format='json')
         self.assertEqual(response.status_code, 201)
-    
     
     def test_complete_yesno_voting(self):
         v = self.create_yesno_voting()
@@ -261,7 +274,7 @@ class VotingTestCase(BaseTestCase):
         v.start_date = timezone.now()
         v.save()
 
-        clear = self.store_votes(v)
+        clear = self.store_yesno_votes(v)
 
         self.login()
         v.tally_votes(self.token)
@@ -275,8 +288,6 @@ class VotingTestCase(BaseTestCase):
 
         for q in v.postproc:
             self.assertEqual(tally.get(q["number"], 0), q["votes"])
-        response = self.client.post('/voting/', data, format='json')
-        self.assertEqual(response.status_code, 201)
         
     def test_create_multiple_choice_voting_from_api(self):
         data = {'name': 'Example'}
@@ -581,7 +592,7 @@ class QuestionTestCases(BaseTestCase):
         q = Question(desc='test question', type='Y')
         opt = QuestionOption(number=1, option='test option', question=q)
         self.assertEqual(str(opt), 
-            'You cannot create a classic option for a non-Classic question')
+            'You cannot create an option for a non-Classic or multiple choice question')
 
     def test_question(self):
         q1 = Question(desc='test question', type='C')
