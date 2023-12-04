@@ -8,11 +8,11 @@ from base import mods
 
 def classic_store(request):
 
-  """ 
+  """
     * voting: id
     * voter: id
     * vote: { "a": int, "b": int }
-    * voting_type: "classic" ||  "yesno" || "comment"
+    * voting_type: "yesno" || "classic" || "comment"
 
   """
   vid = request.data.get('voting')
@@ -31,7 +31,7 @@ def classic_store(request):
 
   if not vid or not uid or not vote:
       return status.HTTP_400_BAD_REQUEST
-    
+
   # validating voter
 
   if request.auth:
@@ -47,7 +47,7 @@ def classic_store(request):
   perms = mods.get('census/{}'.format(vid), params={'voter_id': uid}, response=True)
   if perms.status_code == 401:
       return status.HTTP_401_UNAUTHORIZED
-  
+
   a = vote.get("a")
 
   b = vote.get("b")

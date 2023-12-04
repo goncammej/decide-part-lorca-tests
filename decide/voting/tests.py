@@ -4,15 +4,10 @@ from django.utils import timezone
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
-from django.test import TestCase, tag
-from rest_framework.test import APIClient
-from rest_framework.test import APITestCase
+from django.test import tag
 
 from selenium import webdriver
-from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.common.keys import Keys
 
 from base import mods
 from base.tests import BaseTestCase
@@ -20,8 +15,7 @@ from census.models import Census
 from mixnet.mixcrypt import ElGamal
 from mixnet.mixcrypt import MixCrypt
 from mixnet.models import Auth
-from voting.models import Voting, Question, QuestionOption
-from datetime import datetime
+from voting.models import QuestionOptionYesNo, Voting, Question, QuestionOption
 
 
 class VotingTestCase(BaseTestCase):
@@ -38,6 +32,28 @@ class VotingTestCase(BaseTestCase):
         k = MixCrypt(bits=bits)
         k.k = ElGamal.construct((p, g, y))
         return k.encrypt(msg)
+    
+    def store_yesno_votes(self, v):
+        voters = list(Census.objects.filter(voting_id=v.id))
+        voter = voters.pop()
+
+        clear = {}
+        for opt in v.question.options.all():
+            clear[opt.number] = 0
+            for i in range(random.randint(0, 5)):
+                a, b = self.encrypt_msg(opt.number, v)
+                data = {
+                    'voting': v.id,
+                    'voter': voter.voter_id,
+                    'voting_type': 'classic',
+                    'vote': { 'a': a, 'b': b },
+                }
+                clear[opt.number] += 1
+                user = self.get_or_create_user(voter.voter_id)
+                self.login(user=user.username)
+                voter = voters.pop()
+                mods.post('store', json=data)
+        return clear
 
     def create_classic_voting(self):
         q = Question(desc='test question', type='C')
@@ -55,6 +71,21 @@ class VotingTestCase(BaseTestCase):
 
         return v
     
+    def create_yesno_voting(self):
+        q = Question(desc='Yes/No test question', type='Y')
+        q.save()
+        for i in range(5):
+            opt = QuestionOptionYesNo(question=q, option='option {}'.format(i+1))
+            opt.save()
+        v = Voting(name='test Yes/No voting', question=q)
+        v.save()
+
+        a, _ = Auth.objects.get_or_create(url=settings.BASEURL,defaults={'me': True, 'name': 'test auth'})
+        a.save()
+        v.auths.add(a)
+
+        return v
+
     def create_multiple_choice_voting(self):
         q = Question(desc='test multiple choice question', type='M')
         q.save()
@@ -209,18 +240,6 @@ class VotingTestCase(BaseTestCase):
         clear = self.store_classic_votes(v)
 
         self.login()
-        # v.tally_votes(self.token)
-
-        # tally = v.tally
-        # tally.sort()
-        # tally = {k: len(list(x)) for k, x in itertools.groupby(tally)}
-
-        # for q in v.question.options.all():
-        #     self.assertEqual(tally.get(q.number, 0), clear.get(q.number, 0))
-
-        # for q in v.postproc:
-        #     self.assertEqual(tally.get(q["number"], 0), q["votes"])
-
 
     def test_create_voting_from_api(self):
         data = {'name': 'Example'}
@@ -246,6 +265,29 @@ class VotingTestCase(BaseTestCase):
 
         response = self.client.post('/voting/', data, format='json')
         self.assertEqual(response.status_code, 201)
+    
+    def test_complete_yesno_voting(self):
+        v = self.create_yesno_voting()
+        self.create_voters(v)
+
+        v.create_pubkey()
+        v.start_date = timezone.now()
+        v.save()
+
+        clear = self.store_yesno_votes(v)
+
+        self.login()
+        v.tally_votes(self.token)
+
+        tally = v.tally
+        tally.sort()
+        tally = {k: len(list(x)) for k, x in itertools.groupby(tally)}
+
+        for q in v.question.options.all():
+            self.assertEqual(tally.get(q.number, 0), clear.get(q.number, 0))
+
+        for q in v.postproc:
+            self.assertEqual(tally.get(q["number"], 0), q["votes"])
         
     def test_create_multiple_choice_voting_from_api(self):
         data = {'name': 'Example'}
@@ -275,7 +317,6 @@ class VotingTestCase(BaseTestCase):
         response = self.client.post('/voting/', data, format='json')
         self.assertEqual(response.status_code, 201)
 
-
     def test_create_voting_from_api_comment(self):
         data = {'name': 'Voting text'}
         response = self.client.post('/voting/', data, format='json')
@@ -304,7 +345,7 @@ class VotingTestCase(BaseTestCase):
 
         response = self.client.post('/voting/', data, format='json')
         self.assertEqual(response.status_code, 201)
-
+        
     def test_update_voting(self):
         voting = self.create_classic_voting()
 
@@ -469,6 +510,63 @@ class QuestionsTests(StaticLiveServerTestCase):
     
     def tearDown(self):
         super().tearDown()
+        self.driver.quit()
+        self.base.tearDown()
+
+    def createClassicQuestionSuccess(self):
+        self.cleaner.get(self.live_server_url+"/admin/login/?next=/admin/")
+        self.cleaner.set_window_size(1280, 720)
+
+        self.cleaner.find_element(By.ID, "id_username").click()
+        self.cleaner.find_element(By.ID, "id_username").send_keys("decide")
+
+        self.cleaner.find_element(By.ID, "id_password").click()
+        self.cleaner.find_element(By.ID, "id_password").send_keys("decide")
+
+        self.cleaner.find_element(By.ID, "id_password").send_keys("Keys.ENTER")
+
+        self.cleaner.get(self.live_server_url+"/admin/voting/question/add/")
+        
+        self.cleaner.find_element(By.ID, "id_desc").click()
+        self.cleaner.find_element(By.ID, "id_desc").send_keys('Test')
+        self.cleaner.find_element(By.ID, "id_options-0-number").click()
+        self.cleaner.find_element(By.ID, "id_options-0-number").send_keys('1')
+        self.cleaner.find_element(By.ID, "id_options-0-option").click()
+        self.cleaner.find_element(By.ID, "id_options-0-option").send_keys('test1')
+        self.cleaner.find_element(By.ID, "id_options-1-number").click()
+        self.cleaner.find_element(By.ID, "id_options-1-number").send_keys('2')
+        self.cleaner.find_element(By.ID, "id_options-1-option").click()
+        self.cleaner.find_element(By.ID, "id_options-1-option").send_keys('test2')
+        self.cleaner.find_element(By.NAME, "_save").click()
+
+        self.assertTrue(self.cleaner.current_url == self.live_server_url+"/admin/voting/question/")
+
+    def createCensusEmptyError(self):
+        self.cleaner.get(self.live_server_url+"/admin/login/?next=/admin/")
+        self.cleaner.set_window_size(1280, 720)
+
+        self.cleaner.find_element(By.ID, "id_username").click()
+        self.cleaner.find_element(By.ID, "id_username").send_keys("decide")
+
+        self.cleaner.find_element(By.ID, "id_password").click()
+        self.cleaner.find_element(By.ID, "id_password").send_keys("decide")
+
+        self.cleaner.find_element(By.ID, "id_password").send_keys("Keys.ENTER")
+
+        self.cleaner.get(self.live_server_url+"/admin/voting/question/add/")
+
+        self.cleaner.find_element(By.NAME, "_save").click()
+
+        self.assertTrue(self.cleaner.find_element_by_xpath('/html/body/div/div[3]/div/div[1]/div/form/div/p').text == 'Please correct the errors below.')
+        self.assertTrue(self.cleaner.current_url == self.live_server_url+"/admin/voting/question/add/")
+
+class QuestionTestCases(BaseTestCase):
+
+    def setUp(self):
+        super().setUp()
+
+    def tearDown(self):
+        super().tearDown()
 
     def test_question_to_string(self):
         q = Question(desc='test question', type='C')
@@ -479,27 +577,73 @@ class QuestionsTests(StaticLiveServerTestCase):
         opt = QuestionOption(number=1, option='test option', question=q)
         self.assertEqual(str(opt), 'test option (1)')
 
+    def test_question_option_yesno_to_string(self):
+        q = Question(desc='test question', type='Y')
+        opt = QuestionOptionYesNo(number=1, option='test option', question=q)
+        self.assertEqual(str(opt), 'test question - test option (1) ')
+
+    def test_question_option_yesno_error_str(self):
+        q = Question(desc='test question', type='C')
+        opt = QuestionOptionYesNo(number=1, option='test option', question=q)
+        self.assertEqual(str(opt), 
+            'You cannot create a Yes/No option for a non-Yes/No question')
+
+    def test_question_option_error_str(self):
+        q = Question(desc='test question', type='Y')
+        opt = QuestionOption(number=1, option='test option', question=q)
+        self.assertEqual(str(opt), 
+            'You cannot create an option for a non-Classic or multiple choice question')
+
     def test_question(self):
         q1 = Question(desc='test question', type='C')
         q1.save()
-        q2 = Question(desc='test question', type='T')
+
+        q2 = Question(desc='test question', type='Y')
         q2.save()
+        
+        q3 = Question(desc='test question', type='T')
+        q3.save()
 
         self.assertEqual(q1.type, 'C')
-        self.assertEqual(q2.type, 'T')
+        self.assertEqual(q2.type, 'Y')
+        self.assertEqual(q3.type, 'T')
+        
         self.assertEqual(q1.desc, 'test question')
         self.assertEqual(q2.desc, 'test question')
+        self.assertEqual(q3.desc, 'test question')
 
     def test_question_option(self):
-        Question(desc='test question', type='C').save()
+        Question(desc='test classic question', type='C').save()
+        q = Question.objects.get(desc='test classic question')
+        QuestionOption(number=1, option='test classic option', question=q).save()
+        opt = QuestionOption.objects.get(option='test classic option')
+
+        self.assertEqual(opt.number, 1)
+        self.assertEqual(opt.option, 'test classic option')
+        self.assertEqual(opt.question, q)
+
+    def test_question_option_yesno(self):
+        Question(desc='test question', type='Y').save()
         q = Question.objects.get(desc='test question')
-        QuestionOption(number=1, option='test option', question=q).save()
-        opt = QuestionOption.objects.get(option='test option')
+        QuestionOptionYesNo(number=1, option='test option', question=q).save()
+        opt = QuestionOptionYesNo.objects.get(option='test option')
 
         self.assertEqual(opt.number, 1)
         self.assertEqual(opt.option, 'test option')
         self.assertEqual(opt.question, q)
     
+    def test_question_option_error(self):
+        Question(desc='test question', type='Y').save()
+        q = Question.objects.get(desc='test question')
+        QuestionOption(number=1, option='test option', question=q).save()
+        self.assertRaises(QuestionOption.DoesNotExist)
+
+    def test_question_option_yesno_error(self):
+        Question(desc='test question', type='C').save()
+        q = Question.objects.get(desc='test question')
+        QuestionOptionYesNo(number=1, option='test option', question=q).save()
+        self.assertRaises(QuestionOptionYesNo.DoesNotExist)
+        
     def test_question_option_comment_error_str(self):
         q = Question(desc='test question', type='T')
         opt = QuestionOption(number=1, option='test option', question=q)

@@ -5,7 +5,7 @@ from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from django.utils import timezone
 
 from base.tests import BaseTestCase
-from voting.models import Question, Voting, QuestionOption, Auth
+from voting.models import Question, Voting, QuestionOption, Auth, QuestionOptionYesNo
 import time
 from census.models import Census
 from mixnet.models import Auth
@@ -115,7 +115,7 @@ class MultipleChoiceQuestionBoothTest(StaticLiveServerTestCase):
     
 
 
-class YesNoBoothTestCase(StaticLiveServerTestCase):
+class CommentBoothTestCase(StaticLiveServerTestCase):
     
     def create_voting(self):
         q = Question(desc='test question', type='T')
@@ -142,6 +142,7 @@ class YesNoBoothTestCase(StaticLiveServerTestCase):
         self.base.setUp()
 
         v = self.create_voting()
+
         v.question.save()
         self.v = v
         #Añadimos al usuario noadmin al censo y empezamos la votacion
@@ -154,6 +155,7 @@ class YesNoBoothTestCase(StaticLiveServerTestCase):
         v.create_pubkey()
         v.start_date = timezone.now()
         v.save()
+
         #Opciones de Chrome
         options = webdriver.ChromeOptions()
         options.headless = True
@@ -166,16 +168,18 @@ class YesNoBoothTestCase(StaticLiveServerTestCase):
         self.driver.quit()
 
         self.base.tearDown()
-    
+
     def test_commentquestion(self):
+
 
         self.driver.get(f'{self.live_server_url}/booth/{self.v.id}/')
         self.driver.set_window_size(910, 1016)
-
         time.sleep(1)
+
         self.driver.find_element(By.ID, "menu-toggle").click()
         time.sleep(1)
         self.driver.find_element(By.ID, "goto-logging-button").click()
+
         time.sleep(1)
         self.driver.find_element(By.ID, "username").send_keys("noadmin")
         time.sleep(1)
@@ -196,3 +200,89 @@ class YesNoBoothTestCase(StaticLiveServerTestCase):
         success_alert = self.driver.page_source
         expected_text = "Congratulations. Your vote has been sent"
         self.assertTrue(expected_text in success_alert, "La alerta de éxito no está presente después de votar")
+
+class YesNoBoothTestCase(StaticLiveServerTestCase):
+  
+    def create_voting(self):
+        q = Question(desc='test question', type='Y')
+        q.save()
+        opt1 = QuestionOptionYesNo(question=q, option='Si')
+        opt2 = QuestionOptionYesNo(question=q, option='No')
+        opt1.save()
+        opt2.save()
+        v = Voting(name='test voting', question=q)
+        v.save()
+
+        a, _ = Auth.objects.get_or_create(url=settings.BASEURL,
+                                          defaults={'me': True, 'name': 'test auth'})
+        a.save()
+        v.auths.add(a)
+        return v
+
+    def get_or_create_user(self,pk):
+        user, _ = User.objects.get_or_create(pk=pk)
+        user.username = 'user{}'.format(pk)
+        user.set_password('qwerty')
+        user.save()
+        return user
+    
+    def setUp(self):
+        #Crea un usuario admin y otro no admin
+        self.base = BaseTestCase()
+        self.base.setUp()
+
+        v = self.create_voting()
+        v.question.type = 'Y'
+        v.question.save()
+        self.v = v
+        #Añadimos al usuario noadmin al censo y empezamos la votacion
+        user = self.get_or_create_user(1)
+        user.is_active = True
+        user.save()
+        c = Census(voter_id=user.id, voting_id=v.id)
+        c.save()
+
+        v.create_pubkey()
+        v.start_date = timezone.now()
+        v.save()
+    
+        #Opciones de Chrome
+        options = webdriver.ChromeOptions()
+        options.headless = True
+        self.driver = webdriver.Chrome(options=options)
+
+        super().setUp()            
+            
+    def tearDown(self):           
+        super().tearDown()
+        self.driver.quit()
+
+        self.base.tearDown()  
+    
+    def test_testquestionyesno(self):
+        self.driver.get(f'{self.live_server_url}/booth/{self.v.id}/')
+        self.driver.set_window_size(910, 1016)
+
+        time.sleep(1)
+        self.driver.find_element(By.CSS_SELECTOR, ".navbar-toggler-icon").click()
+        time.sleep(1)
+        self.driver.find_element(By.CSS_SELECTOR, ".btn-secondary").click()
+        time.sleep(1)
+        self.driver.find_element(By.ID, "username").send_keys("noadmin")
+        time.sleep(1)
+
+        self.driver.find_element(By.ID, "password").send_keys("qwerty")
+        time.sleep(1)
+
+        self.driver.find_element(By.CSS_SELECTOR, ".btn-primary").click()
+        time.sleep(1)
+
+        # Realizar la votación votando Sí
+        self.driver.find_element(By.CSS_SELECTOR, ".btn-success").click()
+        time.sleep(1)
+
+        # Verificar que la votación se realizó correctamente
+        success_alert = self.driver.page_source
+        expected_text = "Congratulations. Your vote has been sent"
+        self.assertTrue(expected_text in success_alert, "La alerta de éxito no está presente después de votar")
+  

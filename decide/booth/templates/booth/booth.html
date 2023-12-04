@@ -121,6 +121,7 @@
                     <h1 class="card-title display-3">Voting ID: [[ voting.id ]]</h1>
                     <h2 class="card-subtitle mb-3 display-4">[[ voting.name ]]</h2>
                     <p class="card-text">[[ voting.question.desc ]]</p>
+                  
                     <div v-if="voting.question.type === 'C'" class="mb-3">
                         <!-- Votación normal con opciones -->
                         <div class="d-flex flex-wrap justify-content-center">
@@ -137,6 +138,15 @@
                                 {{ 'Vote' }}
                             </button>
                         </div>
+                    </div>
+                    <div v-else-if="voting.question.type === 'Y'" class="d-flex justify-content-center mt-3">
+                        <!-- Votación 'Yes' o 'No' -->
+                        <button class="btn btn-success btn-lg me-3" @click="decideSend($event,'Si')">
+                            {{ 'Si' }}
+                        </button>
+                        <button class="btn btn-danger btn-lg" @click="decideSend($event,'No')">
+                            {{ 'No' }}
+                        </button>
                     </div>
                     <div v-else-if="voting.question.type === 'M'" class="mb-3">
                         <!-- Votación Pregunta con múltiples opciones -->
@@ -369,7 +379,6 @@
                         this.selected = selectedOption.number;
                         evt.preventDefault();
                         var v = this.decideEncrypt();
-                        console.log(v);
                         var data = {
                             vote: { a: v.alpha.toString(), b: v.beta.toString() },
                             voting: this.voting.id,
