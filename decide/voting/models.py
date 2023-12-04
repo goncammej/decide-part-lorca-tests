@@ -18,13 +18,13 @@ class Question(models.Model):
             ('M', 'Multiple choice question'),
             ('T', 'Text question')
             ]
-  type = models.CharField(max_length=1, choices=TYPES, default='C')
+    type = models.CharField(max_length=1, choices=TYPES, default='C')
+    
+    def save(self):
+        super().save()
 
-  def save(self):
-    super().save()
-
-  def __str__(self):
-    return self.desc
+    def __str__(self):
+        return self.desc
 
 
 class QuestionOption(models.Model):
@@ -172,6 +172,8 @@ class Voting(models.Model):
             data = {"msgs": response.json()}
             for key, values in data.items():
                 data[key] = [decimal_to_ascii(value) for value in values]
+            self.tally = data
+            self.save()
         elif self.question.type == 'T':
             data = {"msgs": response.json()}
             for key, values in data.items():
