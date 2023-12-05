@@ -3,7 +3,7 @@ from django.views.generic import TemplateView
 from django.shortcuts import redirect
 from django.urls import reverse
 from django.contrib import messages
-from .forms import ClassicForm, OpenQuestionForm
+from .forms import ClassicForm, MultipleChoiceForm, OpenQuestionForm
 from voting.models import Voting
 
 
@@ -25,6 +25,25 @@ class CreateClassicView(TemplateView):
             new_voting = form.save()
             request.session["voting_id"] = new_voting.id
             messages.success(request, "Classic voting created successfully!")
+            return redirect(reverse("manage_census"))
+        else:
+            return self.render_to_response(self.get_context_data(form=form))
+
+
+class CreateMultipleChoiceView(TemplateView):
+    template_name = "configurator/create_multiple_choice.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["form"] = MultipleChoiceForm()
+        return context
+
+    def post(self, request, *args, **kwargs):
+        form = MultipleChoiceForm(request.POST)
+        if form.is_valid():
+            new_voting = form.save()
+            request.session["voting_id"] = new_voting.id
+            messages.success(request, "Multiple choice voting created successfully!")
             return redirect(reverse("manage_census"))
         else:
             return self.render_to_response(self.get_context_data(form=form))
