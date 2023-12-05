@@ -206,21 +206,24 @@ class Voting(models.Model):
         if self.question.type == 'R':
             ranked_options = self.question.ranked_options.all()
             vote_counts= {opt.number: 0 for opt in ranked_options}
-            for msg, votes in tally.items():
-                for vote in votes:
-                    list_preferences = vote.split('-') 
-                    for i, vote in enumerate(list_preferences):
-                        vote_counts[int(vote)] += len(list_preferences) - i 
+            for msg, votes_weights in tally.items():
+                for vote_weight in votes_weights:
+                    list_preferences = vote_weight.split('-')
+                    for i, vote_weight in enumerate(list_preferences):
+                        vote_counts[i+1] += len(list_preferences) - int(vote_weight) + 1
 
             opts = []
             for opt in ranked_options:
-                votes = vote_counts[opt.number]
+                votes = len(tally['msgs'])
+                votes_weights = vote_counts[opt.number]
                 opts.append({
                     'option': opt.option,
                     'number': opt.number,
-                    'votes': votes
+                    'votes' : votes,
+                    'votes_wights': votes_weights
+                    
                 })
-            data = { 'type': 'IDENTITY', 'options': opts }
+            data = { 'type': 'WEIGHT', 'options': opts }
         # yes/no postproc
         elif self.question.type == 'Y':
             yesno_options = self.question.yesno_options.all()
