@@ -5,6 +5,7 @@ from .models import QuestionOption
 from .models import QuestionOptionRanked
 from .models import Question
 from .models import Voting
+from .models import QuestionOptionYesNo
 
 from .filters import StartedFilter
 
@@ -33,6 +34,9 @@ class QuestionAdmin(admin.ModelAdmin):
 class QuestionOptionRankedAdmin(admin.ModelAdmin):
     list_display = ('question', 'number', 'option')
 
+class QuestionOptionYesNoAdmin(admin.ModelAdmin):
+    list_display = ('question', 'number', 'option')
+
 
 class VotingAdmin(admin.ModelAdmin):
     list_display = ('name', 'start_date', 'end_date')
@@ -50,3 +54,5 @@ admin.site.register(Voting, VotingAdmin)
 admin.site.register(Question, QuestionAdmin)
 admin.site.register(QuestionOption)
 admin.site.register(QuestionOptionRanked, QuestionOptionRankedAdmin)
+admin.site.register(QuestionOptionYesNo, QuestionOptionYesNoAdmin)
+

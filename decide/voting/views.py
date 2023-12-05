@@ -51,8 +51,6 @@ class VotingView(generics.ListCreateAPIView):
     return Response({}, status=status.HTTP_201_CREATED)
     
 
-
-
 class VotingUpdate(generics.RetrieveUpdateDestroyAPIView):
     queryset = Voting.objects.all()
     serializer_class = VotingSerializer
@@ -103,3 +101,5 @@ class VotingUpdate(generics.RetrieveUpdateDestroyAPIView):
             msg = 'Action not found, try with start, stop or tally'
             st = status.HTTP_400_BAD_REQUEST
         return Response(msg, status=st)
+    
+

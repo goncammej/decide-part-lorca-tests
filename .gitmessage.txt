@@ -7,6 +7,8 @@ tipo: asunto #id
 
 ### recordatorio: los commits se realizarán en inglés.
 
+### recordatorio: los commits se realizarán en inglés.
+
 ### tipo
 # feat (nueva funcionalidad)
 # fix (corrección de bugs)
