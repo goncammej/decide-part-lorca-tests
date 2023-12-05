@@ -1,6 +1,6 @@
 import random
 from django.contrib.auth.models import User
-from django.test import TestCase
+from django.test import Client, TestCase
 from django.conf import settings
 from django.urls import reverse
 from rest_framework.test import APIClient
@@ -25,10 +25,144 @@ from datetime import datetime
 
 
 class CensusTestCase(BaseTestCase):
+
     def setUp(self):
         super().setUp()
-        self.census = Census(voting_id=1, voter_id=1)
-        self.census.save()
+        self.census = Census.objects.create(voting_id='1', voter_id='1')  # Asegúrate de reemplazar esto con los datos reales de tu modelo Census
+
+    def test_create_census(self):
+        # Define the URL and the data
+        url = reverse('census_create')  # replace with your URL name
+        data = {'voting_id': 2, 'voter_id': 2}
+
+        # Make the POST request
+        response = self.client.post(url, data, follow=True)
+
+        # Check the status code and the response data
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(Census.objects.count(), 2)
+        self.assertEqual(Census.objects.latest('id').voting_id, 2)
+        self.assertEqual(Census.objects.latest('id').voter_id, 2)
+
+    def test_create_census_invalid_voting_id(self):
+        with self.assertRaises(ValueError):
+            # Attempt to create a census with an invalid voting_id
+            census = Census.objects.create(voting_id="invalid_voting_id", voter_id=1)
+            census.full_clean()  # This should raise a ValidationError exception
+
+    def test_create_census_invalid_voter_id(self):
+        with self.assertRaises(ValueError):
+            # Attempt to create a census with an invalid voter_id
+            census = Census.objects.create(voting_id=1, voter_id="invalid_voter_id")
+            census.full_clean()
+
+    def test_create_census_invalid_voting_id_and_voter_id(self):
+        with self.assertRaises(ValueError):
+            # Attempt to create a census with an invalid voting_id and voter_id
+            census = Census.objects.create(voting_id="invalid_voting_id", voter_id="invalid_voter_id")
+            census.full_clean()
+
+    def test_delete_census(self):
+        # Delete any existing Census objects to avoid IntegrityError
+        Census.objects.all().delete()
+        
+        # Create a Census object to delete
+        census_to_delete = Census.objects.create(voting_id=1, voter_id=1)
+
+        # Define the URL and the data
+        url = reverse('census_deleted')  # replace with your URL name
+        data = {'voting_id': census_to_delete.voting_id, 'voter_id': census_to_delete.voter_id}
+
+        # Make the POST request
+        response = self.client.post(url, data, follow=True)
+
+        # Check the status code and the response data
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(Census.objects.filter(voting_id=census_to_delete.voting_id, voter_id=census_to_delete.voter_id).exists())
+            
+    def test_delete_census_invalid_voting_id(self):
+        with self.assertRaises(ValueError):
+            # Attempt to delete a census with an invalid voting_id
+            census = Census.objects.create(voting_id="invalid_voting_id", voter_id=1)
+            census.full_clean()
+    
+    def test_delete_census_invalid_voter_id(self):
+        with self.assertRaises(ValueError):
+            # Attempt to delete a census with an invalid voter_id
+            census = Census.objects.create(voting_id=1, voter_id="invalid_voter_id")
+            census.full_clean()
+    
+    def test_delete_census_invalid_voting_id_and_voter_id(self):
+        with self.assertRaises(ValueError):
+            # Attempt to delete a census with an invalid voting_id and voter_id
+            census = Census.objects.create(voting_id="invalid_voting_id", voter_id="invalid_voter_id")
+            census.full_clean()
+
+    def test_list_census(self):
+        # Define the URL and the data
+        url = reverse('census_list')
+
+        # Make the POST request
+        response = self.client.get(url, follow=True)
+
+        # Check the status code and the response data
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(Census.objects.count(), 1)
+        self.assertEqual(Census.objects.latest('id').voting_id, 1)
+        self.assertEqual(Census.objects.latest('id').voter_id, 1)
+
+    def test_list_census_invalid_voting_id(self):
+        with self.assertRaises(ValueError):
+            # Attempt to list a census with an invalid voting_id
+            census = Census.objects.create(voting_id="invalid_voting_id", voter_id=1)
+            census.full_clean()
+    
+    def test_list_census_invalid_voter_id(self):
+        with self.assertRaises(ValueError):
+            # Attempt to list a census with an invalid voter_id
+            census = Census.objects.create(voting_id=1, voter_id="invalid_voter_id")
+            census.full_clean()
+
+    def test_list_census_invalid_voting_id_and_voter_id(self):
+        with self.assertRaises(ValueError):
+            # Attempt to list a census with an invalid voting_id and voter_id
+            census = Census.objects.create(voting_id="invalid_voting_id", voter_id="invalid_voter_id")
+            census.full_clean()
+
+    def test_get_census(self):
+        self.client.login(username='decide', password='decide')  # Replace with valid credentials
+        # Define the URL and the data
+        url = reverse('census_details')
+
+        data = {'id': 1}
+        # Make the POST request
+        response = self.client.get(url, data)
+
+        # Check the status code and the response data
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(Census.objects.count(), 1)
+        self.assertEqual(Census.objects.latest('id').voting_id, 1)
+        self.assertEqual(Census.objects.latest('id').voter_id, 1)
+
+    def test_get_census_invalid_voting_id(self):
+        with self.assertRaises(ValueError):
+            # Attempt to get a census with an invalid voting_id
+            census = Census.objects.create(voting_id="invalid_voting_id", voter_id=1)
+            census.full_clean()
+    
+    def test_get_census_invalid_voter_id(self):
+        with self.assertRaises(ValueError):
+            # Attempt to get a census with an invalid voter_id
+            census = Census.objects.create(voting_id=1, voter_id="invalid_voter_id")
+            census.full_clean()
+
+    def test_get_census_invalid_voting_id_and_voter_id(self):
+        with self.assertRaises(ValueError):
+            # Attempt to get a census with an invalid voting_id and voter_id
+            census = Census.objects.create(voting_id="invalid_voting_id", voter_id="invalid_voter_id")
+            census.full_clean()
+
+            
 
     def tearDown(self):
         super().tearDown()
@@ -296,6 +430,7 @@ class ExportCensusTest(BaseTestCase):
         for i, row in enumerate(census_data, start=3):
             self.assertEqual(worksheet[f"A{i}"].value, row.voting_id)
             self.assertEqual(worksheet[f"B{i}"].value, row.voter_id)
+
 
 
 class CensusImportViewTest(BaseTestCase):
