@@ -376,6 +376,7 @@
                         var data = {
                             vote: {a: v.alpha.toString(), b: v.beta.toString()},
                             voting: this.voting.id,
+                            voting_type: "classic",
                             voter: this.user.id,
                             token: this.token
                         }
@@ -414,6 +415,7 @@
                                 this.successVote = false;
                                 this.showAlert("danger", '{% trans "Error: " %}' + error);
                             });
+
                     } else if (this.voting.question.type === 'T') {
                         var textAreaValue = document.getElementById('floatingTextarea2').value;
                         evt.preventDefault();
