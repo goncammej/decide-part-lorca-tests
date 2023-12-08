@@ -25,6 +25,8 @@ from .models import Census
 from voting.models import Voting
 from openpyxl.styles import Border, Side, Alignment, Font, PatternFill
 from django.shortcuts import redirect
+from django.core.exceptions import ValidationError
+from django.contrib.auth.models import User
 
 def census(request):
     return render(request,'census/census.html')
@@ -151,16 +153,28 @@ class CensusImportView(TemplateView):
             return HttpResponseRedirect("/census/import/")
 
 ######Creación de censo
-def createCensus(request): 
+
+def createCensus(request):
     if request.method == 'POST':
-        census_exists = Census.objects.filter(voting_id = request.POST['voting_id'], voter_id = request.POST['voter_id'])
-        if len(census_exists) != 0:
-            return render(request,'census/census_create.html',{'form': CreationCensusForm, "error": 'Census already exist'})
-        else:
-            census = Census.objects.create(voting_id = request.POST['voting_id'], voter_id = request.POST['voter_id'])
+        voting_id = request.POST.get('voting_id')
+        voter_id = request.POST.get('voter_id')
+
+        try:
+            census = Census.objects.create(voting_id=voting_id, voter_id=voter_id)
+            census.full_clean()
             census.save()
             messages.success(request, 'Census created successfully')
             return redirect('census')
+        
+        # Si hay un ValidationError, muestra el mensaje de error en la página de creación del censo
+        except ValidationError as e:
+            if not Voting.objects.filter(id=voting_id).exists():
+                return render(request, 'census/census_create.html', {'error':'Voting with this ID does not exist.', 'form': CreationCensusForm})
+
+            if not User.objects.filter(id=voter_id).exists():
+                return render(request, 'census/census_create.html', {'error': 'User with this ID does not exist.', 'form': CreationCensusForm})
+            
+    # Si el método no es POST, muestra la página de creación del censo
     return render(request, 'census/census_create.html',{'form': CreationCensusForm})
 
 
@@ -168,7 +182,7 @@ def createCensus(request):
 def deleteCensus(request):
     census = Census.objects.filter(voting_id=request.POST['voting_id'], voter_id = request.POST['voter_id'])
     if len(census) == 0: 
-        return render(request,'census/census.html',{'error':'Census does not exist.Try other census'})
+        return render(request,'census/census.html',{'error':'Census does not exist. Try other census'})
     if len(census) != 0:
         census.delete()
         messages.success(request, 'Census deleted successfully')
