@@ -680,7 +680,7 @@ class PostProcTest(TestCase):
         self.assertEqual(v.postproc[0]['postproc'], 'text1')
         self.assertEqual(v.postproc[1]['postproc'], 'text2')
 
-    def test_do_postproc_no_votes(self):
+    def test_do_comment_postproc_no_votes(self):
         q1 = Question(desc='test question 1', type='T')
         q1.save()
 
