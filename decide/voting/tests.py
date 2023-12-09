@@ -4,7 +4,7 @@ from django.utils import timezone
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
-from django.test import tag
+from django.test import TestCase, tag
 
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -649,3 +649,53 @@ class QuestionTestCases(BaseTestCase):
         opt = QuestionOption(number=1, option='test option', question=q)
         self.assertEqual(str(opt), 
                          'You cannot create an option for a non-Classic or multiple choice question')
+
+@tag("api")
+class PostProcTest(TestCase):
+    def setUp(self):
+        super().setUp()
+
+    def tearDown(self):
+        super().tearDown()
+
+    def test_do_comment_postproc(self):
+        q1 = Question(desc='test question 1', type='T')
+        q1.save()
+
+        v = Voting(name='test voting', question=q1)
+        v.save()
+    
+        a, _ = Auth.objects.get_or_create(url=settings.BASEURL,
+                                          defaults={'me': True, 'name': 'test auth'})
+        a.save()
+        v.auths.add(a)
+
+        tally = {'msgs': ['text1', 'text2']}
+        
+        v.tally = tally
+        v.save()
+
+        v.do_postproc()
+
+        self.assertEqual(v.postproc[0]['postproc'], 'text1')
+        self.assertEqual(v.postproc[1]['postproc'], 'text2')
+
+    def test_do_postproc_no_votes(self):
+        q1 = Question(desc='test question 1', type='T')
+        q1.save()
+
+        v = Voting(name='test voting', question=q1)
+        v.save()
+    
+        a, _ = Auth.objects.get_or_create(url=settings.BASEURL,
+                                          defaults={'me': True, 'name': 'test auth'})
+        a.save()
+        v.auths.add(a)
+
+        tally = []
+
+        v.tally = tally
+        v.save()
+
+        with self.assertRaises(AttributeError):
+            v.do_postproc()
