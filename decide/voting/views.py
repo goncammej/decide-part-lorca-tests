@@ -135,7 +135,7 @@ def voting_details(request,voting_id):
         'voting': voting,
     })
 
-
+@login_required
 def voting_delete(request, voting_id):
     voting = get_object_or_404(Voting, pk=voting_id)
 
@@ -149,7 +149,7 @@ def voting_delete(request, voting_id):
 
     return render(request, 'list_votings.html', {'votings': Voting.objects.all(), 'user': request.user})
 
-
+@login_required
 def start_voting(request, voting_id):
     voting = get_object_or_404(Voting, pk=voting_id)
     if request.method == 'POST':
@@ -162,7 +162,7 @@ def start_voting(request, voting_id):
     return render(request, 'list_votings.html', {'votings': Voting.objects.all(), 'user': request.user})
 
 
-
+@login_required
 def end_voting(request, voting_id):
     voting = get_object_or_404(Voting, pk=voting_id)
     if request.method == 'POST':
@@ -173,7 +173,7 @@ def end_voting(request, voting_id):
             return redirect('list_votings')  
     return render(request, 'list_votings.html', {'votings': Voting.objects.all(), 'user': request.user})
 
-
+@login_required
 def update_voting(request, voting_id):
     voting = get_object_or_404(Voting, pk=voting_id)
 
@@ -182,8 +182,19 @@ def update_voting(request, voting_id):
         if form.is_valid():
             form.save()
             messages.success(request, 'Voting updated successfully.')
-            return redirect('list_votings')  # Replace with the desired URL or view name
+            return redirect('list_votings')  
     else:
         form = UpdateVotingForm(instance=voting)
 
     return render(request, 'update_voting.html', {'form': form, 'voting': voting})
+
+@login_required
+def tally_view(request, voting_id):
+    voting = get_object_or_404(Voting, pk=voting_id)
+    if request.method == 'POST':
+        token = request.session.get('auth-token', '')
+        voting.tally_votes(token)
+        messages.success(request, 'Tally completed successfully.')
+        return redirect('list_votings')  
+
+    return render(request, 'tally_view.html', {'voting': voting})

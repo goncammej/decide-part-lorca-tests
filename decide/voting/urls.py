@@ -1,3 +1,5 @@
+from visualizer.views import VisualizerView
+from booth.views import BoothView
 from django.urls import path
 from . import views
 from .views import list_votings,voting_details,voting_delete,start_voting,end_voting,update_voting
@@ -10,5 +12,8 @@ urlpatterns = [
     path('list_votings/<int:voting_id>/delete/', voting_delete, name='voting_delete'),
     path('list_votings/<int:voting_id>/start/', start_voting, name='start_voting'),
     path('list_votings/<int:voting_id>/end/', end_voting, name='end_voting'),
-    path('list_votings/<int:voting_id>/update/', update_voting, name='update_voting')
+    path('list_votings/<int:voting_id>/update/', update_voting, name='update_voting'),
+    path('list_votings/<int:voting_id>/tally/', views.tally_view, name='tally_view'),
+    path('visualizer/<int:voting_id>/', VisualizerView.as_view(), name='visualizer'),
+     path('booth/<int:voting_id>/', BoothView.as_view(), name='booth'),
 ]
