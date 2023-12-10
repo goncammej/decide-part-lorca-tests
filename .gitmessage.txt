@@ -1,13 +1,35 @@
+<<<<<<< HEAD
 # Title: Summary, imperative, start upper case, don't end with a period
 # No more than 50 chars. #### 50 chars is here:  #
+=======
+# No more than 50 chars. #### 50 chars is here:  #
+
+# Wrap at 72 chars. ################################## which is here:  #
+
+tipo: asunto #id
+>>>>>>> develop
 
 
+<<<<<<< HEAD
 # Remember blank line between title and body.
+=======
+### recordatorio: los commits se realizarán en inglés.
+
+### tipo
+# feat (nueva funcionalidad)
+# fix (corrección de bugs)
+# research (incorporación de código experimental, puede ser no funcional)
+# refactor (refactorización de código)
+# docs (actualización de documentación)
+# test (incorporación o modificación de tests)
+# conf (modificación de archivos de configuración)
+>>>>>>> develop
 
 # Body: Explain *what* and *why* (not *how*). Include task ID.
 # Wrap at 72 chars. ################################## which is here:  #
 
 
+<<<<<<< HEAD
 # 1. Separate subject from body with a blank line
 # 2. Limit the subject line to 50 characters
 # 3. Capitalize the subject line
@@ -31,3 +53,7 @@
 # 		chore (updating grunt tasks etc; no production code change)
 # 10. The <scope> field is optional and is used to tag a package or module of the product that the commit affects.
 # 11. The <description> field is a very short summary of the intent or content included in the comment.
+=======
+### Ejemplo
+# conf : Updated docker-compose.yml #1
+>>>>>>> develop
