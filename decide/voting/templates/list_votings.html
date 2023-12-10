@@ -5,7 +5,7 @@
 <div style="text-align: center;">
     <h1>Votings_List</h1>
 </div>
-{% if user.is_superuser %}
+{% if user.is_staff %}
     {% for voting in votings %}
         {% if voting.end_date != null and voting.start_date != null %}
         <div>
@@ -85,7 +85,7 @@
     {% endfor %}
 {% endif %}
 
-{% if not user.is_superuser %}
+{% if not user.is_staff %}
     {% for voting in votings %}
 
     {% if voting.end_date == null and voting.start_date != null %}
