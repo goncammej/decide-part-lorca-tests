@@ -26,12 +26,9 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('doc/', schema_view),
     path('gateway/', include('gateway.urls')),
-<<<<<<< HEAD
-    path('',include('multiple_votings.urls')),
-=======
+    path('',include('base.urls')),
     path('authentication/',views.main, name='welcome'),
     path('social-auth/', include('social_django.urls', namespace='social'))
->>>>>>> develop
 ]
 
 for module in settings.MODULES:

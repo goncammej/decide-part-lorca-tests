@@ -7,15 +7,15 @@
             <div>
                 {% if user.is_authenticated %}
                   
-                    <a class="btn btn-primary" href="/multiple_votings/list_votings">List Votings</a>
+                    <a class="btn btn-primary" href="/voting/list_votings">List Votings</a>
                     
                     {% if user.is_superuser %}
-                        <a class="btn btn-primary" href="/multiple_votings/">Create Votings</a>
+                        <a class="btn btn-primary" href="/home/">Create Votings</a>
                     {% endif %}
-                    <a class="btn btn-primary" href="/logout">Logout</a>
+                    <a class="btn btn-primary" href="/authentication/logout-view">Logout</a>
                 {% else %}
-                    <a class="btn btn-primary" href="/multiple_votings/signin">Sign In</a>
-                    <a class="btn btn-primary" href="/multiple_votings/signup">Sign Up</a>
+                    <a class="btn btn-primary" href="/authentication/login-view">Sign In</a>
+                    <a class="btn btn-primary" href="/authentication/register-view">Sign Up</a>
                 {% endif %}
             </div>
         </section>
