@@ -73,8 +73,13 @@
           <form method="post" enctype="multipart/form-data">
             {% csrf_token %}
             <input type="hidden" name="voting_id" value="{{ voting.id }}" />
-            <input type="file" name="file" accept=".xlsx" />
-            <button class="btn btn-primary btn-sm" type="submit">Import census</button>
+            <div class="d-flex gap-2">
+              <div class="file">
+                <input type="file" name="file" accept=".xlsx" id="file_input_{{ voting.id }}" data-voting-id="{{ voting.id }}" style="display: none;" />
+                <label class="btn btn-secondary btn-sm" for="file_input_{{ voting.id }}" id="file_label_{{ voting.id }}">Choose file</label>
+              </div>
+              <button class="btn btn-primary btn-sm" type="submit">Import census</button>
+            </div>
           </form>
         </td>
       </tr>
@@ -82,4 +87,31 @@
     </tbody>
   </table>
 </div>
+{% endblock %}
+
+{% block extrabody %}
+<script type="text/javascript">
+  document.addEventListener("DOMContentLoaded", function() {
+    let fileInputs = document.querySelectorAll("input[type='file']");
+
+    fileInputs.forEach(function(fileInput) {
+      let votingId = fileInput.getAttribute("data-voting-id");
+
+      let labelId = "file_label_" + votingId;
+      let inputId = "file_input_" + votingId;
+      
+      let label = document.getElementById(labelId);
+      let input = document.getElementById(inputId);
+      
+      fileInput.addEventListener("change", function() {
+        let file = fileInput.files[0];
+        if (file) {
+          label.innerHTML = file.name;
+        } else {
+          label.innerHTML = '';
+        }
+      });
+    });
+  });
+</script>
 {% endblock %}
