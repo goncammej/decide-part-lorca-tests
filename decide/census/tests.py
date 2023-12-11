@@ -26,8 +26,34 @@ from datetime import datetime
 
 class CensusTestCase(BaseTestCase):
 
+    def create_voting(self):
+        q = Question(desc='test question')
+        q.save()
+        for i in range(5):
+            opt = QuestionOption(question=q, option='option {}'.format(i+1))
+            opt.save()
+        v = Voting(name='test voting', question=q)
+        v.save()
+
+        a, _ = Auth.objects.get_or_create(url=settings.BASEURL,
+                                          defaults={'me': True, 'name': 'test auth'})
+        a.save()
+        v.auths.add(a)
+
+        return v
+
+    def create_voters(self, v):
+        for i in range(100):
+            u, _ = User.objects.get_or_create(username='testvoter{}'.format(i))
+            u.is_active = True
+            u.save()
+            c = Census(voter_id=u.id, voting_id=v.id)
+            c.save()
+
     def setUp(self):
         super().setUp()
+        v = self.create_voting()
+        self.create_voters(v)
         self.census = Census.objects.create(voting_id='1', voter_id='1')  # Asegúrate de reemplazar esto con los datos reales de tu modelo Census
 
     def test_create_census(self):
