@@ -21,20 +21,22 @@ class StoreChoiceCase(BaseTestCase):
 
     def setUp(self):
         super().setUp()
-
-        # Crea la pregunta y la votación
-        self.question = Question(desc='qwerty')
+        self.question = Question(desc='qwerty', type='C')
+        self.question_choices = Question(desc='qwerty', type='M')
         self.question.save()
-
+        self.question_choices.save()
+        
         self.voting = Voting(pk=5001,
                              name='voting example',
                              question=self.question,
                              start_date=timezone.now(),
         )
+        self.voting_choices = Voting(pk=5002,
+                             name='voting example text',
+                             question=self.question_choices,
+                             start_date=timezone.now(),)
         self.voting.save()
-
-        # Crea un usuario para usar en las pruebas
-        self.user = self.get_or_create_user(1)
+        self.voting_choices.save()
 
     def tearDown(self):
         self.question = None
@@ -94,17 +96,22 @@ class StoreChoiceCase(BaseTestCase):
         VOTING_PK = 345
         CTE_A = 96
         CTE_B = 184
-        
-        self.gen_voting(VOTING_PK)
+        voting = Voting(pk=VOTING_PK,
+                             name='voting example',
+                             question=self.question,
+                             start_date=timezone.now(),
+        )
+        voting.save()
+        user = self.get_or_create_user(1)
         census = Census(voting_id=VOTING_PK, voter_id=1)
         census.save()
+        self.gen_voting(VOTING_PK)
         data = {
             "voting": VOTING_PK,
             "voter": 1,
             "vote": { "a": CTE_A, "b": CTE_B },
             "voting_type": 'classic',
         }
-        user = self.get_or_create_user(1)
         self.login(user=user.username)
         response = self.client.post('/store/', data, format='json')
         self.assertEqual(response.status_code, 200)
@@ -119,6 +126,7 @@ class StoreChoiceCase(BaseTestCase):
     def test_store_vote_choices(self):
         CTE_A = 96
         CTE_B = 184
+        user = self.get_or_create_user(1)
         census = Census(voting_id=self.voting_choices.id, voter_id=1)
         census.save()
         data = {
@@ -127,7 +135,6 @@ class StoreChoiceCase(BaseTestCase):
             "votes": [{ "a": CTE_A, "b": CTE_B }, { "a": CTE_A + 1, "b": CTE_B + 1 }],
             'voting_type': 'choices'
         }
-        user = self.get_or_create_user(1)
         self.login(user=user.username)
         response = self.client.post('/store/', data, format='json')
         self.assertEqual(response.status_code, 200)
@@ -141,6 +148,7 @@ class StoreChoiceCase(BaseTestCase):
         self.assertEqual(Vote.objects.filter(b=CTE_B + 1).values()[0]['b'], CTE_B + 1)
     
     def test_voting_invalid_type(self):
+        user = self.get_or_create_user(2)
         census = Census(voting_id=self.voting_choices.id, voter_id=2)
         census.save()
         data = {
@@ -149,7 +157,6 @@ class StoreChoiceCase(BaseTestCase):
             "vote": { "a": 1, "b": 1 },
             'voting_type': 'invalid'
         }
-        user = self.get_or_create_user(2)
         self.login(user=user.username)
         response = self.client.post('/store/', data, format='json')
         self.assertEqual(response.status_code, 400)
@@ -157,6 +164,7 @@ class StoreChoiceCase(BaseTestCase):
     def test_store_vote_text(self):
         CTE_A = 96
         CTE_B = 184
+        user = self.get_or_create_user(1)
         census = Census(voting_id=self.voting_choices.id, voter_id=1)
         census.save()
         data = {
@@ -165,7 +173,6 @@ class StoreChoiceCase(BaseTestCase):
             "vote": { "a": CTE_A, "b": CTE_B },
             'voting_type': 'comment'
         }
-        user = self.get_or_create_user(1)
         self.login(user=user.username)
         response = self.client.post('/store/', data, format='json')
         self.assertEqual(response.status_code, 200)
@@ -177,6 +184,7 @@ class StoreChoiceCase(BaseTestCase):
         self.assertEqual(Vote.objects.first().b, CTE_B)
     
     def test_voting_invalid_type(self):
+        user = self.get_or_create_user(2)
         census = Census(voting_id=self.voting_choices.id, voter_id=2)
         census.save()
         data = {
@@ -185,7 +193,7 @@ class StoreChoiceCase(BaseTestCase):
             "vote": { "a": 1, "b": 1 },
             'voting_type': 'invalid'
         }
-        user = self.get_or_create_user(2)
+
         self.login(user=user.username)
         response = self.client.post('/store/', data, format='json')
         self.assertEqual(response.status_code, 400)
@@ -211,6 +219,13 @@ class StoreChoiceCase(BaseTestCase):
     def test_filter(self):
         votings, voters = self.gen_votes()
         v = votings[0]
+
+        response = self.client.get('/store/?voting_id={}'.format(v), format='json')
+        self.assertEqual(response.status_code, 401)
+
+        self.login(user='noadmin')
+        response = self.client.get('/store/?voting_id={}'.format(v), format='json')
+        self.assertEqual(response.status_code, 403)
 
         self.login()
         response = self.client.get('/store/?voting_id={}'.format(v), format='json')
@@ -255,12 +270,13 @@ class StoreChoiceCase(BaseTestCase):
             "vote": { "a": 30, "b": 55 },
             "voting_type": 'classic',
         }
+
+        user = self.get_or_create_user(1)
         census = Census(voting_id=5001, voter_id=1)
         census.save()
         # not opened
         self.voting.start_date = timezone.now() + datetime.timedelta(days=1)
         self.voting.save()
-        user = self.get_or_create_user(1)
         self.login(user=user.username)
         response = self.client.post('/store/', data, format='json')
         self.assertEqual(response.status_code, 401)
@@ -320,6 +336,8 @@ class StoreTextCase(BaseTestCase):
     def test_store_vote_text(self):
         CTE_A = 96
         CTE_B = 184
+
+        user = self.get_or_create_user(1)
         census = Census(voting_id=self.voting_text.id, voter_id=1)
         census.save()
         data = {
@@ -328,7 +346,6 @@ class StoreTextCase(BaseTestCase):
             "vote": { "a": CTE_A, "b": CTE_B },
             'voting_type': 'comment'
         }
-        user = self.get_or_create_user(1)
         self.login(user=user.username)
         response = self.client.post('/store/', data, format='json')
         self.assertEqual(response.status_code, 200)
@@ -376,6 +393,8 @@ class StoreYesNoCase(BaseTestCase):
     def test_store_vote_yesno(self):
         CTE_A = 96
         CTE_B = 184
+
+        user = self.get_or_create_user(1)
         census = Census(voting_id=self.voting_yesno.id, voter_id=1)
         census.save()
         data = {
@@ -384,7 +403,6 @@ class StoreYesNoCase(BaseTestCase):
             "vote": { "a": CTE_A, "b": CTE_B },
             'voting_type': 'yesno'
         }
-        user = self.get_or_create_user(1)
         self.login(user=user.username)
         response = self.client.post('/store/', data, format='json')
         self.assertEqual(response.status_code, 200)
@@ -433,6 +451,8 @@ class StorePreferenceCase(BaseTestCase):
     def test_store_vote_preference(self):
         CTE_A = 96
         CTE_B = 184
+        
+        user = self.get_or_create_user(1)
         census = Census(voting_id=self.voting_preference.id, voter_id=1)
         census.save()
         data = {
@@ -441,7 +461,6 @@ class StorePreferenceCase(BaseTestCase):
             "vote": { "a": CTE_A, "b": CTE_B },
             'voting_type': 'preference'
         }
-        user = self.get_or_create_user(1)
         self.login(user=user.username)
         response = self.client.post('/store/', data, format='json')
         self.assertEqual(response.status_code, 200)
@@ -453,6 +472,7 @@ class StorePreferenceCase(BaseTestCase):
         self.assertEqual(Vote.objects.first().b, CTE_B)
 
     def test_voting_invalid_type(self):
+        user = self.get_or_create_user(2)
         census = Census(voting_id=self.voting_preference.id, voter_id=2)
         census.save()
         data = {
@@ -461,7 +481,6 @@ class StorePreferenceCase(BaseTestCase):
             "vote": { "a": 1, "b": 1 },
             'voting_type': 'invalid'
         }
-        user = self.get_or_create_user(2)
         self.login(user=user.username)
         response = self.client.post('/store/', data, format='json')
         self.assertEqual(response.status_code, 400)
