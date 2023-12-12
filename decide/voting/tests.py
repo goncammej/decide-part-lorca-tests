@@ -809,7 +809,7 @@ class PostProcTest(TestCase):
         self.assertEqual(v.postproc[0]['postproc'], 3)
         self.assertEqual(v.postproc[1]['postproc'], 3)
 
-    def test_do__ranked_postproc_invalid_vote(self):
+    def test_do_ranked_postproc_invalid_vote(self):
         q = Question(desc='test question', type='R')
         q.save()
         op1 = QuestionOptionRanked(question=q, option='Test 1', number=1)
@@ -831,4 +831,3 @@ class PostProcTest(TestCase):
 
         with self.assertRaises(ValueError):
             v.do_postproc()
-        
