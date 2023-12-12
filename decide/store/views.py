@@ -10,6 +10,7 @@ from base.perms import UserIsStaff
 from . import utils
 
 VOTING_TYPES = {
+  'preference': utils.classic_store,
   'yesno': utils.classic_store,
   'choices': utils.choices_store,
   'comment': utils.classic_store,
