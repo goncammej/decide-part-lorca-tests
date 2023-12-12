@@ -484,6 +484,16 @@
                         token: this.token,
                         voting_type: 'choices'
                     }
+                    this.postData("{% url "gateway" "store" "/" %}", data)
+                        .then(data => {
+                            this.successVote = true;
+                            this.alertShow = false;
+                            this.showAlert("success", '{% trans "Congratulations. Your vote has been sent" %}');
+                        })
+                        .catch(error => {
+                            this.succesVote = false;
+                            this.showAlert("danger", '{% trans "Error: " %}' + error);
+                        });
                 },
                 showAlert(lvl, msg) {
                     this.alertLvl = lvl;
