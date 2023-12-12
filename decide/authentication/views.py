@@ -246,7 +246,7 @@ class RegisterView(CreateView):
 
 
         if (len(errors)>0):
-            template = loader.get_template("authentication/authentication.html")
+            template = loader.get_template("authentication/register.html")
             context = {"errors":errors}
 
             return HttpResponse(template.render(context, request))
