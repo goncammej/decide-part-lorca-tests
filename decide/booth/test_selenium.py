@@ -14,7 +14,7 @@ from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.common.keys import Keys
+from selenium.webdriver import Keys
 
 class MultipleChoiceQuestionBoothTest(StaticLiveServerTestCase):
 
@@ -35,7 +35,6 @@ class MultipleChoiceQuestionBoothTest(StaticLiveServerTestCase):
         return v
     
     def get_or_create_user(self, pk):
-
         user, _ = User.objects.get_or_create(pk=pk)
         user.username = 'user{}'.format(pk)
         user.set_password('qwerty')
@@ -80,33 +79,35 @@ class MultipleChoiceQuestionBoothTest(StaticLiveServerTestCase):
     def test_testquestionmultipleoptions(self):
         self.driver.get(f'{self.live_server_url}/booth/{self.v.id}/')
         self.driver.set_window_size(910, 1016)
-        time.sleep(1)
-        self.driver.find_element(By.CSS_SELECTOR, ".navbar-toggler-icon").click()
-        time.sleep(1)
-        self.driver.find_element(By.CSS_SELECTOR, ".btn-secondary").click()
 
-        time.sleep(1)
-        self.driver.find_element(By.ID, "username").send_keys("noadmin")
-        time.sleep(1)
+        self.driver.find_element(By.ID, "menu-toggle").click()
+        
+        goto_logging = WebDriverWait(self.driver, 10).until(
+        EC.element_to_be_clickable((By.ID, "goto-logging-button"))
+            )
+        goto_logging.click()
 
+        username = WebDriverWait(self.driver, 10).until(
+        EC.element_to_be_clickable((By.ID, "username"))
+            )
+        username.click()
+        
+        self.driver.find_element(By.ID, "username").send_keys("user1")
+        self.driver.find_element(By.ID, "password").click()
         self.driver.find_element(By.ID, "password").send_keys("qwerty")
-        time.sleep(1)
+        self.driver.find_element(By.ID, "process-login-button").click()
 
-        self.driver.find_element(By.CSS_SELECTOR, ".btn-primary").click()
-        time.sleep(1)
+        WebDriverWait(self.driver, 10).until(
+        EC.visibility_of_element_located((By.CSS_SELECTOR, "form:nth-child(1) > .form-check"))
+            )
 
         self.driver.find_element(By.CSS_SELECTOR, "form:nth-child(1) > .form-check").click()
-        time.sleep(1)
-
         self.driver.find_element(By.CSS_SELECTOR, "form:nth-child(2) > .form-check").click()
-        time.sleep(1)
-
         self.driver.find_element(By.CSS_SELECTOR, "form:nth-child(3) > .form-check").click()
         
         checkboxes = self.driver.find_elements(By.CSS_SELECTOR, '.form-check input[type="checkbox"]')
 
         selected_checkboxes = [checkbox for checkbox in checkboxes if checkbox.is_selected()]
-
 
         self.driver.find_element(By.CSS_SELECTOR, ".btn-primary").click()
 
@@ -170,31 +171,36 @@ class CommentBoothTestCase(StaticLiveServerTestCase):
         self.base.tearDown()
 
     def test_commentquestion(self):
-
-
         self.driver.get(f'{self.live_server_url}/booth/{self.v.id}/')
         self.driver.set_window_size(910, 1016)
-        time.sleep(1)
 
         self.driver.find_element(By.ID, "menu-toggle").click()
-        time.sleep(1)
-        self.driver.find_element(By.ID, "goto-logging-button").click()
+        
+        goto_logging = WebDriverWait(self.driver, 10).until(
+        EC.element_to_be_clickable((By.ID, "goto-logging-button"))
+            )
+        goto_logging.click()
 
-        time.sleep(1)
-        self.driver.find_element(By.ID, "username").send_keys("noadmin")
-        time.sleep(1)
-
-        self.driver.find_element(By.ID, "password").send_keys("qwerty")
-        time.sleep(1)
-
-        self.driver.find_element(By.ID, "process-login-button").click()
-        time.sleep(1)
+        username = WebDriverWait(self.driver, 10).until(
+        EC.element_to_be_clickable((By.ID, "username"))
+            )
+        username.click()
+        
+        self.driver.find_element(By.ID, "username").send_keys("user1")
+        self.driver.find_element(By.ID, "password").click()
+        self.driver.find_element(By.ID, "password").send_keys("qwerty", Keys.ENTER)
+        
+        WebDriverWait(self.driver, 10).until(
+        EC.visibility_of_element_located((By.ID, "floatingTextarea2"))
+            )
 
         self.driver.find_element(By.ID, "floatingTextarea2").send_keys("Comentario de prueba")
-        time.sleep(1)
-        # Realizar la votación clickando en Vote 
+
         self.driver.find_element(By.ID, "send-vote").click()
-        time.sleep(1)
+        
+        alert_element = WebDriverWait(self.driver, 10).until(
+        EC.visibility_of_element_located((By.CSS_SELECTOR, ".alert"))
+            )
 
         # Verificar que la votación se realizó correctamente
         success_alert = self.driver.page_source
@@ -206,10 +212,6 @@ class YesNoBoothTestCase(StaticLiveServerTestCase):
     def create_voting(self):
         q = Question(desc='test question', type='Y')
         q.save()
-        opt1 = QuestionOptionYesNo(question=q, option='Si')
-        opt2 = QuestionOptionYesNo(question=q, option='No')
-        opt1.save()
-        opt2.save()
         v = Voting(name='test voting', question=q)
         v.save()
 
@@ -263,23 +265,30 @@ class YesNoBoothTestCase(StaticLiveServerTestCase):
         self.driver.get(f'{self.live_server_url}/booth/{self.v.id}/')
         self.driver.set_window_size(910, 1016)
 
-        time.sleep(1)
-        self.driver.find_element(By.CSS_SELECTOR, ".navbar-toggler-icon").click()
-        time.sleep(1)
-        self.driver.find_element(By.CSS_SELECTOR, ".btn-secondary").click()
-        time.sleep(1)
-        self.driver.find_element(By.ID, "username").send_keys("noadmin")
-        time.sleep(1)
+        self.driver.find_element(By.ID, "menu-toggle").click()
+        
+        goto_logging = WebDriverWait(self.driver, 10).until(
+        EC.element_to_be_clickable((By.ID, "goto-logging-button"))
+            )
+        goto_logging.click()
 
-        self.driver.find_element(By.ID, "password").send_keys("qwerty")
-        time.sleep(1)
+        username = WebDriverWait(self.driver, 10).until(
+        EC.element_to_be_clickable((By.ID, "username"))
+            )
+        username.click()
+        
+        self.driver.find_element(By.ID, "username").send_keys("user1")
+        self.driver.find_element(By.ID, "password").click()
+        self.driver.find_element(By.ID, "password").send_keys("qwerty", Keys.ENTER)
+        
+        yes_button = WebDriverWait(self.driver, 10).until(
+        EC.element_to_be_clickable((By.CSS_SELECTOR, ".btn-success"))
+            )
+        yes_button.click()
 
-        self.driver.find_element(By.CSS_SELECTOR, ".btn-primary").click()
-        time.sleep(1)
-
-        # Realizar la votación votando Sí
-        self.driver.find_element(By.CSS_SELECTOR, ".btn-success").click()
-        time.sleep(1)
+        alert_element = WebDriverWait(self.driver, 10).until(
+        EC.visibility_of_element_located((By.CSS_SELECTOR, ".alert"))
+            )
 
         # Verificar que la votación se realizó correctamente
         success_alert = self.driver.page_source
