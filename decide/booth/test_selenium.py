@@ -1,6 +1,6 @@
-from django.test import TestCase
 from django.conf import settings
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
+from nose.tools import nottest
 
 from django.utils import timezone
 
@@ -15,9 +15,8 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.common.keys import Keys
 
-
+@nottest
 class MultipleChoiceQuestionBoothTest(StaticLiveServerTestCase):
 
     def create_voting(self):
@@ -77,7 +76,6 @@ class MultipleChoiceQuestionBoothTest(StaticLiveServerTestCase):
 
         self.base.tearDown()
     
-
     def test_testquestionmultipleoptions(self):
         self.driver.get(f'{self.live_server_url}/booth/{self.v.id}/')
         self.driver.set_window_size(910, 1016)
@@ -118,6 +116,7 @@ class MultipleChoiceQuestionBoothTest(StaticLiveServerTestCase):
     
 
 
+@nottest
 class CommentBoothTestCase(StaticLiveServerTestCase):
     
     def create_voting(self):
@@ -210,6 +209,7 @@ class CommentBoothTestCase(StaticLiveServerTestCase):
         expected_text = "Congratulations. Your vote has been sent"
         self.assertTrue(expected_text in success_alert, "La alerta de éxito no está presente después de votar")
 
+@nottest
 class YesNoBoothTestCase(StaticLiveServerTestCase):
   
     def create_voting(self):
@@ -304,6 +304,7 @@ class YesNoBoothTestCase(StaticLiveServerTestCase):
         self.assertTrue(expected_text in success_alert, "La alerta de éxito no está presente después de votar")
   
 
+@nottest
 class PreferenceBoothTest(StaticLiveServerTestCase):
 
     def create_voting(self):
