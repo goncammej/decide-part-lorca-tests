@@ -9,12 +9,21 @@ class QuestionOptionSerializer(serializers.HyperlinkedModelSerializer):
         model = QuestionOption
         fields = ('number', 'option')
 
-
+    
 class QuestionSerializer(serializers.HyperlinkedModelSerializer):
-    options = QuestionOptionSerializer(many=True)
+    options = serializers.SerializerMethodField()
+
+    def get_options(self, instance):
+        if instance.type == 'C':
+            serializer = QuestionOptionSerializer(instance.options.all(), many=True).data
+        elif instance.type == 'T':
+            serializer = None
+        return serializer
+    
     class Meta:
         model = Question
-        fields = ('desc', 'options')
+        fields = ('desc', 'options', 'type')
+
 
 
 class VotingSerializer(serializers.HyperlinkedModelSerializer):
