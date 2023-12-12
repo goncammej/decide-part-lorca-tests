@@ -135,3 +135,17 @@ Además, debe cumplir con los siguientes requisitos:
 - La precedencia se determina por la diferencia al comparar identificadores de izquierda a derecha. Por ejemplo: 1.0.0 < 2.0.0 < 2.1.0.
 
 En nuestro caso, las etiquetas se utilizarán principalmente en versiones de producción. Por ejemplo: la primera versión será 1.0.0.
+
+Una vez elegido el número de versión adecuado, es posible crear una nueva release de forma automática. 
+Teniendo la rama main actualizada, debes ejecutar estos comandos para crear un nuevo tag:
+
+- Recuerda estar siempre situado en la rama main
+- Sutitye "v1.0.0." por el número de versión escogido
+
+1. Creación del nuevo tag
+    - `git tag -a v1.0.0 -m “mensaje para añadir al tag que también aparecerá en la release”`
+
+2.  Subir el nuevo tag
+    - `git push origin v1.0.0.`
+
+Una vez ejecutados estos comandos, se creará automáticamente un nuevo tag en el repositorio y automáticamente se generará una nueva release con el tag indicado.

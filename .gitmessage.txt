@@ -1,18 +1,12 @@
-<<<<<<< HEAD
-# Title: Summary, imperative, start upper case, don't end with a period
-# No more than 50 chars. #### 50 chars is here:  #
-=======
 # No more than 50 chars. #### 50 chars is here:  #
 
 # Wrap at 72 chars. ################################## which is here:  #
 
 tipo: asunto #id
->>>>>>> develop
 
 
-<<<<<<< HEAD
-# Remember blank line between title and body.
-=======
+### recordatorio: los commits se realizarán en inglés.
+
 ### recordatorio: los commits se realizarán en inglés.
 
 ### tipo
@@ -23,37 +17,10 @@ tipo: asunto #id
 # docs (actualización de documentación)
 # test (incorporación o modificación de tests)
 # conf (modificación de archivos de configuración)
->>>>>>> develop
 
 # Body: Explain *what* and *why* (not *how*). Include task ID.
 # Wrap at 72 chars. ################################## which is here:  #
 
 
-<<<<<<< HEAD
-# 1. Separate subject from body with a blank line
-# 2. Limit the subject line to 50 characters
-# 3. Capitalize the subject line
-# 4. Do not end the subject line with a period
-# 5. Use the imperative mood in the subject line
-# 6. Wrap the body at 72 characters
-# 7. Use the body to explain what and why vs. how
-# 8. Message format:
-#		<type>(<scope>): <subject>
-#
-#		<body>
-#
-#		<footer>
-# 9. Allowed <type> values:
-# 		feat (new feature)
-# 		fix (bug fix)
-# 		docs (changes to documentation)
-# 		style (formatting, missing semi colons, etc; no code change)
-# 		refactor (refactoring production code)
-# 		test (adding missing tests, refactoring tests; no production code change)
-# 		chore (updating grunt tasks etc; no production code change)
-# 10. The <scope> field is optional and is used to tag a package or module of the product that the commit affects.
-# 11. The <description> field is a very short summary of the intent or content included in the comment.
-=======
 ### Ejemplo
 # conf : Updated docker-compose.yml #1
->>>>>>> develop
