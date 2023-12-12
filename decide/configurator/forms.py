@@ -46,6 +46,29 @@ class ClassicForm(forms.ModelForm):
         )
 
 
+class YesNoForm(forms.ModelForm):
+    question_desc = forms.CharField(label="Question")
+
+    class Meta:
+        model = Voting
+        fields = ["name", "desc"]
+
+    def save(self):
+        # Create Question
+        question = create_question(self, "Y")
+
+        # Create Voting
+        voting = create_voting(self, question)
+
+        return voting
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["name"].widget.attrs.update({"class": "form-control"})
+        self.fields["desc"].widget.attrs.update({"class": "form-control", "rows": 3})
+        self.fields["question_desc"].widget.attrs.update({"class": "form-control"})
+
+
 class MultipleChoiceForm(forms.ModelForm):
     question_desc = forms.CharField(label="Question")
     option1 = forms.CharField(label="Option 1")

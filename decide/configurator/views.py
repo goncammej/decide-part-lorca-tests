@@ -3,7 +3,13 @@ from django.views.generic import TemplateView
 from django.shortcuts import redirect
 from django.urls import reverse
 from django.contrib import messages
-from .forms import ClassicForm, MultipleChoiceForm, PreferenceForm, OpenQuestionForm
+from .forms import (
+    ClassicForm,
+    YesNoForm,
+    MultipleChoiceForm,
+    PreferenceForm,
+    OpenQuestionForm,
+)
 from voting.models import Voting
 
 
@@ -25,6 +31,25 @@ class CreateClassicView(TemplateView):
             new_voting = form.save()
             request.session["voting_id"] = new_voting.id
             messages.success(request, "Classic voting created successfully!")
+            return redirect(reverse("manage_census"))
+        else:
+            return self.render_to_response(self.get_context_data(form=form))
+
+
+class CreateYesNoView(TemplateView):
+    template_name = "configurator/create_yes_no.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["form"] = YesNoForm()
+        return context
+
+    def post(self, request, *args, **kwargs):
+        form = YesNoForm(request.POST)
+        if form.is_valid():
+            new_voting = form.save()
+            request.session["voting_id"] = new_voting.id
+            messages.success(request, "Yes/No voting created successfully!")
             return redirect(reverse("manage_census"))
         else:
             return self.render_to_response(self.get_context_data(form=form))

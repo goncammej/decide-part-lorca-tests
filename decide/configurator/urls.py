@@ -4,6 +4,7 @@ from . import views
 urlpatterns = [
     path("", views.configurator, name="configurator"),
     path("create_classic/", views.CreateClassicView.as_view(), name="create_classic"),
+    path("create_yes_no/", views.CreateYesNoView.as_view(), name="create_yes_no"),
     path(
         "create_multiple_choice/",
         views.CreateMultipleChoiceView.as_view(),
