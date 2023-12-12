@@ -30,7 +30,7 @@ class StoreChoiceCase(BaseTestCase):
                              name='voting example',
                              question=self.question,
                              start_date=timezone.now(),
-                             
+        )
         self.voting.save()
 
         # Crea un usuario para usar en las pruebas
