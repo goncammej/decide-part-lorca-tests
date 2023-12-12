@@ -7,12 +7,11 @@ from .models import Vote
 from base import mods
 
 def classic_store(request):
-
   """
     * voting: id
     * voter: id
     * vote: { "a": int, "b": int }
-    * voting_type: "yesno" || "classic" || "comment"
+    * voting_type: "yesno" || "classic" || "comment" || "preference"
 
   """
   vid = request.data.get('voting')
@@ -33,7 +32,6 @@ def classic_store(request):
       return status.HTTP_400_BAD_REQUEST
 
   # validating voter
-
   if request.auth:
       token = request.auth.key
   else:
@@ -49,7 +47,6 @@ def classic_store(request):
       return status.HTTP_401_UNAUTHORIZED
 
   a = vote.get("a")
-
   b = vote.get("b")
 
   defs = { "a": a, "b": b }
