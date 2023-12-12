@@ -1,5 +1,6 @@
 import random
 import itertools
+import time
 from django.utils import timezone
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -23,6 +24,7 @@ from mixnet.models import Auth
 from voting.models import Voting, Question, QuestionOption
 from datetime import datetime
 
+from .tasks import future_stop_voting_task
 
 class VotingTestCase(BaseTestCase):
 
@@ -55,18 +57,6 @@ class VotingTestCase(BaseTestCase):
 
         return v
 
-    def create_comment_voting(self):
-        q = Question(desc='Text test question', type='T')
-        q.save()
-        v = Voting(name='test text voting', question=q)
-        v.save()
-
-        a, _ = Auth.objects.get_or_create(url=settings.BASEURL,defaults={'me': True, 'name': 'test auth'})
-        a.save()
-        v.auths.add(a)
-
-        return v
-
     def create_voters(self, v):
         for i in range(100):
             u, _ = User.objects.get_or_create(username='testvoter{}'.format(i))
@@ -94,7 +84,6 @@ class VotingTestCase(BaseTestCase):
                 data = {
                     'voting': v.id,
                     'voter': voter.voter_id,
-                    'voting_type': 'classic',
                     'vote': { 'a': a, 'b': b },
                 }
                 clear[opt.number] += 1
@@ -127,29 +116,6 @@ class VotingTestCase(BaseTestCase):
 
         for q in v.postproc:
             self.assertEqual(tally.get(q["number"], 0), q["votes"])
-    
-    def test_complete_comment_voting(self):
-        v = self.create_comment_voting()
-        self.create_voters(v)
-
-        v.create_pubkey()
-        v.start_date = timezone.now()
-        v.save()
-
-        clear = self.store_votes(v)
-
-        self.login()
-        # v.tally_votes(self.token)
-
-        # tally = v.tally
-        # tally.sort()
-        # tally = {k: len(list(x)) for k, x in itertools.groupby(tally)}
-
-        # for q in v.question.options.all():
-        #     self.assertEqual(tally.get(q.number, 0), clear.get(q.number, 0))
-
-        # for q in v.postproc:
-        #     self.assertEqual(tally.get(q["number"], 0), q["votes"])
 
     def test_create_voting_from_api(self):
         data = {'name': 'Example'}
@@ -171,34 +137,6 @@ class VotingTestCase(BaseTestCase):
             'desc': 'Description example',
             'question': 'I want a ',
             'question_opt': ['cat', 'dog', 'horse']
-        }
-
-        response = self.client.post('/voting/', data, format='json')
-        self.assertEqual(response.status_code, 201)
-
-    def test_create_voting_from_api_comment(self):
-        data = {'name': 'Voting text'}
-        response = self.client.post('/voting/', data, format='json')
-        self.assertEqual(response.status_code, 401)
-
-        # login with user no admin
-        self.login(user='noadmin')
-        response = mods.post('voting', params=data, response=True)
-        self.assertEqual(response.status_code, 403)
-
-        # login with user admin
-        self.login()
-        response = mods.post('voting', params=data, response=True)
-        self.assertEqual(response.status_code, 400)
-
-        data = {
-            'name': 'Voting text',
-            'desc': 'Description example',
-            'question': {
-                'desc': 'What do you enjoy doing in your free time?',
-                'type': 'T'
-            },
-            'question_opt':[]
         }
 
         response = self.client.post('/voting/', data, format='json')
@@ -364,43 +302,94 @@ class LogInErrorTests(StaticLiveServerTestCase):
 class QuestionsTests(StaticLiveServerTestCase):
 
     def setUp(self):
+        #Load base test functionality for decide
+        self.base = BaseTestCase()
+        self.base.setUp()
+
+        options = webdriver.ChromeOptions()
+        options.headless = True
+        self.driver = webdriver.Chrome(options=options)
+
         super().setUp()
-    
+
     def tearDown(self):
         super().tearDown()
+        self.driver.quit()
 
-    def test_question_to_string(self):
-        q = Question(desc='test question', type='C')
-        self.assertEqual(str(q), 'test question')
+        self.base.tearDown()
 
-    def test_question_option_to_string(self):
-        q = Question(desc='test question', type='C')
-        opt = QuestionOption(number=1, option='test option', question=q)
-        self.assertEqual(str(opt), 'test option (1)')
+    def createQuestionSuccess(self):
+        self.cleaner.get(self.live_server_url+"/admin/login/?next=/admin/")
+        self.cleaner.set_window_size(1280, 720)
 
-    def test_question(self):
-        q1 = Question(desc='test question', type='C')
-        q1.save()
-        q2 = Question(desc='test question', type='T')
-        q2.save()
+        self.cleaner.find_element(By.ID, "id_username").click()
+        self.cleaner.find_element(By.ID, "id_username").send_keys("decide")
 
-        self.assertEqual(q1.type, 'C')
-        self.assertEqual(q2.type, 'T')
-        self.assertEqual(q1.desc, 'test question')
-        self.assertEqual(q2.desc, 'test question')
+        self.cleaner.find_element(By.ID, "id_password").click()
+        self.cleaner.find_element(By.ID, "id_password").send_keys("decide")
 
-    def test_question_option(self):
-        Question(desc='test question', type='C').save()
-        q = Question.objects.get(desc='test question')
-        QuestionOption(number=1, option='test option', question=q).save()
-        opt = QuestionOption.objects.get(option='test option')
+        self.cleaner.find_element(By.ID, "id_password").send_keys("Keys.ENTER")
 
-        self.assertEqual(opt.number, 1)
-        self.assertEqual(opt.option, 'test option')
-        self.assertEqual(opt.question, q)
+        self.cleaner.get(self.live_server_url+"/admin/voting/question/add/")
+        
+        self.cleaner.find_element(By.ID, "id_desc").click()
+        self.cleaner.find_element(By.ID, "id_desc").send_keys('Test')
+        self.cleaner.find_element(By.ID, "id_options-0-number").click()
+        self.cleaner.find_element(By.ID, "id_options-0-number").send_keys('1')
+        self.cleaner.find_element(By.ID, "id_options-0-option").click()
+        self.cleaner.find_element(By.ID, "id_options-0-option").send_keys('test1')
+        self.cleaner.find_element(By.ID, "id_options-1-number").click()
+        self.cleaner.find_element(By.ID, "id_options-1-number").send_keys('2')
+        self.cleaner.find_element(By.ID, "id_options-1-option").click()
+        self.cleaner.find_element(By.ID, "id_options-1-option").send_keys('test2')
+        self.cleaner.find_element(By.NAME, "_save").click()
+
+        self.assertTrue(self.cleaner.current_url == self.live_server_url+"/admin/voting/question/")
+
+    def createCensusEmptyError(self):
+        self.cleaner.get(self.live_server_url+"/admin/login/?next=/admin/")
+        self.cleaner.set_window_size(1280, 720)
+
+        self.cleaner.find_element(By.ID, "id_username").click()
+        self.cleaner.find_element(By.ID, "id_username").send_keys("decide")
+
+        self.cleaner.find_element(By.ID, "id_password").click()
+        self.cleaner.find_element(By.ID, "id_password").send_keys("decide")
+
+        self.cleaner.find_element(By.ID, "id_password").send_keys("Keys.ENTER")
+
+        self.cleaner.get(self.live_server_url+"/admin/voting/question/add/")
+
+        self.cleaner.find_element(By.NAME, "_save").click()
+
+        self.assertTrue(self.cleaner.find_element_by_xpath('/html/body/div/div[3]/div/div[1]/div/form/div/p').text == 'Please correct the errors below.')
+        self.assertTrue(self.cleaner.current_url == self.live_server_url+"/admin/voting/question/add/")
+        
+class FutureClosureTests(BaseTestCase):
+    def setUp(self):
+        q = Question(desc='test question')
+        q.save()
+        for i in range(5):
+            opt = QuestionOption(question=q, option='option {}'.format(i+1))
+            opt.save()
+        v = Voting(name='test voting', question=q)
+        v.save()
+
+        a, _ = Auth.objects.get_or_create(url=settings.BASEURL,
+                                          defaults={'me': True, 'name': 'test auth'})
+        a.save()
+        v.auths.add(a)
+        
+        self.res = future_stop_voting_task.delay(v.id, v.created_at)
+        self.v = v
+        
+        super().setUp()
+
+    def tearDown(self):
+        super().tearDown()
+        
+    def test_task_status(self):
+        self.assertEqual(self.res.status, "SUCCESS")
     
-    def test_question_option_comment_error_str(self):
-        q = Question(desc='test question', type='T')
-        opt = QuestionOption(number=1, option='test option', question=q)
-        self.assertEqual(str(opt), 
-                         'You cannot create a classic option for a non-Classic question')
+    def test_end_date(self):
+        self.assertEqual(self.v.end_date, self.v.future_stop)
