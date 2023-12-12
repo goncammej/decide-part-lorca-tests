@@ -653,6 +653,48 @@ class PostProcTest(TestCase):
     def tearDown(self):
         super().tearDown()
 
+    def test_do_comment_postproc(self):
+        q1 = Question(desc='test question 1', type='T')
+        q1.save()
+
+        v = Voting(name='test voting', question=q1)
+        v.save()
+    
+        a, _ = Auth.objects.get_or_create(url=settings.BASEURL,
+                                          defaults={'me': True, 'name': 'test auth'})
+        a.save()
+        v.auths.add(a)
+
+        tally = {'msgs': ['text1', 'text2']}
+        
+        v.tally = tally
+        v.save()
+
+        v.do_postproc()
+
+        self.assertEqual(v.postproc[0]['postproc'], 'text1')
+        self.assertEqual(v.postproc[1]['postproc'], 'text2')
+
+    def test_do_comment_postproc_no_votes(self):
+        q1 = Question(desc='test question 1', type='T')
+        q1.save()
+
+        v = Voting(name='test voting', question=q1)
+        v.save()
+    
+        a, _ = Auth.objects.get_or_create(url=settings.BASEURL,
+                                          defaults={'me': True, 'name': 'test auth'})
+        a.save()
+        v.auths.add(a)
+
+        tally = []
+
+        v.tally = tally
+        v.save()
+
+        with self.assertRaises(AttributeError):
+            v.do_postproc()
+
     def test_do_ranked_postproc(self):
         q = Question(desc='test question', type='R')
         q.save()
@@ -680,7 +722,7 @@ class PostProcTest(TestCase):
         self.assertEqual(v.postproc[0]['postproc'], 3)
         self.assertEqual(v.postproc[1]['postproc'], 3)
 
-    def test_do__ranked_postproc_invalid_vote(self):
+    def test_do_ranked_postproc_invalid_vote(self):
         q = Question(desc='test question', type='R')
         q.save()
         op1 = QuestionOptionRanked(question=q, option='Test 1', number=1)
