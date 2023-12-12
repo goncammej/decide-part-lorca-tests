@@ -10,6 +10,8 @@ from django.conf import settings
 from selenium.webdriver.support.ui import Select
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from base import mods
+from django.contrib.auth.models import User
 
 class VisualizerTestCase(StaticLiveServerTestCase):
     def create_classic_voting(self):
@@ -108,17 +110,26 @@ class VisualizerTestCase(StaticLiveServerTestCase):
     def test_visualizer_census_change(self):        
         question = Question(desc='test question', type='C')
         question.save()
-        voting = Voting(name='test voting', start_date=timezone.now(), question_id=question.id)
+        for i in range(5):
+            opt = QuestionOption(question=question, option="option {}".format(i + 1))
+            opt.save()
+        voting = Voting(name="test voting",start_date=timezone.now(), question=question)
         voting.save()
-
+        
         self.driver.get(f'{self.live_server_url}/visualizer/{voting.pk}/')
-
         census_before = self.driver.find_element(By.ID, "census").text
 
-        census1 = Census(voter_id=1, voting_id=voting.id)
-        census1.save()
-        census2 = Census(voter_id=2, voting_id=voting.id)
-        census2.save()
+        user, created = User.objects.get_or_create(username='testvoter')
+        user.is_active = True
+        user.save()
+
+        census1 = Census.objects.create(voting_id=voting.id, voter_id=user.id)
+
+        user2, created2 = User.objects.get_or_create(username='testvoter2')
+        user2.is_active = True
+        user2.save()
+
+        census2 = Census.objects.create(voting_id=voting.id, voter_id=user2.id)
 
         self.driver.get(f'{self.live_server_url}/visualizer/{voting.pk}/')
         census_after = self.driver.find_element(By.ID, "census").text
@@ -126,18 +137,29 @@ class VisualizerTestCase(StaticLiveServerTestCase):
         self.assertNotEqual(census_before, census_after)
 
     def test_visualizer_started_classic_with_census(self):        
-        question = Question(desc='test question', type='C')
+        question = Question(desc="test question", type="C")
         question.save()
-        voting = Voting(name='test voting', start_date=timezone.now(), question_id=question.id)
+        for i in range(5):
+            opt = QuestionOption(question=question, option="option {}".format(i + 1))
+            opt.save()
+        voting = Voting(name="test voting",start_date=timezone.now(), question=question)
         voting.save()
 
-        census1 = Census(voter_id=1, voting_id=voting.id)
-        census1.save()
-        census2 = Census(voter_id=2, voting_id=voting.id)
-        census2.save()
+        user, created = User.objects.get_or_create(username='testvoter')
+        user.is_active = True
+        user.save()
+
+        census1 = Census.objects.create(voting_id=voting.id, voter_id=user.id)
+
+        user2, created2 = User.objects.get_or_create(username='testvoter2')
+        user2.is_active = True
+        user2.save()
+
+        census2 = Census.objects.create(voting_id=voting.id, voter_id=user2.id)
 
         self.driver.get(f'{self.live_server_url}/visualizer/{voting.pk}/')
         self.assertEqual(self.driver.find_element(By.ID, "participation").text, "0.0%")
+        
         
     def test_visualizer_classic_finished(self):        
         question = Question(desc='test question', type='C')
@@ -178,10 +200,17 @@ class VisualizerTestCase(StaticLiveServerTestCase):
         voting = self.create_yesno_voting_started()
         voting.save()
 
-        census1 = Census(voter_id=1, voting_id=voting.id)
-        census1.save()
-        census2 = Census(voter_id=2, voting_id=voting.id)
-        census2.save()
+        user, created = User.objects.get_or_create(username='testvoter')
+        user.is_active = True
+        user.save()
+
+        census1 = Census.objects.create(voting_id=voting.id, voter_id=user.id)
+
+        user2, created2 = User.objects.get_or_create(username='testvoter2')
+        user2.is_active = True
+        user2.save()
+
+        census2 = Census.objects.create(voting_id=voting.id, voter_id=user2.id)
 
         self.driver.get(f'{self.live_server_url}/visualizer/{voting.pk}/')
         self.assertEqual(self.driver.find_element(By.ID, "participation").text, "0.0%")
@@ -218,10 +247,17 @@ class VisualizerTestCase(StaticLiveServerTestCase):
         voting = self.create_comment_voting_started()
         voting.save()
 
-        census1 = Census(voter_id=1, voting_id=voting.id)
-        census1.save()
-        census2 = Census(voter_id=2, voting_id=voting.id)
-        census2.save()
+        user, created = User.objects.get_or_create(username='testvoter')
+        user.is_active = True
+        user.save()
+
+        census1 = Census.objects.create(voting_id=voting.id, voter_id=user.id)
+
+        user2, created2 = User.objects.get_or_create(username='testvoter2')
+        user2.is_active = True
+        user2.save()
+
+        census2 = Census.objects.create(voting_id=voting.id, voter_id=user2.id)
 
         self.driver.get(f'{self.live_server_url}/visualizer/{voting.pk}/')
         self.assertEqual(self.driver.find_element(By.ID, "participation").text, "0.0%")
@@ -243,10 +279,17 @@ class VisualizerTestCase(StaticLiveServerTestCase):
         voting = self.create_multiple_choice_voting_started()
         voting.save()
 
-        census1 = Census(voter_id=1, voting_id=voting.id)
-        census1.save()
-        census2 = Census(voter_id=2, voting_id=voting.id)
-        census2.save()
+        user, created = User.objects.get_or_create(username='testvoter')
+        user.is_active = True
+        user.save()
+
+        census1 = Census.objects.create(voting_id=voting.id, voter_id=user.id)
+
+        user2, created2 = User.objects.get_or_create(username='testvoter2')
+        user2.is_active = True
+        user2.save()
+
+        census2 = Census.objects.create(voting_id=voting.id, voter_id=user2.id)
 
         self.driver.get(f'{self.live_server_url}/visualizer/{voting.pk}/')
         self.assertEqual(self.driver.find_element(By.ID, "participation").text, "0.0%")
