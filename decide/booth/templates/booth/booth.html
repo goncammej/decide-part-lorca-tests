@@ -443,7 +443,7 @@
                       evt.preventDefault();
                       var values = document.getElementsByClassName('form-ranked-input')
                       var listValues = Array.prototype.slice.call(values).map(x => x.value)
-                      var max = {{maxOption}}
+                      let max = {{maxOption}}
                       var check = this.checkVote(listValues)
                       if (check.error) {
                         this.showAlert("danger", '{% trans "Error: " %}' + check.msg);
@@ -508,6 +508,10 @@
                   vSet = new Set(v)
                   if (v.length !== vSet.size) {
                     return { error: true, msg: 'No puede haber preferencias repetidas entre opciones'}
+                  }
+                  let max = {{maxOption}}
+                  if (v.some(x => x < 1 || x > max)) {
+                    return { error: true, msg: `No se pueden escoger preferencias que no existen el rango de prefenrecias es 1-${max}`}
                   }
                   return { error: false, msg: ''}
                 }
