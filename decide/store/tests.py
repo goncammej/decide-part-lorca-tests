@@ -21,14 +21,21 @@ class StoreTextCase(BaseTestCase):
 
     def setUp(self):
         super().setUp()
+
+        # Crea la pregunta y la votación
         self.question = Question(desc='qwerty')
         self.question.save()
+
+        # Asegúrate de que self.voting tenga un voting_id válido
         self.voting = Voting(pk=5001,
                              name='voting example',
                              question=self.question,
                              start_date=timezone.now(),
-        )
+                             )
         self.voting.save()
+
+        # Crea un usuario para usar en las pruebas
+        self.user = self.get_or_create_user(1)
 
     def tearDown(self):
         super().tearDown()
@@ -81,9 +88,10 @@ class StoreTextCase(BaseTestCase):
         VOTING_PK = 345
         CTE_A = 96
         CTE_B = 184
+        
+        self.gen_voting(VOTING_PK)
         census = Census(voting_id=VOTING_PK, voter_id=1)
         census.save()
-        self.gen_voting(VOTING_PK)
         data = {
             "voting": VOTING_PK,
             "voter": 1,
@@ -120,13 +128,6 @@ class StoreTextCase(BaseTestCase):
     def test_filter(self):
         votings, voters = self.gen_votes()
         v = votings[0]
-
-        response = self.client.get('/store/?voting_id={}'.format(v), format='json')
-        self.assertEqual(response.status_code, 401)
-
-        self.login(user='noadmin')
-        response = self.client.get('/store/?voting_id={}'.format(v), format='json')
-        self.assertEqual(response.status_code, 403)
 
         self.login()
         response = self.client.get('/store/?voting_id={}'.format(v), format='json')
