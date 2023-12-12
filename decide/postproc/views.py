@@ -27,6 +27,18 @@ class PostProcView(APIView):
 
         return Response(out)
     
+    def weight(self, options):
+        out = []
+
+        for opt in options:
+            out.append({
+                **opt,
+                'postproc': opt['votes_wights'],
+            });
+
+        out.sort(key=lambda x: -x['postproc'])
+        return Response(out)
+    
     def post(self, request):
         """
          * type: IDENTITY | EQUALITY | WEIGHT
@@ -49,6 +61,9 @@ class PostProcView(APIView):
         
         if t == 'TEXT':
             return self.text(text_votes)
+        
+        if t == 'WEIGHT':
+            return self.weight(opts)
         
 
         return Response({})

@@ -138,6 +138,34 @@
                             </button>
                         </div>
                     </div>
+
+                    <div v-else-if="voting.question.type === 'R'">
+                        {% comment %} Votación Ranking {% endcomment %}
+                        <div class="d-flex flex-wrap justify-content-center">
+                            <form v-for="opt in voting.question.options" :key="opt.number">
+                                <div class="form-check form-check-inline">
+                                    <input type="number" class="form-ranked-input" name="raking-question" min="1" max="{{maxOption}}">
+                                    <label class="form-check-label" :for="'q' + opt.number">[[ opt.option ]]</label>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="d-flex justify-content-center mt-3">
+                            <button class="btn btn-primary btn-lg" @click="decideSend">
+                                {{ 'Vote' }}
+                            </button>
+                        </div>
+                    </div>
+
+                    <div v-else-if="voting.question.type === 'Y'" class="d-flex justify-content-center mt-3">
+                        <!-- Votación 'Yes' o 'No' -->
+                        <button class="btn btn-success btn-lg me-3" @click="decideSend($event,'Si')">
+                            {{ 'Si' }}
+                        </button>
+                        <button class="btn btn-danger btn-lg" @click="decideSend($event,'No')">
+                            {{ 'No' }}
+                        </button>
+                    </div>
+
                     <div v-else-if="voting.question.type === 'M'" class="mb-3">
                         <!-- Votación Pregunta con múltiples opciones -->
                         <div >
@@ -152,7 +180,6 @@
                                         :checked="selectedOptions.includes(opt.number)"
                                         @change="toggleSelection(opt.number)">
                                     <label class="form-check-label" :for="'q' + opt.number">[[ opt.option ]]</label>
-
                                 </div>
                             </form>
                         </div>
@@ -349,6 +376,7 @@
                         var data = {
                             vote: {a: v.alpha.toString(), b: v.beta.toString()},
                             voting: this.voting.id,
+                            voting_type: "classic",
                             voter: this.user.id,
                             token: this.token
                         }
@@ -369,7 +397,6 @@
                         this.selected = selectedOption.number;
                         evt.preventDefault();
                         var v = this.decideEncrypt();
-                        console.log(v);
                         var data = {
                             vote: { a: v.alpha.toString(), b: v.beta.toString() },
                             voting: this.voting.id,
@@ -388,6 +415,7 @@
                                 this.successVote = false;
                                 this.showAlert("danger", '{% trans "Error: " %}' + error);
                             });
+
                     } else if (this.voting.question.type === 'T') {
                         var textAreaValue = document.getElementById('floatingTextarea2').value;
                         evt.preventDefault();
@@ -409,6 +437,35 @@
                             })
                             .catch(error => {
                                 this.successVote = false;
+                                this.showAlert("danger", '{% trans "Error: " %}' + error);
+                            });
+                    } else if (this.voting.question.type === 'R') {
+                        evt.preventDefault();
+                        var values = document.getElementsByClassName('form-ranked-input')
+                        var listValues = Array.prototype.slice.call(values).map(x => x.value)
+                        var check = this.checkVote(listValues)
+                        if (check.error) {
+                            this.showAlert("danger", '{% trans "Error: " %}' + check.msg);
+                            return
+                        }
+                        var vote = listValues.join('-')
+                        this.selected = this.stringToASCII(vote)
+                        var v = this.decideEncrypt();
+                        var data = {
+                            vote: {a: v.alpha.toString(), b: v.beta.toString()},
+                            voting: this.voting.id,
+                            voter: this.user.id,
+                            voting_type: 'preference',
+                            token: this.token,
+                        }
+                        this.postData("{% url "gateway" "store" "/" %}", data)
+                            .then(data => {
+                                this.successVote = true;
+                                this.alertShow = false;
+                                this.showAlert("success", '{% trans "Congratulations. Your vote has been sent" %}');
+                            })
+                            .catch(error => {
+                                this.succesVote = false;
                                 this.showAlert("danger", '{% trans "Error: " %}' + error);
                             });
                     } else {
@@ -441,6 +498,27 @@
                     this.alertLvl = lvl;
                     this.alertMsg = msg;
                     this.alertShow = true;
+                },
+                stringToASCII(value) {
+                  let result = '';
+                  for (let i = 0; i < value.length; i++) {
+                    let valueASCII = value.charCodeAt(i) + '';
+                    if (valueASCII.length <= 2) {
+                      valueASCII = valueASCII.length === 2 ? '0' + valueASCII: valueASCII
+                    }     
+                    result +=  valueASCII;
+                  }
+                  return result;
+                },
+                checkVote(v) {
+                  if (v.some(x => isNaN(parseInt(x)))) {
+                    return { error: true, msg: 'Se tienen que escoger la preferencia de todas las opciones'}
+                  }
+                  vSet = new Set(v)
+                  if (v.length !== vSet.size) {
+                    return { error: true, msg: 'No puede haber preferencias repetidas entre opciones'}
+                  }
+                  return { error: false, msg: ''}
                 }
             },
         }).mount('#app-booth')

@@ -7,12 +7,11 @@ from .models import Vote
 from base import mods
 
 def classic_store(request):
-
-  """ 
+  """
     * voting: id
     * voter: id
     * vote: { "a": int, "b": int }
-    * voting_type: "classic" ||  "yesno" || "comment"
+    * voting_type: "yesno" || "classic" || "comment" || "preference"
 
   """
   vid = request.data.get('voting')
@@ -31,9 +30,8 @@ def classic_store(request):
 
   if not vid or not uid or not vote:
       return status.HTTP_400_BAD_REQUEST
-    
-  # validating voter
 
+  # validating voter
   if request.auth:
       token = request.auth.key
   else:
@@ -47,9 +45,8 @@ def classic_store(request):
   perms = mods.get('census/{}'.format(vid), params={'voter_id': uid}, response=True)
   if perms.status_code == 401:
       return status.HTTP_401_UNAUTHORIZED
-  
-  a = vote.get("a")
 
+  a = vote.get("a")
   b = vote.get("b")
 
   defs = { "a": a, "b": b }

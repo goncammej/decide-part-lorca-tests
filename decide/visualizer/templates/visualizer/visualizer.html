@@ -44,7 +44,6 @@
             </div>
             <div v-else>    
                 <div v-if="voting.question.type === 'C' || voting.question.type === 'R' || voting.question.type === 'M'" class="mb-3">
-
                     <h2 class="heading">Results:</h2>
                     <table class="table table-bordered table-striped">
                         <thead>
@@ -63,22 +62,22 @@
                         </tbody>
                     </table>
                     <select id="chart-select" onchange="showChart()">
-                        <option value="bar-chart">Bar Chart</option>
+                        <option value="doughnut-chart-post">Doughnut Chart (Score)</option>
+                        <option value="doughnut-chart-votes">Doughnut Chart (Votes)</option>
                         <option value="polar-chart-post">Polar Chart (Score)</option>
                         <option value="polar-chart-votes">Polar Chart (Votes)</option>
                         <option value="radar-chart-post">Radar Chart (Score)</option>
                         <option value="radar-chart-votes">Radar Chart (Votes)</option>
-                        <option value="doughnut-chart-post">Doughnut Chart (Score)</option>
-                        <option value="doughnut-chart-votes">Doughnut Chart (Votes)</option>
+                        <option value="bar-chart">Bar Chart</option>
                     </select>
 
-                    <canvas id="bar-chart"></canvas>
+                    <canvas id="bar-chart" style="display:none"></canvas>
                     <canvas id="polar-chart-post" style="display:none"></canvas>
                     <canvas id="polar-chart-votes" style="display:none"></canvas>
                     <canvas id="radar-chart-votes" style="display:none"></canvas>
                     <canvas id="doughnut-chart-votes" style="display:none"></canvas>
                     <canvas id="radar-chart-post" style="display:none"></canvas>
-                    <canvas id="doughnut-chart-post" style="display:none"></canvas>
+                    <canvas id="doughnut-chart-post"></canvas>
                 </div>
                 <div v-else-if="voting.question.type === 'T'" class="d-flex justify-content-center mt-3">
                     <h3>Text Voting Results:</h3>
