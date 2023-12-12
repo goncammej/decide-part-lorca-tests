@@ -14,6 +14,6 @@ urlpatterns = [
     path('list_votings/<int:voting_id>/end/', end_voting, name='end_voting'),
     path('list_votings/<int:voting_id>/update/', update_voting, name='update_voting'),
     path('list_votings/<int:voting_id>/tally/', views.tally_view, name='tally_view'),
-    path('visualizer/<int:voting_id>/', VisualizerView.as_view(), name='visualizer'),
-     path('booth/<int:voting_id>/', BoothView.as_view(), name='booth'),
+   
+    path('booth/<int:voting_id>/', BoothView.as_view(), name='booth'),
 ]
