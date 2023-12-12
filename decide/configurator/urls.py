@@ -10,6 +10,11 @@ urlpatterns = [
         name="create_multiple_choice",
     ),
     path(
+        "create_preference/",
+        views.CreatePreferenceView.as_view(),
+        name="create_preference",
+    ),
+    path(
         "create_open_question/",
         views.CreateOpenQuestionView.as_view(),
         name="create_open_question",
