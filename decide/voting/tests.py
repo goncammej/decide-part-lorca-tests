@@ -4,7 +4,8 @@ from django.utils import timezone
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
-from django.test import TestCase, tag
+from django.test import TestCase
+from nose.tools import nottest
 
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -16,7 +17,6 @@ from mixnet.mixcrypt import ElGamal
 from mixnet.mixcrypt import MixCrypt
 from mixnet.models import Auth
 from voting.models import Voting, Question, QuestionOption, QuestionOptionRanked, QuestionOptionYesNo
-from datetime import datetime
 
 
 class VotingTestCase(BaseTestCase):
@@ -173,7 +173,7 @@ class VotingTestCase(BaseTestCase):
                 mods.post('store', json=data)
         return clear
 
-    @tag("slow")
+    @nottest
     def test_complete_voting(self):
         v = self.create_classic_voting()
         self.create_voters(v)
@@ -733,7 +733,7 @@ class QuestionTestCases(BaseTestCase):
         self.assertEqual(str(opt),
                          'You cannot create an option for a non-Classic or multiple choice question')
 
-@tag("api")
+@nottest
 class PostProcTest(TestCase):
     def setUp(self):
         super().setUp()
