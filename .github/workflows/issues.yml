@@ -1,0 +1,53 @@
+name: Create Issue on Workflow Failure
+
+on:
+  workflow_run:
+    workflows: ["Decide-Lorca application"]
+    types: [completed]
+
+jobs:
+  create-issue-on-failure:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion != 'success' }}
+
+    steps:
+      - name: Create Issue on Workflow Failure
+        id: create-issue
+        env:
+          GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
+
+        run: |
+          # Título y cuerpo de la issue
+          issue_title="Error in CI ${{ github.event.workflow.name }} - Decide "
+          issue_body="The workflow '${{ github.event.workflow.name }}' has failed and the PR cannot be merged. Don't forget to add the group label and assign a assignee."
+
+          # Agregar las etiquetas al cuerpo del JSON
+          labels='"labels": ["Error", "Medium"], '
+
+          # Crear la issue utilizando la API de GitHub y obtener el número de la issue creada
+          issue_number=$(curl -X POST \
+            -H "Authorization: token $GITHUB_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d '{'"$labels"' "title": "'"$issue_title"'", "body": "'"$issue_body"'"}' \
+            "https://api.github.com/repos/${{ github.repository }}/issues" | jq '.number')
+
+          echo "::set-output name=issue_number::$issue_number"
+
+      name: Add Issue to GitHub Project
+  if: steps.create-issue.outputs.issue_number != null
+  env:
+    GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
+
+  run: |
+    # Obtener el ID del proyecto "Incidents" dentro de la organización
+    project_id=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
+      "https://api.github.com/orgs/EGC-23-24/projects" | jq '.[] | select(.name == "Incidents") | .id')
+
+    # Agregar la issue creada al proyecto "Incidents" en la organización
+    curl -X POST \
+      -H "Authorization: token $GITHUB_TOKEN" \
+      -H "Accept: application/vnd.github.inertia-preview+json" \
+      -H "Content-Type: application/json" \
+      -d "{\"content_id\":${{ steps.create-issue.outputs.issue_number }},\"content_type\":\"Issue\"}" \
+      "https://api.github.com/projects/${project_id}/items"
+
