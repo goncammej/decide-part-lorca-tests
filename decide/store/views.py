@@ -1,4 +1,3 @@
-from django.utils import timezone
 from django.utils.dateparse import parse_datetime
 import django_filters.rest_framework
 from rest_framework import status
@@ -7,11 +6,13 @@ from rest_framework import generics
 
 from .models import Vote
 from .serializers import VoteSerializer
-from base import mods
 from base.perms import UserIsStaff
 from . import utils
 
 VOTING_TYPES = {
+  'preference': utils.classic_store,
+  'yesno': utils.classic_store,
+  'choices': utils.choices_store,
   'comment': utils.classic_store,
   'classic': utils.classic_store,
 }

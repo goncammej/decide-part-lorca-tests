@@ -26,7 +26,6 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('doc/', schema_view),
     path('gateway/', include('gateway.urls')),
-    path('authentication/',views.main, name='welcome'),
     path('social-auth/', include('social_django.urls', namespace='social'))
 ]
 
