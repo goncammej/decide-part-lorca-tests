@@ -25,14 +25,14 @@
                     {% if user.is_authenticated %}
 
                     <li class="nav-link">
-                        <a href="/authentication/logout-view" class="nav-link">logout</a>
+                        <a href="/authentication/logout-view" id="logout"class="nav-link">logout</a>
                     </li>
                     {% else %}
                     <li class="nav-link">
-                        <a href="/authentication/login-view" class="nav-link">signin</a>
+                        <a href="/authentication/login-view" id="signin"class="nav-link">signin</a>
                     </li>
                     <li class="nav-link">
-                        <a href="/authentication/register-view" class="nav-link">signup</a>
+                        <a href="/authentication/register-view" id="signup" class="nav-link">signup</a>
                     </li>
 
                     {% endif %}
