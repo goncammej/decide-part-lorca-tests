@@ -68,6 +68,10 @@ MODULES = [
     'store',
     'visualizer',
     'voting',
+<<<<<<< Updated upstream
+=======
+    
+>>>>>>> Stashed changes
 ]
 
 BASEURL = 'http://localhost:8000'

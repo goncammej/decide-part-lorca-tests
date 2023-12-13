@@ -11,6 +11,10 @@ MODULES = [
     'store',
     'visualizer',
     'voting',
+<<<<<<< Updated upstream
+=======
+   
+>>>>>>> Stashed changes
 ]
 BASEURL = 'http://localhost:8000'
 APIS = {
@@ -23,6 +27,10 @@ APIS = {
     'store': BASEURL,
     'visualizer': BASEURL,
     'voting': BASEURL,
+<<<<<<< Updated upstream
+=======
+    
+>>>>>>> Stashed changes
 }
 
 
