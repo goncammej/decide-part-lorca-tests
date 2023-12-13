@@ -15,7 +15,6 @@
 * Jímenez del Villar, Juan Antonio (juajimdel2@alum.us.es) <br>
 
 # Miembros del grupo decide-part-lorca-2
-(falta por poner correos)
 
 * Bernal Caunedo, Álvaro Jesús (alvarobc2412@gmail.com) <br>
 * Gónzalez Frías, Álvaro (alvgonfri@alum.us.es) <br>
@@ -26,13 +25,12 @@
 
 
 # Resumen reuniones
-incial en el pasillo, segunda discord reparto, tercera asignar tareas discord, cuarta dicord para las epicas, quinta pasillo para ver como ibamos, sexta en discord despues defensa
 
-* Total de reuniones: 6 reuniones
+* Total de reuniones: 7 reuniones
 * Total de reuniones presenciales: 2
-* Total de reuniones virtuales: 4
+* Total de reuniones virtuales: 5
 * Total de tiempo empleado en reuniones presenciales: 2 horas aproximadamente
-* Total de tiempo empleado en reuniones virtuales: 3 horas aproximadamente<br>
+* Total de tiempo empleado en reuniones virtuales: 4 horas y media aproximadamente<br>
 
 # Acta 2023-01
 
@@ -80,10 +78,16 @@ incial en el pasillo, segunda discord reparto, tercera asignar tareas discord, c
 2. Acuerdo 2023-06-02: Se acordó que dos miembros del quipo recibirán un aviso al no tener nada de su funcionalidad implementado.
 3. Acuerdo 2023-06-03: Se acordó que la aplicación será desplegada en docker y vagrant, aparte de onrender.
 
+# Acta 2023-07
+
+* Miembros: Todos los integrantes del grupo.
+### Acuerdos tomados: <br>
+1. Acuerdo 2023-07-01: Se decidió no implementar el tipo de votación "multiple questions" al considerar que su complejidad iba a requerir de un tiempo mayor al que se le podía dedicar al desarrollo de las tareas debido a la fecha de entrega.
+
 # Decisiones importantes 
 1. Configurar el repositorio remoto como un único repositorio para los dos grupos.
 2. Antes de aceptar una pull request, hay que comprobar los tests.
-3. Los encargados de revisar una pull request, son personas pertenecientes al grupo contrario de la persona que la realiza, en la medida de lo posible.
+3. Los encargados de revisar una pull request son dos personas, una perteneciente al grupo contrario de la persona que la realiza y otra perteneciente al mismo grupo, en la medida de lo posible.
 4. Se acordó que el despliegue se realizará de tres formas distintas: docker, vagrant y onrender.
 5. Se acordó que todos los comentarios, nombres de ramas y mensaje de commits serían en inglés.
 6. Se acordó una política de commits y de creación de ramas basada en GitFlow.
@@ -92,15 +96,16 @@ incial en el pasillo, segunda discord reparto, tercera asignar tareas discord, c
 9. Para gestionar las incidencias, usaremos GitHub Project. Para poder cerrar una incidencia, la rama tiene que estar mergeada a develop y debe citarse la incidencia resulta en la pull request correspondiente. Además, la pull request que resuelve dicha incidencia también tendrá que ser citada.
 
 # Tareas asignadas y horas imputadas
-* Gallardo Pelayo, Alejandro: Autenticación con redes sociales, implementación vista login y registro para usuarios, implementar distintos tipos de votación en visualizer y elaboración del diario del equipo. Tiempo: <br>
-* Medina Durán, Alejandro: Mostrar datos en tiempo real, mostrar datos en gráficas, implementar distintos tipos de votación en visualizer y elaboración del diario del equipo. Tiempo: <br>
-* López-Benjumea Novella, Alberto Miguel: Implementación del voto si/no. Tiempo: <br>
-* Campos Mejías, Gonzalo: Implementación de la interfaz de distintos tipos de votaciones, despliegue en vagrant y predefinir una fecha de cierre de la votación. Tiempo: <br>
-* Delgado Pallares, David: Gestión de la interfaz del censo y despliegue en docker. Tiempo:  <br>
-* Jímenez del Villar, Juan Antonio: Soportar los diferentes tipos de votaciones en el postprocesado. Tiempo: <br>
-* Bernal Caunedo, Álvaro Jesús: Interfaz de votación si/no, elaboración documento manual de git, votación subjetiva por cuadro de texto. Tiempo: <br>
-* Gónzalez Frías, Álvaro: Importación/exportación del censo, plantilla de incidencias e implementación de una vista de gestión de votaciones para el administrador. Tiempo: <br>
-* Martín Acuña, Joaquín: Elaboración documento manual de git, despliegue en onrender, integración continua, interfaz de votación por preferencia, votación subjetiva por cuadro de texto. Tiempo: <br>
-* García Berdejo, José María: Implementación del voto por preferencia. Tiempo: <br>
-* Benítez Ruis Díaz, Francisco Sebastían: Implementación de votación con varias preguntas. Tiempo: <br>
+En este apartado se recoge el tiempo empleado por cada persona del proyecto respecto al desarrollo de sus funcionalidades asignadas, aparte de este tiempo todos los miembros han invertido más horas en reuniones, solución de conflictos y errores relativos a la correción de pull requests.
+* Gallardo Pelayo, Alejandro: Autenticación con redes sociales, elaboración y corrección de los test de authentication, implementación vista login y registro para usuarios, elaboración del diario del equipo, automatización de releases en GitHub Actions y actualización del manual de gestión del repositorio. Tiempo: <br>
+* Medina Durán, Alejandro: Mostrar datos en tiempo real en visualizer, mostrar datos en gráficas en visualizer, implementar todos los tipos de votación en visualizer, elaboración y corrección de los test de visualizer, elaboración del diario del equipo y añadir al django.yml las instancias de redis y celery. Tiempo: <br>
+* López-Benjumea Novella, Alberto Miguel: Implementación del voto si/no en el módulo voting, elaboración de los test de yes/no del módulo voting, arreglar el tally en preference voting. Tiempo: <br>
+* Campos Mejías, Gonzalo: Implementación de la interfaz de multiple questions módulo booth (finalmente no integrado en la versión final del proyecto), configurar redis y celery, predefinir una fecha de cierre de la votación de forma asíncrona, refactorizar el booth de preference voting, lanzar la aplicación en Docker y generar documentación automática en GitHub Actions, realización de los test de redis y celery, elaboración de los test de multiple questions del módulo booth (finalmente no integrado en la versión final del proyecto). Tiempo: <br>
+* Delgado Pallares, David: Gestión de la interfaz del censo, elaboración de los test de Census (menos importar/exportar censo) y despliegue en Vagrant. Tiempo:  <br>
+* Jímenez del Villar, Juan Antonio: Soportar todos los tipos de votaciones en el postprocesado, solución de distintos errores e implementar nuevo sistema de encriptación en la mixnet. Tiempo: <br>
+* Bernal Caunedo, Álvaro Jesús: Impementación del comment questions en el módulo voting, interfaz de votación si/no del módulo voting, elaboración documento manual de git, implementación del booth del comment question, documento de gestión del repositorio. Tiempo: <br>
+* Gónzalez Frías, Álvaro: Importación/exportación del censo, elaboración de los test de importación/exportación del censo, plantilla de incidencias e implementación de una vista de gestión de votaciones para el administrador. Tiempo: <br>
+* Martín Acuña, Joaquín: Elaboración documento manual de git, despliegue en render, integración continua y configuración de GitHub Actions, implementación de todos los tipos de votación en el módulo store, interfaz de votación por preferencia en Booth, encriptar y desencriptar ascii en el postprocesado. Tiempo: <br>
+* García Berdejo, José María: Implementación del voto por preferencia en el módulo Voting, la página inicial y test de selenium de Voting. Tiempo: <br>
+* Benítez Ruis Díaz, Francisco Sebastían: Implementación de votación con varias preguntas en el módulo Voting(finalmente no integrado en la versión final del proyecto), implementación de multiple choice en Voting y Booth, permitir que un usuario pueda sobreescribir su voto en el Booth. Tiempo: <br>
 * García Ruíz, Manuel: Interfaz del configurador. Tiempo: <br>
