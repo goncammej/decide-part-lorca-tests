@@ -7,7 +7,7 @@
             <div>
                 {% if user.is_authenticated %}
                   
-                    <a class="btn btn-primary" href="/voting/list_votings">List Votings</a>
+                    <a class="btn btn-primary" id="listvoting" href="/voting/list_votings">List Votings</a>
                     
                     {% if user.is_superuser %}
                         <a class="btn btn-primary" href="/home/">Create Votings</a>
