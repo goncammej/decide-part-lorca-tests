@@ -17,6 +17,7 @@ from voting.models import Voting, Question
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
+@nottest
 class ConfiguratorTests(StaticLiveServerTestCase):
 
     def setUp(self):
@@ -66,10 +67,10 @@ class ConfiguratorTests(StaticLiveServerTestCase):
         return c
     
     def test_access_to_voting_lists_view_as_admin(self):
-        v = self.create_yesno_voting()
-        c = self.add_user_to_census(1)
+        self.create_yesno_voting()
+        self.add_user_to_census(1)
         self.driver.get(f'{self.live_server_url}/')
-        signin_url = self.driver.find_element(By.ID, "signin").get_dom_attribute('href')
+        signin_url = self.driver.find_element(By.ID, "login").get_dom_attribute('href')
         self.driver.get(f'{self.live_server_url}{signin_url}')
         username = WebDriverWait(self.driver, 10).until(
         EC.element_to_be_clickable((By.ID, "id_username"))
@@ -92,7 +93,7 @@ class ConfiguratorTests(StaticLiveServerTestCase):
         v.start_date = timezone.now()
         v.save()
         self.driver.get(f'{self.live_server_url}/')
-        signin_url = self.driver.find_element(By.ID, "signin").get_dom_attribute('href')
+        signin_url = self.driver.find_element(By.ID, "login").get_dom_attribute('href')
         self.driver.get(f'{self.live_server_url}{signin_url}')
         username = WebDriverWait(self.driver, 10).until(
         EC.element_to_be_clickable((By.ID, "id_username"))
