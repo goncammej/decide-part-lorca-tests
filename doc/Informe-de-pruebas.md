@@ -18,10 +18,11 @@
 Para nuestro proyecto hemos decidido implementar tipos diferentes pruebas en función del módulo al que pertenezcan. En concreto:
 - Voting: Pruebas de vistas dinámicas, estáticas, unitarias y de integración.
 - Booth: Pruebas de vistas dinámicas y de carga.
-- Store: 
-- Authentication: Pruebas de vistas dinámicas y 
+- Store: Pruebas de vistas estáticas y unitarias.
+- Authentication: Pruebas de vistas dinámicas y estáticas.
 - Census: Pruebas de vistas dinámicas, estáticas, unitarias y de integración.
-- Visualizer
+- Visualizer: Pruebas de vistas dinámicas.
+Además, consideramos importante comentar que debido a que Github Actions algunas veces no ejecuta correctamente las pruebas de vista, hemos decidido no ejecutarlas de forma automática, sino que se ejecutan de forma manual en el entorno de desarrollo. Se ha utilizado `@nottest` para que no se ejecuten de forma automática.
 
  <div id='id2'/>
 
@@ -68,7 +69,11 @@ Estas pruebas se centran en funciones o métodos específicos para asegurar que 
  <div id='id2.5'/>
 
 #### 2.5. Pruebas de carga
+Al igual que hemos visto en las prácticas, se han diseñado dos pruebas de carga, una para la votación de opción múltiple y otra para el censo. Para ver las pruebas de carga, acceda a la carpeta `loadtests` en el directorio raíz del proyecto. Para ejecutar las pruebas de carga, ejecute el siguiente comando:
+- **Prueba de carga de votación de múltiples opciones**
+- **Prueba de carga de censo**
+
  <div id='id3'/>
 
 ### 3. Técnica de Diseño de Casos de Prueba
-Los tests siguen una estrategia basada en casos de uso. Cada método de prueba simula un caso de uso específico (por ejemplo, acceso como administrador, usuario no administrador, inicio o detención de votaciones, etc.). La división por funcionalidades indica un enfoque modular en el diseño de casos de prueba.
+La mayoría de los tests siguen una estrategia basada en casos de uso. Cada método de prueba simula un caso de uso específico (por ejemplo, acceso como administrador, usuario no administrador, inicio o detención de votaciones, etc.). La división por funcionalidades indica un enfoque modular en el diseño de casos de prueba.
