@@ -233,6 +233,8 @@
     <script src="https://unpkg.com/bootstrap@5.2.2/dist/js/bootstrap.js"></script>
 
     <script>
+        var isAuthenticated = {{ user.is_authenticated|yesno:"true,false" }};
+        var username = "{{ user.username }}"
         const { createApp } = Vue
         var voting = {{voting|safe}};
         createApp({
@@ -241,13 +243,13 @@
                 return {
                     voting: voting,
                     selected: "",
-                    signup: true,
+                    signup: !isAuthenticated,
                     successVote: false,
                     alertShow: false,
                     alertMsg: "",
                     alertLvl: "info",
                     token: null,
-                    user: null,
+                    user: isAuthenticated ? { username: username } : null,
                     form: {
                         username: '',
                         password: ''
