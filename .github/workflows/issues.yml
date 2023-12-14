@@ -21,8 +21,14 @@ jobs:
           issue_title="Error in CI ${{ github.event.workflow.name }} - Decide"
           issue_body="The workflow '${{ github.event.workflow.name }}' has failed and the PR cannot be merged. Don't forget to add the group label and assign an assignee."
 
-          # Agregar las etiquetas al cuerpo del JSON
-          labels='"labels": ["Error", "Medium"]'
+          # Determinar la etiqueta basada en el GitHub.actor
+          if [[ "${{ github.actor }}" == "alblopnov" || "${{ github.actor }}" == "alejandromd" || "${{ github.actor }}" == "davdelpal1" || "${{ github.actor }}" == "goncammej" || "${{ github.actor }}" == "JuanAntonioJimenezdelVillar" || "${{ github.actor }}" == "Thealean28" ]]; then
+              labels='"labels": ["Error", "Medium", "lorca-1"]'
+          elif [[ "${{ github.actor }}" == "alvarobernal2412" || "${{ github.actor }}" == "josgarber6" || "${{ github.actor }}" == "alvgonfri" || "${{ github.actor }}" == "mangarrui" || "${{ github.actor }}" == "jmartinacu" || "${{ github.actor }}" == "sebasruii" ]]; then
+              labels='"labels": ["Error", "Medium", "lorca-2"]'
+          else
+              labels='"labels": ["Error", "Medium"]'
+          fi
 
           # Crear la issue utilizando la API de GitHub y asignarla al usuario que activó el flujo de trabajo
           issue_number=$(curl -X POST \
