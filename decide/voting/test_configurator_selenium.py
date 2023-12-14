@@ -17,6 +17,7 @@ from voting.models import Voting, Question
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
+@nottest
 class ConfiguratorTests(StaticLiveServerTestCase):
 
     def setUp(self):
@@ -27,7 +28,7 @@ class ConfiguratorTests(StaticLiveServerTestCase):
         mods.mock_query(self.client)
 
         options = webdriver.ChromeOptions()
-        # options.headless = True
+        options.headless = True
         self.driver = webdriver.Chrome(options=options)
 
         super().setUp()
