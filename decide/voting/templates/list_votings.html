@@ -48,7 +48,7 @@
                 <form method="post" action="{% url 'start_voting' voting.id %}">
                     {% csrf_token %}
                     <input type="hidden" name="voting_id" value="{{ voting.id }}" />
-                    <button type="submit" name="start_voting_button">📆 Start Date</button>
+                    <button type="submit" name="start_voting_button">📆 Start Voting</button>
                 </form>
             </button>                
                 <form method="post" action="{% url 'update_voting' voting.id %}">
@@ -72,7 +72,7 @@
             <form method="post" action="{% url 'end_voting' voting.id %}">
                 {% csrf_token %}
                 <input type="hidden" name="voting_id" value="{{ voting.id }}" />
-                <button type="submit" name="end_voting_button">📆 End Date</button>
+                <button type="submit" name="end_voting_button">📆 End Voting</button>
             </form>
             <form method="post" action="{% url 'update_voting' voting.id %}">
                 {% csrf_token %}
