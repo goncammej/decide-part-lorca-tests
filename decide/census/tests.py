@@ -9,12 +9,6 @@ from io import BytesIO
 from openpyxl import Workbook
 from django.core.files.uploadedfile import SimpleUploadedFile
 
-from selenium import webdriver
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.common.keys import Keys
-
 from .models import Census
 from voting.models import Voting, Question, QuestionOption
 from base.models import Auth

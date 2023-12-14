@@ -43,87 +43,87 @@ class CensusTest(StaticLiveServerTestCase):
         self.base.tearDown()
 
     def createCensusSuccess(self):
-        self.cleaner.get(self.live_server_url + "/admin/login/?next=/admin/")
-        self.cleaner.set_window_size(1280, 720)
+        self.driver.get(self.live_server_url + "/admin/login/?next=/admin/")
+        self.driver.set_window_size(1280, 720)
 
-        self.cleaner.find_element(By.ID, "id_username").click()
-        self.cleaner.find_element(By.ID, "id_username").send_keys("decide")
+        self.driver.find_element(By.ID, "id_username").click()
+        self.driver.find_element(By.ID, "id_username").send_keys("decide")
 
-        self.cleaner.find_element(By.ID, "id_password").click()
-        self.cleaner.find_element(By.ID, "id_password").send_keys("decide")
+        self.driver.find_element(By.ID, "id_password").click()
+        self.driver.find_element(By.ID, "id_password").send_keys("decide")
 
-        self.cleaner.find_element(By.ID, "id_password").send_keys("Keys.ENTER")
+        self.driver.find_element(By.ID, "id_password").send_keys("Keys.ENTER")
 
-        self.cleaner.get(self.live_server_url + "/admin/census/census/add")
+        self.driver.get(self.live_server_url + "/admin/census/census/add")
         now = datetime.now()
-        self.cleaner.find_element(By.ID, "id_voting_id").click()
-        self.cleaner.find_element(By.ID, "id_voting_id").send_keys(
+        self.driver.find_element(By.ID, "id_voting_id").click()
+        self.driver.find_element(By.ID, "id_voting_id").send_keys(
             now.strftime("%m%d%M%S")
         )
-        self.cleaner.find_element(By.ID, "id_voter_id").click()
-        self.cleaner.find_element(By.ID, "id_voter_id").send_keys(
+        self.driver.find_element(By.ID, "id_voter_id").click()
+        self.driver.find_element(By.ID, "id_voter_id").send_keys(
             now.strftime("%m%d%M%S")
         )
-        self.cleaner.find_element(By.NAME, "_save").click()
+        self.driver.find_element(By.NAME, "_save").click()
 
         self.assertTrue(
-            self.cleaner.current_url == self.live_server_url + "/admin/census/census"
+            self.driver.current_url == self.live_server_url + "/admin/census/census"
         )
 
     def createCensusEmptyError(self):
-        self.cleaner.get(self.live_server_url + "/admin/login/?next=/admin/")
-        self.cleaner.set_window_size(1280, 720)
+        self.driver.get(self.live_server_url + "/admin/login/?next=/admin/")
+        self.driver.set_window_size(1280, 720)
 
-        self.cleaner.find_element(By.ID, "id_username").click()
-        self.cleaner.find_element(By.ID, "id_username").send_keys("decide")
+        self.driver.find_element(By.ID, "id_username").click()
+        self.driver.find_element(By.ID, "id_username").send_keys("decide")
 
-        self.cleaner.find_element(By.ID, "id_password").click()
-        self.cleaner.find_element(By.ID, "id_password").send_keys("decide")
+        self.driver.find_element(By.ID, "id_password").click()
+        self.driver.find_element(By.ID, "id_password").send_keys("decide")
 
-        self.cleaner.find_element(By.ID, "id_password").send_keys("Keys.ENTER")
+        self.driver.find_element(By.ID, "id_password").send_keys("Keys.ENTER")
 
-        self.cleaner.get(self.live_server_url + "/admin/census/census/add")
+        self.driver.get(self.live_server_url + "/admin/census/census/add")
 
-        self.cleaner.find_element(By.NAME, "_save").click()
+        self.driver.find_element(By.NAME, "_save").click()
 
         self.assertTrue(
-            self.cleaner.find_element_by_xpath(
+            self.driver.find_element_by_xpath(
                 "/html/body/div/div[3]/div/div[1]/div/form/div/p"
             ).text
             == "Please correct the errors below."
         )
         self.assertTrue(
-            self.cleaner.current_url
+            self.driver.current_url
             == self.live_server_url + "/admin/census/census/add"
         )
 
     def createCensusValueError(self):
-        self.cleaner.get(self.live_server_url + "/admin/login/?next=/admin/")
-        self.cleaner.set_window_size(1280, 720)
+        self.driver.get(self.live_server_url + "/admin/login/?next=/admin/")
+        self.driver.set_window_size(1280, 720)
 
-        self.cleaner.find_element(By.ID, "id_username").click()
-        self.cleaner.find_element(By.ID, "id_username").send_keys("decide")
+        self.driver.find_element(By.ID, "id_username").click()
+        self.driver.find_element(By.ID, "id_username").send_keys("decide")
 
-        self.cleaner.find_element(By.ID, "id_password").click()
-        self.cleaner.find_element(By.ID, "id_password").send_keys("decide")
+        self.driver.find_element(By.ID, "id_password").click()
+        self.driver.find_element(By.ID, "id_password").send_keys("decide")
 
-        self.cleaner.find_element(By.ID, "id_password").send_keys("Keys.ENTER")
+        self.driver.find_element(By.ID, "id_password").send_keys("Keys.ENTER")
 
-        self.cleaner.get(self.live_server_url + "/admin/census/census/add")
+        self.driver.get(self.live_server_url + "/admin/census/census/add")
         now = datetime.now()
-        self.cleaner.find_element(By.ID, "id_voting_id").click()
-        self.cleaner.find_element(By.ID, "id_voting_id").send_keys("64654654654654")
-        self.cleaner.find_element(By.ID, "id_voter_id").click()
-        self.cleaner.find_element(By.ID, "id_voter_id").send_keys("64654654654654")
-        self.cleaner.find_element(By.NAME, "_save").click()
+        self.driver.find_element(By.ID, "id_voting_id").click()
+        self.driver.find_element(By.ID, "id_voting_id").send_keys("64654654654654")
+        self.driver.find_element(By.ID, "id_voter_id").click()
+        self.driver.find_element(By.ID, "id_voter_id").send_keys("64654654654654")
+        self.driver.find_element(By.NAME, "_save").click()
 
         self.assertTrue(
-            self.cleaner.find_element_by_xpath(
+            self.driver.find_element_by_xpath(
                 "/html/body/div/div[3]/div/div[1]/div/form/div/p"
             ).text
             == "Please correct the errors below."
         )
         self.assertTrue(
-            self.cleaner.current_url
+            self.driver.current_url
             == self.live_server_url + "/admin/census/census/add"
         )
