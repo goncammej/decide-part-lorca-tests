@@ -1,9 +1,6 @@
-import random
 from django.contrib.auth.models import User
-from django.test import Client, TestCase
 from django.conf import settings
 from django.urls import reverse
-from rest_framework.test import APIClient
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
 from openpyxl import load_workbook
 from io import BytesIO
@@ -12,15 +9,11 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.utils import timezone
 
 from selenium import webdriver
-from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.common.keys import Keys
 
 from .models import Census
 from voting.models import Voting, Question, QuestionOption
 from base.models import Auth
-from base import mods
 from base.tests import BaseTestCase
 from datetime import datetime
 
@@ -472,7 +465,7 @@ class CensusTestCase(BaseTestCase):
         Census.objects.all().delete()
 
         # Crear un votante
-        u, created = User.objects.get_or_create(username="testvoter")
+        u = User.objects.get_or_create(username="testvoter")
         u.is_active = True
         u.save()
 

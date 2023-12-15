@@ -1,17 +1,11 @@
-from typing import Any
-from django import http
 from django.db.utils import IntegrityError
 from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import render
-from django.views import View
 from django.views.generic.base import TemplateView
 from django.http import HttpResponse
 from django.http import HttpResponseRedirect
 from django.contrib import messages
 from django.urls import reverse
-from django.db import transaction
-from django.contrib.auth.decorators import user_passes_test
-from django.utils.decorators import method_decorator
 import openpyxl
 from openpyxl import Workbook
 from openpyxl.styles import PatternFill, Font, Alignment
@@ -20,7 +14,6 @@ from rest_framework.response import Response
 from rest_framework.status import (
     HTTP_201_CREATED as ST_201,
     HTTP_204_NO_CONTENT as ST_204,
-    HTTP_400_BAD_REQUEST as ST_400,
     HTTP_401_UNAUTHORIZED as ST_401,
     HTTP_409_CONFLICT as ST_409,
 )
@@ -29,7 +22,7 @@ from base.perms import UserIsStaff
 from .forms import CreationCensusForm
 from .models import Census
 from voting.models import Voting
-from openpyxl.styles import Border, Side, Alignment, Font, PatternFill
+from openpyxl.styles import Alignment, Font, PatternFill
 from django.shortcuts import redirect
 from django.core.exceptions import ValidationError
 from django.contrib.auth.models import User
