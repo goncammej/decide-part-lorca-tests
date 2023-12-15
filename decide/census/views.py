@@ -218,7 +218,6 @@ class CensusImportView(TemplateView):
             return HttpResponseRedirect("/")
         return super().dispatch(request, *args, **kwargs)
 
-    @transaction.atomic
     def post(self, request, *args, **kwargs):
         voting_id = request.POST.get("voting_id")
         voting = Voting.objects.get(id=voting_id)

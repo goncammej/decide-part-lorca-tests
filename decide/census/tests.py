@@ -26,7 +26,6 @@ from datetime import datetime
 
 
 class CensusTestCase(BaseTestCase):
-
     def setUp(self):
         # Crear una votación
         q = Question(desc="test question")
@@ -38,7 +37,7 @@ class CensusTestCase(BaseTestCase):
         v.save()
 
         # Crear un votante
-        u, created = User.objects.get_or_create(username='testvoter')
+        u, created = User.objects.get_or_create(username="testvoter")
         u.is_active = True
         u.save()
 
@@ -46,7 +45,7 @@ class CensusTestCase(BaseTestCase):
         self.census = Census.objects.create(voting_id=v.id, voter_id=u.id)
 
         super().setUp()
-    
+
     def test_create_census(self):
         # Crear una votación
         q = Question(desc="test question")
@@ -58,7 +57,7 @@ class CensusTestCase(BaseTestCase):
         v.save()
 
         # Crear un votante
-        u, created = User.objects.get_or_create(username='testvoter')
+        u, created = User.objects.get_or_create(username="testvoter")
         u.is_active = True
         u.save()
 
@@ -68,8 +67,8 @@ class CensusTestCase(BaseTestCase):
         # Comprobar que se ha creado correctamente
         self.assertEqual(census.voting_id, v.id)
         self.assertEqual(census.voter_id, u.id)
-        self.assertEqual(Census.objects.latest('id').voting_id, v.id)
-        self.assertEqual(Census.objects.latest('id').voter_id, u.id)
+        self.assertEqual(Census.objects.latest("id").voting_id, v.id)
+        self.assertEqual(Census.objects.latest("id").voter_id, u.id)
 
     def test_create_census_invalid_voting_id(self):
         # Crear una votación
@@ -82,7 +81,7 @@ class CensusTestCase(BaseTestCase):
         v.save()
 
         # Crear un votante
-        u, created = User.objects.get_or_create(username='testvoter')
+        u, created = User.objects.get_or_create(username="testvoter")
         u.is_active = True
         u.save()
 
@@ -102,7 +101,7 @@ class CensusTestCase(BaseTestCase):
         v.save()
 
         # Crear un votante
-        u, created = User.objects.get_or_create(username='testvoter')
+        u, created = User.objects.get_or_create(username="testvoter")
         u.is_active = True
         u.save()
 
@@ -114,7 +113,9 @@ class CensusTestCase(BaseTestCase):
     def test_create_census_invalid_voting_id_and_voter_id(self):
         with self.assertRaises(ValueError):
             # Attempt to create a census with an invalid voting_id and voter_id
-            census = Census.objects.create(voting_id="invalid_voting_id", voter_id="invalid_voter_id")
+            census = Census.objects.create(
+                voting_id="invalid_voting_id", voter_id="invalid_voter_id"
+            )
             census.full_clean()
 
     def test_delete_census(self):
@@ -131,24 +132,31 @@ class CensusTestCase(BaseTestCase):
         v.save()
 
         # Crear un votante
-        u, created = User.objects.get_or_create(username='testvoter')
+        u, created = User.objects.get_or_create(username="testvoter")
         u.is_active = True
         u.save()
-        
+
         # Create a Census object to delete
         census_to_delete = Census.objects.create(voting_id=v.id, voter_id=u.id)
 
         # Define the URL and the data
-        url = reverse('census_deleted')  # replace with your URL name
-        data = {'voting_id': census_to_delete.voting_id, 'voter_id': census_to_delete.voter_id}
+        url = reverse("census_deleted")  # replace with your URL name
+        data = {
+            "voting_id": census_to_delete.voting_id,
+            "voter_id": census_to_delete.voter_id,
+        }
 
         # Make the POST request
         response = self.client.post(url, data, follow=True)
 
         # Check the status code and the response data
         self.assertEqual(response.status_code, 200)
-        self.assertFalse(Census.objects.filter(voting_id=census_to_delete.voting_id, voter_id=census_to_delete.voter_id).exists())
-            
+        self.assertFalse(
+            Census.objects.filter(
+                voting_id=census_to_delete.voting_id, voter_id=census_to_delete.voter_id
+            ).exists()
+        )
+
     def test_delete_census_invalid_voting_id(self):
         # Crear una votación
         q = Question(desc="test question")
@@ -160,7 +168,7 @@ class CensusTestCase(BaseTestCase):
         v.save()
 
         # Crear un votante
-        u, created = User.objects.get_or_create(username='testvoter')
+        u, created = User.objects.get_or_create(username="testvoter")
         u.is_active = True
         u.save()
 
@@ -168,7 +176,7 @@ class CensusTestCase(BaseTestCase):
             # Attempt to delete a census with an invalid voting_id
             census = Census.objects.create(voting_id="invalid_voting_id", voter_id=u.id)
             census.full_clean()
-    
+
     def test_delete_census_invalid_voter_id(self):
         # Crear una votación
         q = Question(desc="test question")
@@ -180,7 +188,7 @@ class CensusTestCase(BaseTestCase):
         v.save()
 
         # Crear un votante
-        u, created = User.objects.get_or_create(username='testvoter')
+        u, created = User.objects.get_or_create(username="testvoter")
         u.is_active = True
         u.save()
 
@@ -188,11 +196,13 @@ class CensusTestCase(BaseTestCase):
             # Attempt to delete a census with an invalid voter_id
             census = Census.objects.create(voting_id=v.id, voter_id="invalid_voter_id")
             census.full_clean()
-    
+
     def test_delete_census_invalid_voting_id_and_voter_id(self):
         with self.assertRaises(ValueError):
             # Attempt to delete a census with an invalid voting_id and voter_id
-            census = Census.objects.create(voting_id="invalid_voting_id", voter_id="invalid_voter_id")
+            census = Census.objects.create(
+                voting_id="invalid_voting_id", voter_id="invalid_voter_id"
+            )
             census.full_clean()
 
     def test_list_census(self):
@@ -200,7 +210,7 @@ class CensusTestCase(BaseTestCase):
         Census.objects.all().delete()
 
         # Crear un votante
-        u, created = User.objects.get_or_create(username='testvoter')
+        u, created = User.objects.get_or_create(username="testvoter")
         u.is_active = True
         u.save()
 
@@ -218,7 +228,7 @@ class CensusTestCase(BaseTestCase):
         census.save()
 
         # Define the URL and the data
-        url = reverse('census_list')
+        url = reverse("census_list")
 
         # Make the POST request
         response = self.client.get(url, follow=True)
@@ -227,8 +237,8 @@ class CensusTestCase(BaseTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(Census.objects.count(), 1)
         # Comprobar que el voting_id del objeto Census es el correcto
-        self.assertEqual(Census.objects.latest('id').voting_id, v.id)
-        self.assertEqual(Census.objects.latest('id').voter_id, u.id)
+        self.assertEqual(Census.objects.latest("id").voting_id, v.id)
+        self.assertEqual(Census.objects.latest("id").voter_id, u.id)
 
     def test_list_census_invalid_voting_id(self):
         # Crear una votación
@@ -241,7 +251,7 @@ class CensusTestCase(BaseTestCase):
         v.save()
 
         # Crear un votante
-        u, created = User.objects.get_or_create(username='testvoter')
+        u, created = User.objects.get_or_create(username="testvoter")
         u.is_active = True
         u.save()
 
@@ -249,7 +259,7 @@ class CensusTestCase(BaseTestCase):
             # Attempt to list a census with an invalid voting_id
             census = Census.objects.create(voting_id="invalid_voting_id", voter_id=u.id)
             census.full_clean()
-    
+
     def test_list_census_invalid_voter_id(self):
         # Crear una votación
         q = Question(desc="test question")
@@ -261,7 +271,7 @@ class CensusTestCase(BaseTestCase):
         v.save()
 
         # Crear un votante
-        u, created = User.objects.get_or_create(username='testvoter')
+        u, created = User.objects.get_or_create(username="testvoter")
         u.is_active = True
         u.save()
 
@@ -273,7 +283,9 @@ class CensusTestCase(BaseTestCase):
     def test_list_census_invalid_voting_id_and_voter_id(self):
         with self.assertRaises(ValueError):
             # Attempt to list a census with an invalid voting_id and voter_id
-            census = Census.objects.create(voting_id="invalid_voting_id", voter_id="invalid_voter_id")
+            census = Census.objects.create(
+                voting_id="invalid_voting_id", voter_id="invalid_voter_id"
+            )
             census.full_clean()
 
     def test_get_census(self):
@@ -281,7 +293,7 @@ class CensusTestCase(BaseTestCase):
         Census.objects.all().delete()
 
         # Crear un votante
-        u, created = User.objects.get_or_create(username='testvoter')
+        u, created = User.objects.get_or_create(username="testvoter")
         u.is_active = True
         u.save()
 
@@ -299,17 +311,17 @@ class CensusTestCase(BaseTestCase):
         census.save()
 
         # Define the URL and the data
-        url = reverse('census_details')
+        url = reverse("census_details")
 
-        data = {'id': census.id}
+        data = {"id": census.id}
         # Make the POST request
         response = self.client.get(url, data)
 
         # Check the status code and the response data
         self.assertEqual(response.status_code, 200)
         self.assertEqual(Census.objects.count(), 1)
-        self.assertEqual(Census.objects.latest('id').voting_id, v.id)
-        self.assertEqual(Census.objects.latest('id').voter_id, u.id)
+        self.assertEqual(Census.objects.latest("id").voting_id, v.id)
+        self.assertEqual(Census.objects.latest("id").voter_id, u.id)
 
     def test_get_census_invalid_voting_id(self):
         # Crear una votación
@@ -322,7 +334,7 @@ class CensusTestCase(BaseTestCase):
         v.save()
 
         # Crear un votante
-        u, created = User.objects.get_or_create(username='testvoter')
+        u, created = User.objects.get_or_create(username="testvoter")
         u.is_active = True
         u.save()
 
@@ -330,7 +342,7 @@ class CensusTestCase(BaseTestCase):
             # Attempt to get a census with an invalid voting_id
             census = Census.objects.create(voting_id="invalid_voting_id", voter_id=u.id)
             census.full_clean()
-    
+
     def test_get_census_invalid_voter_id(self):
         # Crear una votación
         q = Question(desc="test question")
@@ -342,7 +354,7 @@ class CensusTestCase(BaseTestCase):
         v.save()
 
         # Crear un votante
-        u, created = User.objects.get_or_create(username='testvoter')
+        u, created = User.objects.get_or_create(username="testvoter")
         u.is_active = True
         u.save()
 
@@ -354,10 +366,10 @@ class CensusTestCase(BaseTestCase):
     def test_get_census_invalid_voting_id_and_voter_id(self):
         with self.assertRaises(ValueError):
             # Attempt to get a census with an invalid voting_id and voter_id
-            census = Census.objects.create(voting_id="invalid_voting_id", voter_id="invalid_voter_id")
+            census = Census.objects.create(
+                voting_id="invalid_voting_id", voter_id="invalid_voter_id"
+            )
             census.full_clean()
-
-            
 
     def tearDown(self):
         super().tearDown()
@@ -365,7 +377,7 @@ class CensusTestCase(BaseTestCase):
 
     def test_check_vote_permissions(self):
         # Crear un votante
-        u, created = User.objects.get_or_create(username='testvoter')
+        u, created = User.objects.get_or_create(username="testvoter")
         u.is_active = True
         u.save()
 
@@ -399,7 +411,7 @@ class CensusTestCase(BaseTestCase):
         v.save()
 
         # Crear un votante
-        u, created = User.objects.get_or_create(username='testvoter')
+        u, created = User.objects.get_or_create(username="testvoter")
         u.is_active = True
         u.save()
 
@@ -422,7 +434,7 @@ class CensusTestCase(BaseTestCase):
         v.save()
 
         # Crear un votante
-        u, created = User.objects.get_or_create(username='testvoter')
+        u, created = User.objects.get_or_create(username="testvoter")
         u.is_active = True
         u.save()
 
@@ -445,7 +457,7 @@ class CensusTestCase(BaseTestCase):
         v.save()
 
         # Crear un votante
-        u, created = User.objects.get_or_create(username='testvoter2')
+        u, created = User.objects.get_or_create(username="testvoter2")
         u.is_active = True
         u.save()
 
@@ -453,14 +465,14 @@ class CensusTestCase(BaseTestCase):
         data = {"voting_id": v.id, "voters": [u.id]}
         response = self.client.post("/census/", data, format="json")
         self.assertEqual(response.status_code, 201)
-        self.assertEqual(len(data.get("voters")), Census.objects.count()-1)
+        self.assertEqual(len(data.get("voters")), Census.objects.count() - 1)
 
     def test_destroy_voter(self):
         # Eliminar todos los objetos Census existentes
         Census.objects.all().delete()
 
         # Crear un votante
-        u, created = User.objects.get_or_create(username='testvoter')
+        u, created = User.objects.get_or_create(username="testvoter")
         u.is_active = True
         u.save()
 
@@ -481,7 +493,10 @@ class CensusTestCase(BaseTestCase):
         deletion = census_to_delete.delete()
 
         self.assertEqual(deletion[0], 1)  # Comprobar que se eliminó un objeto
-        self.assertEqual(0, Census.objects.count())  # Comprobar que no hay objetos Census
+        self.assertEqual(
+            0, Census.objects.count()
+        )  # Comprobar que no hay objetos Census
+
 
 class CensusTest(StaticLiveServerTestCase):
     def setUp(self):
@@ -609,8 +624,10 @@ class CensusExportViewTest(BaseTestCase):
 
         return v
 
-    def test_census_export_view(self):
+    def test_census_export_view_for_admin(self):
         self.create_voting()
+
+        self.client.force_login(User.objects.get(username="admin"))
 
         url = reverse("export_census")
 
@@ -623,6 +640,16 @@ class CensusExportViewTest(BaseTestCase):
         self.assertEqual(votings.count(), Voting.objects.count())
 
         self.assertTemplateUsed(response, "census/export_census.html")
+
+    def test_census_export_view_for_non_admin(self):
+        self.create_voting()
+
+        self.client.force_login(User.objects.get(username="noadmin"))
+
+        url = reverse("export_census")
+
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 302)
 
 
 class ExportCensusTest(BaseTestCase):
@@ -687,10 +714,12 @@ class ExportCensusTest(BaseTestCase):
             self.assertEqual(worksheet[f"B{i}"].value, row.voter_id)
 
 
-
 class CensusImportViewTest(BaseTestCase):
     def setUp(self):
         super().setUp()
+        user = User(username="test")
+        user.set_password("test")
+        user.save()
 
     def create_voting(self):
         q = Question(desc="test question")
@@ -715,17 +744,22 @@ class CensusImportViewTest(BaseTestCase):
         v.start_date = timezone.now()
         v.save()
 
+        user1 = User.objects.get(username="noadmin")
+        user2 = User.objects.get(username="test")
+
         workbook = Workbook()
         sheet = workbook.active
         sheet.append(["Voter ID"])
-        sheet.append([1])
-        sheet.append([2])
+        sheet.append([user1.id])
+        sheet.append([user2.id])
 
         file_buffer = BytesIO()
         workbook.save(file_buffer)
         file_buffer.seek(0)
 
         excel_file = SimpleUploadedFile("census.xlsx", file_buffer.read())
+
+        self.client.force_login(User.objects.get(username="admin"))
 
         url = reverse("import_census")
 
@@ -738,9 +772,9 @@ class CensusImportViewTest(BaseTestCase):
         census_data = Census.objects.all()
         self.assertEqual(census_data.count(), 2)
         self.assertEqual(census_data[0].voting_id, v.id)
-        self.assertEqual(census_data[0].voter_id, 1)
+        self.assertEqual(census_data[0].voter_id, user1.id)
         self.assertEqual(census_data[1].voting_id, v.id)
-        self.assertEqual(census_data[1].voter_id, 2)
+        self.assertEqual(census_data[1].voter_id, user2.id)
 
         messages = list(response.context["messages"])
         self.assertEqual(len(messages), 1)
@@ -763,6 +797,8 @@ class CensusImportViewTest(BaseTestCase):
 
         excel_file = SimpleUploadedFile("census.xlsx", file_buffer.read())
 
+        self.client.force_login(User.objects.get(username="admin"))
+
         url = reverse("import_census")
 
         response = self.client.post(
@@ -781,6 +817,8 @@ class CensusImportViewTest(BaseTestCase):
         v.start_date = timezone.now()
         v.save()
 
+        self.client.force_login(User.objects.get(username="admin"))
+
         url = reverse("import_census")
 
         response = self.client.post(url, {"voting_id": v.id}, follow=True)
@@ -797,6 +835,8 @@ class CensusImportViewTest(BaseTestCase):
         v.start_date = timezone.now()
         v.end_date = timezone.now()
         v.save()
+
+        self.client.force_login(User.objects.get(username="admin"))
 
         url = reverse("import_census")
 
@@ -824,6 +864,8 @@ class CensusImportViewTest(BaseTestCase):
 
         excel_file = SimpleUploadedFile("census.xlsx", file_buffer.read())
 
+        self.client.force_login(User.objects.get(username="admin"))
+
         url = reverse("import_census")
 
         response = self.client.post(
@@ -835,3 +877,23 @@ class CensusImportViewTest(BaseTestCase):
         messages = list(response.context["messages"])
         self.assertEqual(len(messages), 1)
         self.assertEqual(str(messages[0]), "Voting should be started first!")
+
+    def test_census_import_view_not_admin(self):
+        v = self.create_voting()
+        v.create_pubkey()
+        v.start_date = timezone.now()
+        v.save()
+
+        self.client.force_login(User.objects.get(username="noadmin"))
+
+        url = reverse("import_census")
+
+        response = self.client.post(
+            url, {"file": "test", "voting_id": v.id}, follow=True
+        )
+
+        self.assertEqual(response.status_code, 200)
+
+        messages = list(response.context["messages"])
+        self.assertEqual(len(messages), 1)
+        self.assertEqual(str(messages[0]), "You must be an admin to access this page!")
