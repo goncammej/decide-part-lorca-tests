@@ -465,7 +465,8 @@ class CensusTestCase(BaseTestCase):
         Census.objects.all().delete()
 
         # Crear un votante
-        u = User.objects.get_or_create(username="testvoter")
+        u, created = User.objects.get_or_create(username="testvoter")
+        u.is_active = True
         u.save()
 
         # Crear una votación
