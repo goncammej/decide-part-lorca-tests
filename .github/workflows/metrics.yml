@@ -1,0 +1,85 @@
+name: Generate and Publish Metrics
+
+on:
+  push:
+    branches:
+      - develop
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Set up Environment
+        run: |
+          sudo apt-get update
+          sudo apt-get install jq
+          sudo apt-get install git
+          git config --global --add safe.directory /github/workspace
+
+      - name: Run Metrics Script
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO_OWNER: ${{ github.repository_owner }}
+          REPO_NAME: ${{ github.event.repository.name }}
+        run: |
+          #!/bin/bash
+
+          # Function to get commit count per contributor
+          function get_commit_count() {
+              contributor=$1
+              commit_count=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
+                  "https://api.github.com/repos/$REPO_OWNER/$REPO_NAME/commits?author=$contributor" | jq length)
+              echo "$contributor, Commits: $commit_count"
+          }
+
+          # Function to get LOC changes per contributor
+          function get_loc_changes() {
+              contributor=$1
+              loc=$(git log --author="$contributor" --pretty=tformat: --numstat \
+                    | awk '{added+=$1; deleted+=$2} END {print "added lines: " added ", deleted lines: " deleted}')
+              echo "$contributor, LOC: $loc"
+          }
+
+          # Function to get issue count per contributor
+          function get_issue_count() {
+              contributor=$1
+              issue_count=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
+                  "https://api.github.com/search/issues?q=repo:$REPO_OWNER/$REPO_NAME+type:issue+assignee:$contributor" \
+                  | jq '.total_count')
+              echo "$contributor, Issues: $issue_count"
+          }
+
+          # Function to get PR comment count per contributor
+          function get_pr_comment_count() {
+              contributor=$1
+              comment_count=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
+                  "https://api.github.com/search/issues?q=repo:$REPO_OWNER/$REPO_NAME+type:pr+comments:>=1+involves:$contributor" \
+                  | jq '.items | .[] | .comments_url' | xargs -I {} curl -s -H "Authorization: token $GITHUB_TOKEN" {} | jq -s length)
+              echo "$contributor, PR Comments: $comment_count"
+          }
+
+          # Get list of contributors
+          contributors=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
+              "https://api.github.com/repos/$REPO_OWNER/$REPO_NAME/contributors" | jq -r '.[].login')
+
+          # Gather and print all metrics per contributor
+          for contributor in $contributors; do
+              commits=$(get_commit_count "$contributor")
+              loc=$(get_loc_changes "$contributor")
+              issues=$(get_issue_count "$contributor")
+              comments=$(get_pr_comment_count "$contributor")
+              echo "$contributor: $commits, $loc, $issues, $comments" >> metrics.txt
+          done
+
+          # Generate a simple HTML file
+          echo "<html><body><h1>Repository Metrics</h1><pre>$(cat metrics.txt)</pre></body></html>" > metrics.html
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: .
