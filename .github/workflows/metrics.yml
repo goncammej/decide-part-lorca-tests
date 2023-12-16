@@ -3,7 +3,7 @@ name: Generate and Publish Metrics
 on:
   push:
     branches:
-      - develop
+      - main
 
 jobs:
   build:
@@ -47,10 +47,6 @@ jobs:
               echo "${results[@]}"
           }
 
-          # Fetch all branches
-          branches_json=$(fetch_with_pagination "https://api.github.com/repos/$REPO_OWNER/$REPO_NAME/branches")
-          branches=$(echo "$branches_json" | jq -r '.[] | .name')
-
           # Fetch all contributors
           contributors_json=$(fetch_with_pagination "https://api.github.com/repos/$REPO_OWNER/$REPO_NAME/contributors")
           contributors=$(echo "$contributors_json" | jq -r '.[] | .login')
@@ -60,12 +56,10 @@ jobs:
 
           # Loop through each contributor
           for contributor in $contributors; do
-              # Aggregate commits across all branches
-              for branch in $branches; do
-                  commits=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
-                      "https://api.github.com/repos/$REPO_OWNER/$REPO_NAME/commits?sha=$branch&author=$contributor" | jq length)
-                  total_commits[$contributor]=$((${total_commits[$contributor]:-0} + commits))
-              done
+              # Aggregate commits
+              commits=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
+                  "https://api.github.com/search/commits?q=repo:$REPO_OWNER/$REPO_NAME+author:$contributor" | jq '.total_count')
+              total_commits[$contributor]=$commits
 
               # Aggregate LOC (lines of code)
               # Note: This part is highly dependent on your repository and might need adjustments.
