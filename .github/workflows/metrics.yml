@@ -28,12 +28,19 @@ jobs:
         run: |
           #!/bin/bash
 
-          # Function to get commit count per contributor
+          # Function to get branches
+          function get_branches() {
+              curl -s -H "Authorization: token $GITHUB_TOKEN" \
+                  "https://api.github.com/repos/$REPO_OWNER/$REPO_NAME/branches" | jq -r '.[].name'
+          }
+
+          # Function to get commits count per contributor in a branch
           function get_commit_count() {
-              contributor=$1
+              branch=$1
+              contributor=$2
               commit_count=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
-                  "https://api.github.com/repos/$REPO_OWNER/$REPO_NAME/commits?author=$contributor" | jq length)
-              echo "$contributor, Commits: $commit_count"
+                  "https://api.github.com/repos/$REPO_OWNER/$REPO_NAME/commits?sha=$branch&author=$contributor" | jq length)
+              echo "$commit_count"
           }
 
           # Function to get LOC changes per contributor
@@ -41,7 +48,7 @@ jobs:
               contributor=$1
               loc=$(git log --author="$contributor" --pretty=tformat: --numstat \
                     | awk '{added+=$1; deleted+=$2} END {print "added lines: " added ", deleted lines: " deleted}')
-              echo "$contributor, LOC: $loc"
+              echo "$loc"
           }
 
           # Function to get issue count per contributor
@@ -50,7 +57,7 @@ jobs:
               issue_count=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
                   "https://api.github.com/search/issues?q=repo:$REPO_OWNER/$REPO_NAME+type:issue+assignee:$contributor" \
                   | jq '.total_count')
-              echo "$contributor, Issues: $issue_count"
+              echo "$issue_count"
           }
 
           # Function to get PR comment count per contributor
@@ -59,21 +66,54 @@ jobs:
               comment_count=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
                   "https://api.github.com/search/issues?q=repo:$REPO_OWNER/$REPO_NAME+type:pr+comments:>=1+involves:$contributor" \
                   | jq '.items | .[] | .comments_url' | xargs -I {} curl -s -H "Authorization: token $GITHUB_TOKEN" {} | jq -s length)
-              echo "$contributor, PR Comments: $comment_count"
+              echo "$comment_count"
           }
+
+          # Get list of branches
+          branches=$(get_branches)
 
           # Get list of contributors
           contributors=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
               "https://api.github.com/repos/$REPO_OWNER/$REPO_NAME/contributors" | jq -r '.[].login')
 
-          # Gather and print all metrics per contributor
+          # Initialize associative arrays for storing total metrics per contributor
+          declare -A total_commits total_loc total_issues total_comments
+
+          # Loop through each branch and contributor to aggregate metrics
+          for branch in $branches; do
+              for contributor in $contributors; do
+                  # Aggregate commits
+                  commit_count=$(get_commit_count "$branch" "$contributor")
+                  total_commits[$contributor]=$((${total_commits[$contributor]:-0} + $commit_count))
+
+                  # Aggregate LOC - only once as it counts across the whole repo history
+                  if [[ "$branch" == "main" ]]; then
+                      loc=$(get_loc_changes "$contributor")
+                      total_loc[$contributor]=$loc
+                  fi
+
+                  # Aggregate issues - only once as it's not branch specific
+                  if [[ "$branch" == "main" ]]; then
+                      issue_count=$(get_issue_count "$contributor")
+                      total_issues[$contributor]=$issue_count
+                  fi
+
+                  # Aggregate comments - only once as it's not branch specific
+                  if [[ "$branch" == "main" ]]; then
+                      comment_count=$(get_pr_comment_count "$contributor")
+                      total_comments[$contributor]=$comment_count
+                  fi
+              done
+          done
+
+          # Generate metrics.html with aggregated data
           echo "<html><body><h1>Repository Metrics</h1><pre>" > metrics.html
-          for contributor in $contributors; do
-              commits=$(get_commit_count "$contributor")
-              loc=$(get_loc_changes "$contributor")
-              issues=$(get_issue_count "$contributor")
-              comments=$(get_pr_comment_count "$contributor")
-              echo "$contributor: $commits, $loc, $issues, $comments<br>" >> metrics.html
+          for contributor in "${!total_commits[@]}"; do
+              commits=${total_commits[$contributor]}
+              loc=${total_loc[$contributor]}
+              issues=${total_issues[$contributor]}
+              comments=${total_comments[$contributor]}
+              echo "$contributor: Commits: $commits, LOC: $loc, Issues: $issues, Comments: $comments<br>" >> metrics.html
           done
           echo "</pre></body></html>" >> metrics.html
 
