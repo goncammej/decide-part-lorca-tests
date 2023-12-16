@@ -19,7 +19,9 @@ class StartedFilter(SimpleListFilter):
         if self.value() == 'S':
             return queryset.exclude(start_date__isnull=True)
         if self.value() == 'R':
-            return queryset.exclude(start_date__isnull=True).filter(end_date__isnull=True)
+            return queryset.exclude(
+                start_date__isnull=True).filter(
+                end_date__isnull=True)
         if self.value() == 'F':
             return queryset.exclude(end_date__isnull=True)
         else:

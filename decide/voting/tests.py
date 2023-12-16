@@ -60,13 +60,14 @@ class VotingTestCase(BaseTestCase):
         q = Question(desc='test question', type='C')
         q.save()
         for i in range(5):
-            opt = QuestionOption(question=q, option='option {}'.format(i+1))
+            opt = QuestionOption(question=q, option='option {}'.format(i + 1))
             opt.save()
         v = Voting(name='test voting', question=q)
         v.save()
 
-        a, _ = Auth.objects.get_or_create(url=settings.BASEURL,
-                                          defaults={'me': True, 'name': 'test auth'})
+        a, _ = Auth.objects.get_or_create(
+            url=settings.BASEURL, defaults={
+                'me': True, 'name': 'test auth'})
         a.save()
         v.auths.add(a)
 
@@ -77,7 +78,7 @@ class VotingTestCase(BaseTestCase):
         q.save()
         for i in range(5):
             opt = QuestionOptionRanked(
-                question=q, option='option {}'.format(i+1))
+                question=q, option='option {}'.format(i + 1))
             opt.save()
         v = Voting(name='test ranked voting', question=q)
         v.save()
@@ -94,7 +95,7 @@ class VotingTestCase(BaseTestCase):
         q.save()
         for i in range(5):
             opt = QuestionOptionYesNo(
-                question=q, option='option {}'.format(i+1))
+                question=q, option='option {}'.format(i + 1))
             opt.save()
         v = Voting(name='test Yes/No voting', question=q)
         v.save()
@@ -110,13 +111,14 @@ class VotingTestCase(BaseTestCase):
         q = Question(desc='test multiple choice question', type='M')
         q.save()
         for i in range(5):
-            opt = QuestionOption(question=q, option='option {}'.format(i+1))
+            opt = QuestionOption(question=q, option='option {}'.format(i + 1))
             opt.save()
         v = Voting(name='test voting', question=q)
         v.save()
 
-        a, _ = Auth.objects.get_or_create(url=settings.BASEURL,
-                                          defaults={'me': True, 'name': 'test auth'})
+        a, _ = Auth.objects.get_or_create(
+            url=settings.BASEURL, defaults={
+                'me': True, 'name': 'test auth'})
         a.save()
         v.auths.add(a)
 
@@ -187,8 +189,7 @@ class VotingTestCase(BaseTestCase):
         self.login()  # set token
         v.tally_votes(self.token)
 
-        tally = v.tally
-        tally.sort()
+        tally = sorted(v.tally)
         tally = {k: len(list(x)) for k, x in itertools.groupby(tally)}
 
         for q in v.question.options.all():
@@ -262,8 +263,7 @@ class VotingTestCase(BaseTestCase):
         self.login()  # set token
         v.tally_votes(self.token)
 
-        tally = v.tally
-        tally.sort()
+        tally = sorted(v.tally)
         tally = {k: len(list(x)) for k, x in itertools.groupby(tally)}
 
         for q in v.question.options.all():
@@ -322,8 +322,7 @@ class VotingTestCase(BaseTestCase):
         self.login()
         v.tally_votes(self.token)
 
-        tally = v.tally
-        tally.sort()
+        tally = sorted(v.tally)
         tally = {k: len(list(x)) for k, x in itertools.groupby(tally)}
 
         for q in v.question.options.all():
@@ -517,7 +516,7 @@ class QuestionTestCases(BaseTestCase):
         super().tearDown()
 
     def createClassicQuestionSuccess(self):
-        self.cleaner.get(self.live_server_url+"/admin/login/?next=/admin/")
+        self.cleaner.get(self.live_server_url + "/admin/login/?next=/admin/")
         self.cleaner.set_window_size(1280, 720)
 
     def test_question_to_string(self):
@@ -537,14 +536,16 @@ class QuestionTestCases(BaseTestCase):
     def test_question_option_ranked_error_str(self):
         q = Question(desc='test question', type='C')
         opt = QuestionOptionRanked(number=1, option='test option', question=q)
-        self.assertEqual(str(opt),
-                         'You cannot create a ranked option for a non-ranked question')
+        self.assertEqual(
+            str(opt),
+            'You cannot create a ranked option for a non-ranked question')
 
     def test_question_option_error_str(self):
         q = Question(desc='test question', type='R')
         opt = QuestionOption(number=1, option='test option', question=q)
-        self.assertEqual(str(opt),
-                         'You cannot create an option for a non-Classic or multiple choice question')
+        self.assertEqual(
+            str(opt),
+            'You cannot create an option for a non-Classic or multiple choice question')
 
     def test_question_option_yesno_to_string(self):
         q = Question(desc='test question', type='Y')
@@ -554,14 +555,16 @@ class QuestionTestCases(BaseTestCase):
     def test_question_option_yesno_error_str(self):
         q = Question(desc='test question', type='C')
         opt = QuestionOptionYesNo(number=1, option='test option', question=q)
-        self.assertEqual(str(opt),
-                         'You cannot create a Yes/No option for a non-Yes/No question')
+        self.assertEqual(
+            str(opt),
+            'You cannot create a Yes/No option for a non-Yes/No question')
 
     def test_yes_no_question_option_error_str(self):
         q = Question(desc='test question', type='Y')
         opt = QuestionOption(number=1, option='test option', question=q)
-        self.assertEqual(str(opt),
-                         'You cannot create an option for a non-Classic or multiple choice question')
+        self.assertEqual(
+            str(opt),
+            'You cannot create an option for a non-Classic or multiple choice question')
 
     def test_question(self):
         q1 = Question(desc='test question', type='C')
@@ -643,13 +646,16 @@ class QuestionTestCases(BaseTestCase):
     def test_question_option_comment_error_str(self):
         q = Question(desc='test question', type='T')
         opt = QuestionOption(number=1, option='test option', question=q)
-        self.assertEqual(str(opt),
-                         'You cannot create an option for a non-Classic or multiple choice question')
+        self.assertEqual(
+            str(opt),
+            'You cannot create an option for a non-Classic or multiple choice question')
+
 
 @nottest
 class PostProcTest(TestCase):
     def setUp(self):
         super().setUp()
+
     def tearDown(self):
         super().tearDown()
 
@@ -659,14 +665,15 @@ class PostProcTest(TestCase):
 
         v = Voting(name='test voting', question=q1)
         v.save()
-    
-        a, _ = Auth.objects.get_or_create(url=settings.BASEURL,
-                                          defaults={'me': True, 'name': 'test auth'})
+
+        a, _ = Auth.objects.get_or_create(
+            url=settings.BASEURL, defaults={
+                'me': True, 'name': 'test auth'})
         a.save()
         v.auths.add(a)
 
         tally = {'msgs': ['text1', 'text2']}
-        
+
         v.tally = tally
         v.save()
 
@@ -681,9 +688,10 @@ class PostProcTest(TestCase):
 
         v = Voting(name='test voting', question=q1)
         v.save()
-    
-        a, _ = Auth.objects.get_or_create(url=settings.BASEURL,
-                                          defaults={'me': True, 'name': 'test auth'})
+
+        a, _ = Auth.objects.get_or_create(
+            url=settings.BASEURL, defaults={
+                'me': True, 'name': 'test auth'})
         a.save()
         v.auths.add(a)
 
@@ -704,8 +712,9 @@ class PostProcTest(TestCase):
         op2.save()
         v = Voting(name='test voting', question=q)
         v.save()
-        a, _ = Auth.objects.get_or_create(url=settings.BASEURL,
-                                          defaults={'me': True, 'name': 'test auth'})
+        a, _ = Auth.objects.get_or_create(
+            url=settings.BASEURL, defaults={
+                'me': True, 'name': 'test auth'})
         a.save()
         v.auths.add(a)
 
@@ -731,8 +740,9 @@ class PostProcTest(TestCase):
         op2.save()
         v = Voting(name='test voting', question=q)
         v.save()
-        a, _ = Auth.objects.get_or_create(url=settings.BASEURL,
-                                          defaults={'me': True, 'name': 'test auth'})
+        a, _ = Auth.objects.get_or_create(
+            url=settings.BASEURL, defaults={
+                'me': True, 'name': 'test auth'})
         a.save()
         v.auths.add(a)
 

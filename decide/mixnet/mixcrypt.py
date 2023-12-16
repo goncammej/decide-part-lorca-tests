@@ -46,7 +46,8 @@ from Crypto.Cipher import AES
 def rand(p):
     while True:
         k = random.StrongRandom().randint(1, int(p) - 1)
-        if GCD(k, int(p) - 1) == 1: break
+        if GCD(k, int(p) - 1) == 1:
+            break
     return k
 
 
@@ -73,6 +74,7 @@ def multiple_decrypt_shuffle(ciphers, *crypts):
         last = i == len(crypts) - 1
         b = k.shuffle_decrypt(b, last)
     return b
+
 
 def multiple_decrypt_shuffle2(ciphers, *crypts, pubkey=None):
     '''
@@ -125,7 +127,7 @@ class MixCrypt:
     def setk(self, p, g, y, x):
         self.k = ElGamal.construct((p, g, y, x))
         return self.k
-    
+
     def encrypt(self, m, k=None):
         r = rand(self.k.p)
         if not k:
@@ -136,7 +138,7 @@ class MixCrypt:
     def decrypt(self, c):
         m = self.k._decrypt(c)
         return m
-    
+
     def multiple_decrypt(self, msgs, last=True):
         msgs2 = []
         for a, b in msgs:
@@ -162,7 +164,7 @@ class MixCrypt:
             msgs3.append(msg)
 
         return msgs3
-    
+
     def reencrypt(self, cipher, pubkey=None):
         '''
         >>> B = 256
