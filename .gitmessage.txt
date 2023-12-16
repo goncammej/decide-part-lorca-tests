@@ -1,0 +1,26 @@
+# No more than 50 chars. #### 50 chars is here:  #
+
+# Wrap at 72 chars. ################################## which is here:  #
+
+tipo: asunto #id
+
+
+### recordatorio: los commits se realizarán en inglés.
+
+### recordatorio: los commits se realizarán en inglés.
+
+### tipo
+# feat (nueva funcionalidad)
+# fix (corrección de bugs)
+# research (incorporación de código experimental, puede ser no funcional)
+# refactor (refactorización de código)
+# docs (actualización de documentación)
+# test (incorporación o modificación de tests)
+# conf (modificación de archivos de configuración)
+
+# Body: Explain *what* and *why* (not *how*). Include task ID.
+# Wrap at 72 chars. ################################## which is here:  #
+
+
+### Ejemplo
+# conf : Updated docker-compose.yml #1
