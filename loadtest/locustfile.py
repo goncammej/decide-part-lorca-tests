@@ -39,8 +39,10 @@ class DefVoters(SequentialTaskSet):
 
     @task
     def getuser(self):
-        self.usr= self.client.post("/authentication/getuser/", self.token).json()
-        print( str(self.user))
+        self.usr = self.client.post(
+            "/authentication/getuser/",
+            self.token).json()
+        print(str(self.user))
 
     @task
     def voting(self):
@@ -58,18 +60,17 @@ class DefVoters(SequentialTaskSet):
             "voting": VOTING
         }), headers=headers)
 
-
     def on_quit(self):
         self.voter = None
+
 
 class Visualizer(HttpUser):
     host = HOST
     tasks = [DefVisualizer]
-    wait_time = between(3,5)
-
+    wait_time = between(3, 5)
 
 
 class Voters(HttpUser):
     host = HOST
     tasks = [DefVoters]
-    wait_time= between(3,5)
+    wait_time = between(3, 5)

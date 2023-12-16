@@ -28,11 +28,14 @@ def tally(ModelAdmin, request, queryset):
         token = request.session.get('auth-token', '')
         v.tally_votes(token)
 
+
 class QuestionAdmin(admin.ModelAdmin):
     list_display = ('desc', 'type')
 
+
 class QuestionOptionRankedAdmin(admin.ModelAdmin):
     list_display = ('question', 'number', 'option')
+
 
 class QuestionOptionYesNoAdmin(admin.ModelAdmin):
     list_display = ('question', 'number', 'option')
@@ -46,8 +49,7 @@ class VotingAdmin(admin.ModelAdmin):
     list_filter = (StartedFilter,)
     search_fields = ('name', )
 
-    actions = [ start, stop, tally ]
-
+    actions = [start, stop, tally]
 
 
 admin.site.register(Voting, VotingAdmin)
@@ -55,4 +57,3 @@ admin.site.register(Question, QuestionAdmin)
 admin.site.register(QuestionOption)
 admin.site.register(QuestionOptionRanked, QuestionOptionRankedAdmin)
 admin.site.register(QuestionOptionYesNo, QuestionOptionYesNoAdmin)
-

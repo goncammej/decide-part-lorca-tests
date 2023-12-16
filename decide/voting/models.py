@@ -24,50 +24,63 @@ class Question(models.Model):
         super().save(*args, **kwargs)
         if self.type == 'Y':
             # Create Yes/No options when a Yes/No question is saved
-            QuestionOptionYesNo.objects.get_or_create(question=self, option='Si', number=1)
-            QuestionOptionYesNo.objects.get_or_create(question=self, option='No', number=2)
+            QuestionOptionYesNo.objects.get_or_create(
+                question=self, option='Si', number=1)
+            QuestionOptionYesNo.objects.get_or_create(
+                question=self, option='No', number=2)
 
     def __str__(self):
         return self.desc
 
 
 class QuestionOption(models.Model):
-    question = models.ForeignKey(Question, related_name='options', on_delete=models.CASCADE)
+    question = models.ForeignKey(
+        Question,
+        related_name='options',
+        on_delete=models.CASCADE)
     number = models.PositiveIntegerField(blank=True, null=True)
     option = models.TextField()
 
     def save(self):
         if not self.number:
             self.number = self.question.options.count() + 2
-        if self.question.type in ['C','M']:
+        if self.question.type in ['C', 'M']:
             return super().save()
 
     def __str__(self):
-        if self.question.type in ['C','M']:
+        if self.question.type in ['C', 'M']:
             return '{} ({})'.format(self.option, self.number)
         else:
             return 'You cannot create an option for a non-Classic or multiple choice question'
-    
+
+
 class QuestionOptionRanked(models.Model):
-  question = models.ForeignKey(Question, related_name='ranked_options', on_delete=models.CASCADE)
-  number = models.PositiveIntegerField(blank=True, null=True)
-  option = models.TextField()
-  preference = models.PositiveIntegerField(blank=True, null=True)
+    question = models.ForeignKey(
+        Question,
+        related_name='ranked_options',
+        on_delete=models.CASCADE)
+    number = models.PositiveIntegerField(blank=True, null=True)
+    option = models.TextField()
+    preference = models.PositiveIntegerField(blank=True, null=True)
 
-  def save(self):
-    if not self.number:
-      self.number = self.question.options.count() + 2
-    if self.question.type == 'R':
-      return super().save()
+    def save(self):
+        if not self.number:
+            self.number = self.question.options.count() + 2
+        if self.question.type == 'R':
+            return super().save()
 
-  def __str__(self):
-    if self.question.type == 'R':
-      return '{} ({})'.format(self.option, self.number)
-    else:
-      return 'You cannot create a ranked option for a non-ranked question'
+    def __str__(self):
+        if self.question.type == 'R':
+            return '{} ({})'.format(self.option, self.number)
+        else:
+            return 'You cannot create a ranked option for a non-ranked question'
+
 
 class QuestionOptionYesNo(models.Model):
-    question = models.ForeignKey(Question, related_name='yesno_options', on_delete=models.CASCADE)
+    question = models.ForeignKey(
+        Question,
+        related_name='yesno_options',
+        on_delete=models.CASCADE)
     number = models.PositiveIntegerField(blank=True, null=True)
     option = models.TextField()
 
@@ -79,19 +92,29 @@ class QuestionOptionYesNo(models.Model):
 
     def __str__(self):
         if self.question.type == 'Y':
-            return '{} - {} ({}) '.format(self.question,self.option, self.number)
+            return '{} - {} ({}) '.format(self.question,
+                                          self.option, self.number)
         else:
             return 'You cannot create a Yes/No option for a non-Yes/No question'
+
 
 class Voting(models.Model):
     name = models.CharField(max_length=200)
     desc = models.TextField(blank=True, null=True)
-    question = models.ForeignKey(Question, related_name='voting', on_delete=models.CASCADE)
+    question = models.ForeignKey(
+        Question,
+        related_name='voting',
+        on_delete=models.CASCADE)
 
     start_date = models.DateTimeField(blank=True, null=True)
     end_date = models.DateTimeField(blank=True, null=True)
 
-    pub_key = models.OneToOneField(Key, related_name='voting', blank=True, null=True, on_delete=models.SET_NULL)
+    pub_key = models.OneToOneField(
+        Key,
+        related_name='voting',
+        blank=True,
+        null=True,
+        on_delete=models.SET_NULL)
     auths = models.ManyToManyField(Auth, related_name='votings')
 
     tally = JSONField(blank=True, null=True)
@@ -102,10 +125,8 @@ class Voting(models.Model):
             return
 
         auth = self.auths.first()
-        data = {
-            "voting": self.id,
-            "auths": [ {"name": a.name, "url": a.url} for a in self.auths.all() ],
-        }
+        data = {"voting": self.id, "auths": [
+            {"name": a.name, "url": a.url} for a in self.auths.all()], }
         key = mods.post('mixnet', baseurl=auth.url, json=data)
         pk = Key(p=key["p"], g=key["g"], y=key["y"])
         pk.save()
@@ -114,7 +135,12 @@ class Voting(models.Model):
 
     def get_votes(self, token=''):
         # gettings votes from store
-        votes = mods.get('store', params={'voting_id': self.id}, HTTP_AUTHORIZATION='Token ' + token)
+        votes = mods.get(
+            'store',
+            params={
+                'voting_id': self.id},
+            HTTP_AUTHORIZATION='Token ' +
+            token)
         # anon votes
         votes_format = []
         vote_list = []
@@ -142,36 +168,47 @@ class Voting(models.Model):
         auths = [{"name": a.name, "url": a.url} for a in self.auths.all()]
 
         # first, we do the shuffle
-        data = { "msgs": votes }
-        response = mods.post('mixnet', entry_point=shuffle_url, baseurl=auth.url, json=data,
-                response=True)
+        data = {"msgs": votes}
+        response = mods.post(
+            'mixnet',
+            entry_point=shuffle_url,
+            baseurl=auth.url,
+            json=data,
+            response=True)
         if response.status_code != 200:
             # TODO: manage error
             pass
 
         # then, we can decrypt that
         data = {"msgs": response.json()}
-        response = mods.post('mixnet', entry_point=decrypt_url, baseurl=auth.url, json=data,
-                response=True)
+        response = mods.post(
+            'mixnet',
+            entry_point=decrypt_url,
+            baseurl=auth.url,
+            json=data,
+            response=True)
 
         if response.status_code != 200:
             # TODO: manage error
             pass
+
         def decimal_to_ascii(decimal_string):
-            decimal_string = str(decimal_string).replace('[', '').replace(']', '')
+            decimal_string = str(decimal_string).replace(
+                '[', '').replace(']', '')
             try:
-                # Convert the decimal string to a list of ASCII characters with length 4
+                # Convert the decimal string to a list of ASCII characters with
+                # length 4
                 while len(decimal_string) % 3 != 0:
                     decimal_string = '0' + decimal_string
                 ascii_string = ''
                 for i in range(0, len(decimal_string), 3):
-                    ascii_char = decimal_string[i:i+3]
+                    ascii_char = decimal_string[i:i + 3]
                     ascii_string += chr(int(ascii_char))
                 return ascii_string
             except ValueError:
                 # Handle the case where the input is not a valid decimal string
                 return "Invalid decimal string"
-        
+
         if self.question.type == 'R':
             data = {"msgs": response.json()}
             for key, values in data.items():
@@ -188,7 +225,6 @@ class Voting(models.Model):
             self.tally = response.json()
             self.save()
         self.do_postproc()
-    
 
     def do_postproc(self):
         tally = self.tally
@@ -205,16 +241,17 @@ class Voting(models.Model):
                 'number': opt.number,
                 'votes': votes
             })
-        
-        #postproc for ranked questions
+
+        # postproc for ranked questions
         if self.question.type == 'R':
             ranked_options = self.question.ranked_options.all()
-            vote_counts= {opt.number: 0 for opt in ranked_options}
+            vote_counts = {opt.number: 0 for opt in ranked_options}
             for msg, votes_weights in tally.items():
                 for vote_weight in votes_weights:
                     list_preferences = vote_weight.split('-')
                     for i, vote_weight in enumerate(list_preferences):
-                        vote_counts[i+1] += len(list_preferences) - int(vote_weight) + 1
+                        vote_counts[i + 1] += len(list_preferences) - \
+                            int(vote_weight) + 1
 
             opts = []
             for opt in ranked_options:
@@ -223,11 +260,11 @@ class Voting(models.Model):
                 opts.append({
                     'option': opt.option,
                     'number': opt.number,
-                    'votes' : votes,
+                    'votes': votes,
                     'votes_wights': votes_weights
-                    
+
                 })
-            data = { 'type': 'WEIGHT', 'options': opts }
+            data = {'type': 'WEIGHT', 'options': opts}
         # yes/no postproc
         elif self.question.type == 'Y':
             yesno_options = self.question.yesno_options.all()
@@ -241,9 +278,9 @@ class Voting(models.Model):
                     'number': opt.number,
                     'votes': votes
                 })
-            data = { 'type': 'IDENTITY', 'options': opts }
- 
-        #postproc for text questions
+            data = {'type': 'IDENTITY', 'options': opts}
+
+        # postproc for text questions
         elif self.question.type == 'T':
             text_votes = []
             for msg, votes in tally.items():
@@ -252,8 +289,8 @@ class Voting(models.Model):
 
             data = {'type': 'TEXT', 'text_votes': text_votes}
         else:
-            data = { 'type': 'IDENTITY', 'options': opts }
-            
+            data = {'type': 'IDENTITY', 'options': opts}
+
         postp = mods.post('postproc', json=data)
 
         self.postproc = postp
