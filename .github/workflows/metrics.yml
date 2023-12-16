@@ -67,19 +67,19 @@ jobs:
               "https://api.github.com/repos/$REPO_OWNER/$REPO_NAME/contributors" | jq -r '.[].login')
 
           # Gather and print all metrics per contributor
+          echo "<html><body><h1>Repository Metrics</h1><pre>" > metrics.html
           for contributor in $contributors; do
               commits=$(get_commit_count "$contributor")
               loc=$(get_loc_changes "$contributor")
               issues=$(get_issue_count "$contributor")
               comments=$(get_pr_comment_count "$contributor")
-              echo "$contributor: $commits, $loc, $issues, $comments" >> metrics.txt
+              echo "$contributor: $commits, $loc, $issues, $comments<br>" >> metrics.html
           done
-
-          # Generate a simple HTML file
-          echo "<html><body><h1>Repository Metrics</h1><pre>$(cat metrics.txt)</pre></body></html>" > metrics.html
+          echo "</pre></body></html>" >> metrics.html
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: .
+          publish_dir: .  # Deploy the current directory
+          publish_branch: gh-pages  # The branch to deploy to (GitHub Pages)
