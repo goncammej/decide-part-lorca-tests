@@ -3,7 +3,7 @@ name: Generate and Publish Metrics
 on:
   push:
     branches:
-      - main
+      - develop
 
 jobs:
   build:
