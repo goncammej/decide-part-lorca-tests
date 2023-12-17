@@ -21,43 +21,58 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 
 class VotingView(generics.ListCreateAPIView):
-  queryset = Voting.objects.all()
-  serializer_class = VotingSerializer
-  filter_backends = (django_filters.rest_framework.DjangoFilterBackend,)
-  filterset_fields = ('id', )
+    """
+    API view for listing and creating Voting instances.
 
-  def get(self, request, *args, **kwargs):
-    idpath = kwargs.get('voting_id')
-    self.queryset = Voting.objects.all()
-    version = request.version
-    if version not in settings.ALLOWED_VERSIONS:
-        version = settings.DEFAULT_VERSION
-    if version == 'v2':
-        self.serializer_class = SimpleVotingSerializer
+    This view supports listing all Voting instances or creating a new Voting instance with associated Question and
+    QuestionOption instances.
 
-    return super().get(request, *args, **kwargs)
+    :ivar queryset: The base queryset for Voting objects.
+    :vartype queryset: QuerySet
+    :ivar serializer_class: The default serializer class for Voting objects.
+    :vartype serializer_class: Serializer
+    :ivar filter_backends: Tuple of filter backend classes.
+    :vartype filter_backends: tuple
+    :ivar filterset_fields: Fields allowed for filtering.
+    :vartype filterset_fields: tuple
+    """
+    queryset = Voting.objects.all()
+    serializer_class = VotingSerializer
+    filter_backends = (django_filters.rest_framework.DjangoFilterBackend,)
+    filterset_fields = ('id', )
 
-  def post(self, request, *args, **kwargs):
-    self.permission_classes = (UserIsStaff,)
-    self.check_permissions(request)
-    for data in ['name', 'desc', 'question', 'question_opt']:
-      if not data in request.data:
-        return Response({}, status=status.HTTP_400_BAD_REQUEST)
+    def get(self, request, *args, **kwargs):
+        idpath = kwargs.get('voting_id')
+        self.queryset = Voting.objects.all()
+        version = request.version
+        if version not in settings.ALLOWED_VERSIONS:
+            version = settings.DEFAULT_VERSION
+        if version == 'v2':
+            self.serializer_class = SimpleVotingSerializer
 
-    question = Question(desc=request.data.get('question'))
-    question.save()
-    for idx, q_opt in enumerate(request.data.get('question_opt')):
-      opt = QuestionOption(question=question, option=q_opt, number=idx)
-      opt.save()
-    voting = Voting(name=request.data.get('name'), desc=request.data.get('desc'),
-            question=question)
-    voting.save()
+        return super().get(request, *args, **kwargs)
 
-    auth, _ = Auth.objects.get_or_create(url=settings.BASEURL,
-                                      defaults={'me': True, 'name': 'test auth'})
-    auth.save()
-    voting.auths.add(auth)
-    return Response({}, status=status.HTTP_201_CREATED)
+    def post(self, request, *args, **kwargs):
+        self.permission_classes = (UserIsStaff,)
+        self.check_permissions(request)
+        for data in ['name', 'desc', 'question', 'question_opt']:
+            if not data in request.data:
+                return Response({}, status=status.HTTP_400_BAD_REQUEST)
+
+        question = Question(desc=request.data.get('question'))
+        question.save()
+        for idx, q_opt in enumerate(request.data.get('question_opt')):
+            opt = QuestionOption(question=question, option=q_opt, number=idx)
+            opt.save()
+        voting = Voting(name=request.data.get('name'), desc=request.data.get('desc'),
+                question=question)
+        voting.save()
+
+        auth, _ = Auth.objects.get_or_create(url=settings.BASEURL,
+                                        defaults={'me': True, 'name': 'test auth'})
+        auth.save()
+        voting.auths.add(auth)
+        return Response({}, status=status.HTTP_201_CREATED)
     
 
 class VotingUpdate(generics.RetrieveUpdateDestroyAPIView):
